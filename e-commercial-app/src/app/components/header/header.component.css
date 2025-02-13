@@ -5,33 +5,33 @@
     background: #5a2d82;
     padding: 10px;
     color: white;
-  }
+}
 
-  .logo img {
+.logo img {
     height: 60px;
-  }
+}
 
-  .search-bar input {
+.search-bar input {
     padding: 8px;
     width: 300px;
     border-radius: 5px;
     border: none;
-  }
+}
 
-  .actions {
+.actions {
     display: flex;
     gap: 15px;
-  }
+}
 
-  .btn {
+.btn {
     background: white;
     color: #5a2d82;
     border: none;
     padding: 8px 12px;
     border-radius: 5px;
     cursor: pointer;
-  }
+}
 
-  .language {
+.language {
     cursor: pointer;
-  }
+}

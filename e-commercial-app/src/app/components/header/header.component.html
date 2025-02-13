@@ -3,11 +3,12 @@
         <img src="assets/logo.png" alt="Logo">
     </div>
     <div class="search-bar">
-        <input type="text" placeholder="Ürün, kategori ara...">
+        <input type="text" placeholder="Search...">
     </div>
     <div class="actions">
         <span class="language">🌍 Türkçe (TR)</span>
-        <button class="btn">Giriş yap</button>
-        <button class="btn">Kayıt Ol</button>
+        <button class="btn" (click)="navigateToLogin()">Login</button>
+        <button class="btn" (click)="navigateToRegister()">Register</button>
+        
     </div>
 </header>
