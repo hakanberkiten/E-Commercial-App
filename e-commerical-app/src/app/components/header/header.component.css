@@ -1,0 +1,38 @@
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #5a2d82;
+    padding: 10px;
+    color: white;
+  }
+  
+  .logo img {
+    height: 50px;
+  }
+  
+  .search-bar input {
+    padding: 8px;
+    width: 300px;
+    border-radius: 5px;
+    border: none;
+  }
+  
+  .actions {
+    display: flex;
+    gap: 15px;
+  }
+  
+  .btn {
+    background: white;
+    color: #5a2d82;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .language {
+    cursor: pointer;
+  }
+  
