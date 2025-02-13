@@ -6,8 +6,10 @@ import { NavbarComponent } from "./components/navbar/navbar.component";
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent, NavbarComponent, ], // RouterOutlet EKLENMELİ!
+  imports: [RouterOutlet, HeaderComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {}
+export class AppComponent {
+  title = 'e-commercial-app';
+}

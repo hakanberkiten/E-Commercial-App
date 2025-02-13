@@ -8,13 +8,13 @@ import { Router } from '@angular/router';
   styleUrls: ['./header.component.css']
 })
 export class HeaderComponent {
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   navigateToLogin() {
     this.router.navigate(['/login']);
   }
 
-  navigateToRegister() {
-    this.router.navigate(['/register']);
+  navigateToSignup() {
+    this.router.navigate(['/signup']);
   }
 }
