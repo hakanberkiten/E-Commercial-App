@@ -13,4 +13,6 @@ import { RouterModule } from '@angular/router';
     <router-outlet></router-outlet>
   `,
 })
-export class AppComponent { }
+export class AppComponent {
+  title = 'e-commercial-app';
+}
