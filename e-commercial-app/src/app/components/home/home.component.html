@@ -1,1 +1,26 @@
-<p>home works!</p>
+<div class="home-container">
+    <!-- Hero Banner (Ana Banner) -->
+    <div class="hero-banner">
+      <h1>Welcome to Our Store</h1>
+      <p>Discover the best products at unbeatable prices.</p>
+      <button class="shop-now">Shop Now</button>
+    </div>
+  
+    <!-- Kategori Filtreleme -->
+    <div class="categories">
+      <button *ngFor="let category of categories" (click)="filterByCategory(category)">
+        {{ category }}
+      </button>
+    </div>
+  
+    <!-- Ürün Listesi -->
+    <div class="products-grid">
+      <div class="product-card" *ngFor="let product of filteredProducts">
+        <img [src]="product.image" alt="{{ product.name }}">
+        <h3>{{ product.name }}</h3>
+        <p>${{ product.price }}</p>
+        <button (click)="addToCart(product)">Add to Cart</button>
+      </div>
+    </div>
+  </div>
+  
