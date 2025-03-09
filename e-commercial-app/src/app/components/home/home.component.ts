@@ -1,36 +1,43 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { Product, ProductsService } from '../../services/products.service';
+import { ProductItemComponent } from "../product-item/product-item.component";
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ProductItemComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent {
-  categories = ['All', 'Electronics', 'Clothing', 'Home', 'Sports'];
-  products = [
-    { id: 1, name: 'Laptop', price: 899, category: 'Electronics', image: '/assets/laptop.jpg' },
-    { id: 2, name: 'T-Shirt', price: 19, category: 'Clothing', image: '/assets/tshirt.jpg' },
-    { id: 3, name: 'Coffee Maker', price: 49, category: 'Home', image: '/assets/coffeemaker.jpg' },
-    { id: 4, name: 'Running Shoes', price: 79, category: 'Sports', image: '/assets/shoes.jpg' }
-  ];
+export class HomeComponent implements OnInit{
+  categories : string[] = [];
+  products : Product[] = [];
 
   filteredProducts = [...this.products];
 
-  constructor(private router: Router) { }
+  IsShopNowClicked : boolean = false;
 
-  filterByCategory(category: string) {
-    if (category === 'All') {
-      this.filteredProducts = [...this.products];
-    } else {
-      this.filteredProducts = this.products.filter(p => p.category === category);
-    }
+  shopNow() {
+    this.IsShopNowClicked = true;
   }
 
+  ngOnInit() {
+    this.categories = this.productsService.getCategories();
+    this.products = this.productsService.getProducts();
+    this.filteredProducts = [...this.products];
+  }
+
+  constructor(private router: Router, private productsService: ProductsService) { }
+
+  filterByCategory(category: string) {
+    this.filteredProducts = this.productsService.filterByCategory(category);
+  }
+
+  // This is connected to the product service but just for testing.
   addToCart(product: any) {
-    alert(`${product.name} added to cart!`);
+    this.productsService.addToCart(product);
+    console.log("This product added to cart: "+product.name);
   }
 }

@@ -3,24 +3,24 @@
     <div class="hero-banner">
       <h1>Welcome to Our Store</h1>
       <p>Discover the best products at unbeatable prices.</p>
-      <button class="shop-now">Shop Now</button>
+      <button class="shop-now" (click)="shopNow()">Shop Now</button>
     </div>
-  
-    <!-- Kategori Filtreleme -->
-    <div class="categories">
-      <button *ngFor="let category of categories" (click)="filterByCategory(category)">
-        {{ category }}
-      </button>
-    </div>
-  
-    <!-- Ürün Listesi -->
-    <div class="products-grid">
-      <div class="product-card" *ngFor="let product of filteredProducts">
-        <img [src]="product.image" alt="{{ product.name }}">
-        <h3>{{ product.name }}</h3>
-        <p>${{ product.price }}</p>
-        <button (click)="addToCart(product)">Add to Cart</button>
+
+    <div class="container" *ngIf="IsShopNowClicked">
+        <!-- Kategori Filtreleme -->
+      <div class="categories">
+        <button *ngFor="let category of categories" (click)="filterByCategory(category)">
+          {{ category }}
+        </button>
       </div>
+
+      <!-- Ürün Listesi -->
+      <div class="products-grid">
+        <div class="product-card" *ngFor="let product of filteredProducts">
+            <app-product-item [product]="product" (productAdded)="addToCart($event)"></app-product-item>
+        </div>
+      </div>
+
     </div>
+
   </div>
-  
