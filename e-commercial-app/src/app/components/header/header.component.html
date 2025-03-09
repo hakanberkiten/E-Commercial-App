@@ -1,15 +1,23 @@
 <header class="header">
-    <div class="logo">
+
+    <div class="icons">
         <a href="http://localhost:4200/home">
-            <img src="assets/images/homeLogo.png" alt="Logo">
+          <i class="icon bi bi-house mx-2 fs-3 text-light"></i>
+        </a>
+
+        <a href="http://localhost:4200/shopping-cart">
+          <i class="icon bi bi-cart mx-2 fs-3 text-light"></i>
         </a>
     </div>
+
     <div class="search-bar">
         <input type="text" placeholder="Search...">
     </div>
+
     <div class="actions">
         <span class="language">🌍 Türkçe (TR)</span>
         <button class="btn" (click)="navigateToLogin()">Log In</button>
         <button class="btn" (click)="navigateToSignup()">Sign Up</button>
     </div>
+
 </header>

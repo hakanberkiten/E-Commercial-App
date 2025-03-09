@@ -31,3 +31,8 @@
 .language {
     cursor: pointer;
 }
+
+.icon:hover{
+  color: #959595 !important;
+  transition: color 0.2s ease;
+}
