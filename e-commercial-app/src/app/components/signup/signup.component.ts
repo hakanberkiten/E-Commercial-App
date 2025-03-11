@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -5,7 +6,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.css']
 })
@@ -33,12 +34,13 @@ export class SignUpComponent {
       return;
     }
 
+
     if (this.signupForm.valid) {
       const formValues = this.signupForm.value;
 
 
-      if (formValues.password !== formValues.confirmPassword) {
-        alert("Passwords do not match!");
+      if (this.passwordsDoNotMatch) {
+
         return;
       }
 
@@ -49,5 +51,14 @@ export class SignUpComponent {
       alert('Registration successful!');
       this.router.navigate(['/login']);
     }
+  }
+  get password() { return this.signupForm.get('password'); }
+  get confirmPassword() { return this.signupForm.get('confirmPassword'); }
+
+
+  get passwordsDoNotMatch(): boolean {
+    const password = this.password?.value;
+    const confirmPassword = this.confirmPassword?.value;
+    return (password && confirmPassword && password !== confirmPassword) ? true : false;
   }
 }
