@@ -1,25 +1,30 @@
 import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
-navigateToRegister() {
-    this.router.navigate(['/signup']);
-}
-  email: string = '';
-  password: string = '';
+  loginForm: FormGroup;
 
-  constructor(private router: Router) { }
+  constructor(private router: Router) {
+    this.loginForm = new FormGroup({
+      email: new FormControl('', Validators.required),
+      password: new FormControl('', Validators.required)
+    });
+  }
+
+  navigateToRegister() {
+    this.router.navigate(['/signup']);
+  }
 
   onSubmit() {
-    console.log('Email:', this.email);
-    console.log('Password:', this.password);
+    console.log('Email:', this.loginForm.value.email);
+    console.log('Password:', this.loginForm.value.password);
   }
 }

@@ -9,7 +9,7 @@ export const routes: Routes = [
     { path: 'home', component: HomeComponent },
     { path: 'login', component: LoginComponent },
     { path: 'signup', component: SignUpComponent },
-    { path: 'shopping-cart', component: ShoppingCartComponent}
+    { path: 'shopping-cart', component: ShoppingCartComponent }
 ];
 
 export const appRouter = provideRouter(routes);

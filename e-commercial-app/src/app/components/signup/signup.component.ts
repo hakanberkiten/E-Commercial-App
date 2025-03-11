@@ -1,36 +1,53 @@
 import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [FormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.css']
 })
 export class SignUpComponent {
+  signupForm: FormGroup;
+
+  constructor(private router: Router) {
+    this.signupForm = new FormGroup({
+      name: new FormControl('', Validators.required),
+      email: new FormControl('', [Validators.required, Validators.email]),
+      password: new FormControl('', [Validators.required, Validators.minLength(6)]),
+      confirmPassword: new FormControl('', Validators.required)
+    });
+  }
+
   navigateToLogin() {
     this.router.navigate(['/login']);
   }
-  name: string = '';
-  email: string = '';
-  password: string = '';
-  confirmPassword: string = '';
-
-  constructor(private router: Router) { }
 
   onSubmit() {
-    if (this.password !== this.confirmPassword) {
-      alert("Passwords do not match!");
+
+    const emailControl = this.signupForm.get('email');
+    if (emailControl && emailControl.invalid) {
+      alert("Please enter a valid email address!");
       return;
     }
 
-    console.log('Name:', this.name);
-    console.log('Email:', this.email);
-    console.log('Password:', this.password);
+    if (this.signupForm.valid) {
+      const formValues = this.signupForm.value;
 
-    alert('Registration successful!');
-    this.router.navigate(['/login']);
+
+      if (formValues.password !== formValues.confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+      }
+
+      console.log('Name:', formValues.name);
+      console.log('Email:', formValues.email);
+      console.log('Password:', formValues.password);
+
+      alert('Registration successful!');
+      this.router.navigate(['/login']);
+    }
   }
 }
