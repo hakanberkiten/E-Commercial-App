@@ -1,14 +1,17 @@
 package com.example.e_commerce.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import lombok.AllArgsConstructor;
+@Builder
 @Entity
 @Table(name = "user")
 @Getter
 @Setter
+@AllArgsConstructor
 @NoArgsConstructor
 public class User {
 

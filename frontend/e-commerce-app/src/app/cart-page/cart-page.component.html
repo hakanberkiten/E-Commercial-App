@@ -1,0 +1,20 @@
+<!-- src/app/cart-page/cart-page.component.html -->
+<h2>My Cart</h2>
+
+<div *ngIf="items.length === 0">Your cart is empty</div>
+
+<div *ngFor="let it of items" class="cart-item">
+    <span>{{ it.product.productName }}</span>
+
+    <!-- 1) #qtyRef ile referans alıyoruz, .value kesin dolu -->
+    <input #qtyRef type="number" [value]="it.quantityInCart" (change)="update(it, qtyRef.value)" />
+
+    <span>x {{ it.product.price | currency }}</span>
+    <button (click)="remove(it)">Remove</button>
+</div>
+
+<div *ngIf="items.length > 0">
+    <h3>Total: {{ total | currency }}</h3>
+</div>
+
+<div *ngIf="error" class="error">{{ error }}</div>

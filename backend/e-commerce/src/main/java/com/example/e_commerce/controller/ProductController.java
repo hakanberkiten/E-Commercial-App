@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@CrossOrigin("http://localhost:4200")
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
 public class ProductController {
@@ -23,7 +24,10 @@ public class ProductController {
     public List<Product> getAllProducts() {
         return productService.getAllProducts();
     }
-
+    @GetMapping
+    public List<Product> byCategory(@RequestParam Long categoryId) {
+      return productService.getByCategory(categoryId);
+    }
     @GetMapping("/{id}")
     public Product getProductById(@PathVariable Long id) {
         return productService.getProductById(id);

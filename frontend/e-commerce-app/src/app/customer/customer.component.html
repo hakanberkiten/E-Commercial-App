@@ -1,0 +1,26 @@
+<!-- src/app/customer/customer.component.html -->
+<h1 *ngIf="user">Hello, {{ user.firstName }}!</h1>
+
+<div class="filter">
+    <label>Category:</label>
+    <select #catSel (change)="onCategoryChange(catSel.value)">
+        <option value="">All</option>
+        <option *ngFor="let c of categories" [value]="c.categoryId">
+            {{ c.categoryName }}
+        </option>
+    </select>
+
+
+</div>
+
+<div class="product-list">
+    <div *ngFor="let p of products" class="product-card">
+        <img [src]="p.image" alt="{{p.productName}}" />
+        <h3>{{p.productName}}</h3>
+        <p>{{p.description}}</p>
+        <p>Price: {{p.price | currency}}</p>
+        <button (click)="addToCart(p)">Add to Cart</button>
+    </div>
+</div>
+
+<div *ngIf="error" class="error">{{error}}</div>

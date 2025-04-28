@@ -9,6 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/categories")
+@CrossOrigin("http://localhost:4200")
 @RequiredArgsConstructor
 public class CategoryController {
 
@@ -18,7 +19,10 @@ public class CategoryController {
     public Category saveCategory(@RequestBody Category category) {
         return categoryService.saveCategory(category);
     }
-
+    // @GetMapping("/all") 
+    // public List<Category> all() { 
+    //   return categoryService.getAll(); 
+    // }
     @GetMapping("/all")
     public List<Category> getAllCategories() {
         return categoryService.getAllCategories();

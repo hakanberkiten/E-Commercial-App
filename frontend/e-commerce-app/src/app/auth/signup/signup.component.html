@@ -1,0 +1,54 @@
+<!-- src/app/auth/signup/signup.component.html -->
+<div class="signup-container">
+    <h2>Sign Up</h2>
+    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" novalidate>
+        <div class="form-group">
+            <label for="firstName">First Name</label>
+            <input id="firstName" type="text" formControlName="firstName" class="form-control" placeholder="John" />
+            <div *ngIf="signupForm.get('firstName')?.invalid && signupForm.get('firstName')?.touched" class="error">
+                First name is required.
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <input id="lastName" type="text" formControlName="lastName" class="form-control" placeholder="Doe" />
+            <div *ngIf="signupForm.get('lastName')?.invalid && signupForm.get('lastName')?.touched" class="error">
+                Last name is required.
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input id="email" type="email" formControlName="email" class="form-control" placeholder="you@example.com" />
+            <div *ngIf="signupForm.get('email')?.invalid && signupForm.get('email')?.touched" class="error">
+                Please enter a valid email.
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input id="password" type="password" formControlName="password" class="form-control"
+                placeholder="At least 6 characters" />
+            <div *ngIf="signupForm.get('password')?.invalid && signupForm.get('password')?.touched" class="error">
+                Minimum 6 characters.
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="mobileNumber">Mobile Number</label>
+            <input id="mobileNumber" type="text" formControlName="mobileNumber" class="form-control"
+                placeholder="+90 5xx xxx xx xx" />
+            <div *ngIf="signupForm.get('mobileNumber')?.invalid && signupForm.get('mobileNumber')?.touched"
+                class="error">
+                Mobile number is required.
+            </div>
+        </div>
+
+        <button type="submit" [disabled]="signupForm.invalid">Sign Up</button>
+        <div class="error" *ngIf="errorMsg">{{ errorMsg }}</div>
+        <p class="help-text">
+            Already have an account?
+            <a routerLink="/login">Login</a>
+        </p>
+    </form>

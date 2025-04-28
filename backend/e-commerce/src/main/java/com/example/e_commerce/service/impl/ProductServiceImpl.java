@@ -53,4 +53,8 @@ public Product saveProduct(Product product) {
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
     }
+
+    public List<Product> getByCategory(Long categoryId) {
+        return productRepository.findByCategoryCategoryId(categoryId);
+      }
 }
