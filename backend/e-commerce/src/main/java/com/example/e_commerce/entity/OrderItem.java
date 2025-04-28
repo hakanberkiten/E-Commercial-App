@@ -1,27 +1,31 @@
+// OrderItem.java
 package com.example.e_commerce.entity;
-
 
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 @Entity
-@Table(name = "orderitem")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name = "order_item")
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "OrderItemID")
-    private Integer id;
+    private Long orderItemId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ProductItemID", nullable = false)
-    private ProductItem productItem;
+    private BigDecimal orderProductPrice;
+    private BigDecimal orderedProductPrice;
+    private Integer quantityInOrder;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "OrderID", nullable = false)
-    private Order order;
+    @ManyToOne
+    @JoinColumn(name = "order_id", nullable = false)
+    @JsonBackReference           
+    private Orders order;
 
-    private Integer quantity;
+    @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 }

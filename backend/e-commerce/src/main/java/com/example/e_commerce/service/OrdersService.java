@@ -1,0 +1,16 @@
+// OrdersService.java
+package com.example.e_commerce.service;
+
+import com.example.e_commerce.dto.OrderRequest;
+import com.example.e_commerce.entity.Orders;
+
+import java.util.List;
+
+public interface OrdersService {
+    Orders saveOrder(Orders order);
+    List<Orders> getAllOrders();
+    Orders getOrderById(Long id);
+    void deleteOrder(Long id);
+    Orders placeOrder(OrderRequest request);
+
+}

@@ -1,43 +1,37 @@
 package com.example.e_commerce.entity;
 
-
 import jakarta.persistence.*;
-import lombok.*;
-import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Table(name = "user")  // MySQL’de reserved kelime olabilir, gerekirse `\`user\`` olarak quote et
-@Data
+@Table(name = "user")
+@Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "UserID")
-    private Integer id;
+    private Long userId;
 
-    @Column(name = "Username", length = 50, nullable = false, unique = true)
-    private String username;
-
-    @Column(name = "Password", length = 255, nullable = false)
-    private String password;
-
-    @Column(name = "Email", length = 50, nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "PhoneNumber", length = 20)
-    private String phoneNumber;
+    @Column(nullable = false, length = 50)
+    private String firstName;
 
-    @Column(name = "UserRole", length = 50)
-    private String userRole;
+    @Column(nullable = false, length = 50)
+    private String lastName;
 
-    @Column(name = "CreatedAt", nullable = false, updatable = false,
-            columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime createdAt;
+    @Column(nullable = false, length = 10)
+    private String mobileNumber;
 
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
+    @Column(nullable = false)
+    private String password;
+
+    @ManyToOne
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
 }

@@ -1,13 +1,11 @@
+// AddressController.java
 package com.example.e_commerce.controller;
 
-
-import com.example.e_commerce.dto.AddressDTO;
+import com.example.e_commerce.entity.Address;
 import com.example.e_commerce.service.AddressService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -17,35 +15,23 @@ public class AddressController {
 
     private final AddressService addressService;
 
-    @PostMapping
-    public ResponseEntity<AddressDTO> create(@Valid @RequestBody AddressDTO dto) {
-        AddressDTO created = addressService.create(dto);
-        return ResponseEntity
-            .status(201)
-            .body(created);
+    @PostMapping("/save")
+    public Address saveAddress(@RequestBody Address address) {
+        return addressService.saveAddress(address);
+    }
+
+    @GetMapping("/all")
+    public List<Address> getAllAddresses() {
+        return addressService.getAllAddresses();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AddressDTO> getById(@PathVariable Integer id) {
-        return ResponseEntity.ok(addressService.getById(id));
+    public Address getAddressById(@PathVariable Long id) {
+        return addressService.getAddressById(id);
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<AddressDTO>> getByUser(@PathVariable Integer userId) {
-        return ResponseEntity.ok(addressService.getAllByUser(userId));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<AddressDTO> update(
-            @PathVariable Integer id,
-            @Valid @RequestBody AddressDTO dto) {
-        return ResponseEntity.ok(addressService.update(id, dto));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        addressService.delete(id);
-        return ResponseEntity.noContent().build();
+    @DeleteMapping("/delete/{id}")
+    public void deleteAddress(@PathVariable Long id) {
+        addressService.deleteAddress(id);
     }
 }
-

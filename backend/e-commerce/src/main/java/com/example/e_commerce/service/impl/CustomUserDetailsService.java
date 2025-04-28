@@ -1,3 +1,4 @@
+// CustomUserDetailsService.java
 package com.example.e_commerce.service.impl;
 
 import com.example.e_commerce.entity.User;
@@ -9,12 +10,17 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
+    
     private final UserRepository userRepo;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepo.findByUsername(username)
-            .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
-        return UserDetailsImpl.build(user);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User u = userRepo.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return org.springframework.security.core.userdetails.User.builder()
+            .username(u.getEmail())
+            .password(u.getPassword())
+            .roles(u.getRole().getRoleName())
+            .build();
     }
 }

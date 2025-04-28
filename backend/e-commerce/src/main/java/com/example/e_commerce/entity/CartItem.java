@@ -1,26 +1,24 @@
+// CartItem.java
 package com.example.e_commerce.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "cartitem")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name = "cart_item")
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class CartItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "CartItemID")
-    private Integer id;
+    private Long cartItemId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ProductItemID", nullable = false)
-    private ProductItem productItem;
+    private Integer quantityInCart;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "CartID", nullable = false)
-    private ShoppingCart cart;
+    @ManyToOne
+    @JoinColumn(name = "cart_id", nullable = false)
+    private Cart cart;
 
-    private Integer quantity;
+    @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 }

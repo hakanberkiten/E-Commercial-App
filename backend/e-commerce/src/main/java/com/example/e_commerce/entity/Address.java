@@ -1,3 +1,4 @@
+// Address.java
 package com.example.e_commerce.entity;
 
 import jakarta.persistence.*;
@@ -5,34 +6,26 @@ import lombok.*;
 
 @Entity
 @Table(name = "address")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Address {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "AddressID")
-    private Integer id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "UserID", nullable = false)
-    private User user;
-
-    @Column(columnDefinition = "TEXT")
-    private String addressLine;
-
-    @Column(length = 50)
+    private Long addressId;
+    @Column(nullable = false)
+    private String buildingName;
+    @Column(nullable = false)
     private String city;
-
-    @Column(length = 50)
-    private String state;
-
-    @Column(length = 50)
-    private String postalCode;
-
-    @Column(length = 50)
+    @Column(nullable = false)
     private String country;
-
-    @Column(length = 50)
-    private String addressType;
+    @Column(nullable = false)
+    private String pincode;
+    @Column(nullable = false)
+    private String state;
+    @Column(nullable = false)
+    private String street;
 }

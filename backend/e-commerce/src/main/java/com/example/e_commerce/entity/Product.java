@@ -2,37 +2,41 @@ package com.example.e_commerce.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.math.BigDecimal;
 
 @Entity
 @Table(name = "product")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Product {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ProductID")
-    private Integer id;
+    private Long productId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "CategoryID")
-    private Category category;
-
-    @Column(name = "ProductName", length = 50, nullable = false)
-    private String name;
-
-    @Column(name = "ProductDescription", columnDefinition = "TEXT")
+    @Column(nullable = false)
     private String description;
 
-    @Column(precision = 10, scale = 2)
-    private BigDecimal price;
+    private String image;
 
-    private Byte gender;               // tinyint
+    @Column(nullable = false)
+    private Double price;
 
-    @Column(precision = 10, scale = 2)
-    private BigDecimal discount;
+    @Column(nullable = false)
+    private String productName;
 
-    @Column(columnDefinition = "TEXT")
-    private String productImage;
+    @Column(nullable = false)
+    private Integer quantityInStock;
+
+    // Category bağlantısı
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
+    // Seller bağlantısı (user tablosundan)
+    @ManyToOne
+    @JoinColumn(name = "seller_id", nullable = false)
+    private User seller;
 }
