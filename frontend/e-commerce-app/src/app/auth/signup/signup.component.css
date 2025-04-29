@@ -1,0 +1,45 @@
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    border-bottom: none;
+}
+
+.input-group-text {
+    border: none;
+}
+
+.form-control {
+    border-left: none;
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: #ced4da;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:disabled {
+    background: #6c757d;
+}
+
+/* Add a nice background to the whole page */
+:host {
+    display: block;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    padding: 20px 0;
+}

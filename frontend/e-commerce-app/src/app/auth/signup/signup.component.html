@@ -1,54 +1,117 @@
-<!-- src/app/auth/signup/signup.component.html -->
-<div class="signup-container">
-    <h2>Sign Up</h2>
-    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" novalidate>
-        <div class="form-group">
-            <label for="firstName">First Name</label>
-            <input id="firstName" type="text" formControlName="firstName" class="form-control" placeholder="John" />
-            <div *ngIf="signupForm.get('firstName')?.invalid && signupForm.get('firstName')?.touched" class="error">
-                First name is required.
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h2 class="mb-0">Create Your Account</h2>
+                    <p class="mb-0 mt-2 text-white-50">Join our shopping community today</p>
+                </div>
+
+                <div class="card-body p-4">
+                    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+                        <!-- Name Row -->
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label class="form-label" for="firstName">First Name</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                                    <input type="text" id="firstName" formControlName="firstName" class="form-control"
+                                        [ngClass]="{'is-invalid': signupForm.get('firstName')?.touched && signupForm.get('firstName')?.invalid}"
+                                        placeholder="Enter your first name">
+                                </div>
+                                <div *ngIf="signupForm.get('firstName')?.touched && signupForm.get('firstName')?.invalid"
+                                    class="text-danger small mt-1">
+                                    First name is required
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="lastName">Last Name</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                                    <input type="text" id="lastName" formControlName="lastName" class="form-control"
+                                        [ngClass]="{'is-invalid': signupForm.get('lastName')?.touched && signupForm.get('lastName')?.invalid}"
+                                        placeholder="Enter your last name">
+                                </div>
+                                <div *ngIf="signupForm.get('lastName')?.touched && signupForm.get('lastName')?.invalid"
+                                    class="text-danger small mt-1">
+                                    Last name is required
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label class="form-label" for="email">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                                <input type="email" id="email" formControlName="email" class="form-control"
+                                    [ngClass]="{'is-invalid': signupForm.get('email')?.touched && signupForm.get('email')?.invalid}"
+                                    placeholder="name@example.com">
+                            </div>
+                            <div *ngIf="signupForm.get('email')?.touched && signupForm.get('email')?.errors"
+                                class="text-danger small mt-1">
+                                <span *ngIf="signupForm.get('email')?.errors?.['required']">Email is required</span>
+                                <span *ngIf="signupForm.get('email')?.errors?.['email']">Please enter a valid email
+                                    address</span>
+                            </div>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-3">
+                            <label class="form-label" for="password">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                                <input type="password" id="password" formControlName="password" class="form-control"
+                                    [ngClass]="{'is-invalid': signupForm.get('password')?.touched && signupForm.get('password')?.invalid}"
+                                    placeholder="Create a password">
+                            </div>
+                            <div *ngIf="signupForm.get('password')?.touched && signupForm.get('password')?.errors"
+                                class="text-danger small mt-1">
+                                <span *ngIf="signupForm.get('password')?.errors?.['required']">Password is
+                                    required</span>
+                                <span *ngIf="signupForm.get('password')?.errors?.['minlength']">Password must be at
+                                    least 6 characters</span>
+                            </div>
+                            <div class="form-text">Must be at least 6 characters long</div>
+                        </div>
+
+                        <!-- Mobile Number -->
+                        <div class="mb-4">
+                            <label class="form-label" for="mobileNumber">Mobile Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-phone"></i></span>
+                                <input type="tel" id="mobileNumber" formControlName="mobileNumber" class="form-control"
+                                    [ngClass]="{'is-invalid': signupForm.get('mobileNumber')?.touched && signupForm.get('mobileNumber')?.invalid}"
+                                    placeholder="Enter your mobile number">
+                            </div>
+                            <div *ngIf="signupForm.get('mobileNumber')?.touched && signupForm.get('mobileNumber')?.invalid"
+                                class="text-danger small mt-1">
+                                Mobile number is required
+                            </div>
+                        </div>
+
+                        <!-- Error message -->
+                        <div *ngIf="errorMsg" class="alert alert-danger mb-3">
+                            {{ errorMsg }}
+                        </div>
+
+                        <!-- Submit button -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg"
+                                [disabled]="signupForm.invalid || loading">
+                                <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status"
+                                    aria-hidden="true"></span>
+                                Sign Up
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <p class="mb-0">Already have an account? <a routerLink="/login"
+                                class="text-primary fw-bold">Login</a></p>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <div class="form-group">
-            <label for="lastName">Last Name</label>
-            <input id="lastName" type="text" formControlName="lastName" class="form-control" placeholder="Doe" />
-            <div *ngIf="signupForm.get('lastName')?.invalid && signupForm.get('lastName')?.touched" class="error">
-                Last name is required.
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label for="email">Email</label>
-            <input id="email" type="email" formControlName="email" class="form-control" placeholder="you@example.com" />
-            <div *ngIf="signupForm.get('email')?.invalid && signupForm.get('email')?.touched" class="error">
-                Please enter a valid email.
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label for="password">Password</label>
-            <input id="password" type="password" formControlName="password" class="form-control"
-                placeholder="At least 6 characters" />
-            <div *ngIf="signupForm.get('password')?.invalid && signupForm.get('password')?.touched" class="error">
-                Minimum 6 characters.
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label for="mobileNumber">Mobile Number</label>
-            <input id="mobileNumber" type="text" formControlName="mobileNumber" class="form-control"
-                placeholder="+90 5xx xxx xx xx" />
-            <div *ngIf="signupForm.get('mobileNumber')?.invalid && signupForm.get('mobileNumber')?.touched"
-                class="error">
-                Mobile number is required.
-            </div>
-        </div>
-
-        <button type="submit" [disabled]="signupForm.invalid">Sign Up</button>
-        <div class="error" *ngIf="errorMsg">{{ errorMsg }}</div>
-        <p class="help-text">
-            Already have an account?
-            <a routerLink="/login">Login</a>
-        </p>
-    </form>
+    </div>
+</div>
