@@ -1,75 +1,81 @@
 package com.example.e_commerce.security;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import lombok.RequiredArgsConstructor;
+import com.example.e_commerce.service.impl.CustomUserDetailsService;
 
 import java.io.IOException;
-import java.util.List;
 
+/**
+ * Bu filtre:
+ * 1. Authorization header’daki "Bearer <token>" bilgisini okur.
+ * 2. JwtUtils ile token’ın geçerli olup olmadığını kontrol eder.
+ * 3. Geçerliyse token’dan çıkarılan username ile
+ *    CustomUserDetailsService.loadUserByUsername(...) çağrılır.
+ * 4. UserDetails’ı Spring Security context’e set eder.
+ * 5. Sonra isteği devam ettirir.
+ */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
-    private final UserDetailsService userDetailsService;
+    private final CustomUserDetailsService userDetailsService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
-        
-        // Header'dan token bilgisini al
-        final String authHeader = request.getHeader("Authorization");
-        
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
+    protected void doFilterInternal(
+            HttpServletRequest  request,
+            HttpServletResponse response,
+            FilterChain         filterChain
+    ) throws ServletException, IOException {
+
+        // 1️⃣ Header’dan token’ı çek
+        String authHeader = request.getHeader("Authorization");
+        String token      = null;
+        String username   = null;
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token    = authHeader.substring(7);       // “Bearer ” kısmını at
+            try {
+                username = jwtUtils.getUsername(token); // Token’dan subject (=email) al
+            } catch (JwtException ex) {
+                // Token geçersiz veya süresi dolmuş
+                logger.warn("JWT validation failed: " + ex.getMessage());
+            }
         }
-        
-        // Token'ı ayıkla
-        final String jwt = authHeader.substring(7);
-        
-        if (jwtUtils.validateToken(jwt)) {
-            // Token geçerliyse kullanıcı bilgilerini al
-            String username = jwtUtils.getUsername(jwt);
-            Integer roleId = jwtUtils.getUserRole(jwt);
-            
-            // Kullanıcıyı yükle
+
+        // 2️⃣ Eğer token geçerliyse ve henüz authenticate edilmediyse...
+        if (username != null &&
+            SecurityContextHolder.getContext().getAuthentication() == null &&
+            jwtUtils.validateToken(token)
+        ) {
+            // 3️⃣ Gerçek UserDetails’ı DB’den (veya cache’den) yükle
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            
-            // Rol yetkisini oluştur (ROLE_ADMIN, ROLE_SELLER, ROLE_CUSTOMER)
-            String roleName = getRoleName(roleId);
-            
-            // Kimlik bilgisini oluştur (kullanıcı adı, şifre, yetkiler)
-            UsernamePasswordAuthenticationToken authentication = 
-                new UsernamePasswordAuthenticationToken(
-                    userDetails, 
-                    null, 
-                    List.of(new SimpleGrantedAuthority(roleName))
-                );
-            
-            // Güvenlik bağlamına kimliği kaydet
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            // 4️⃣ Spring’e “bu istek, bu user tarafından geliyor” de
+            var authToken = new UsernamePasswordAuthenticationToken(
+                    userDetails,           // principal
+                    null,                  // credentials zaten token’la doğrulandı
+                    userDetails.getAuthorities()
+            );
+            authToken.setDetails(
+                new WebAuthenticationDetailsSource().buildDetails(request)
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authToken);
         }
-        
+
+        // 5️⃣ İsteği zincirde devam ettir
         filterChain.doFilter(request, response);
-    }
-    
-    private String getRoleName(Integer roleId) {
-        switch (roleId) {
-            case 1: return "ROLE_ADMIN";
-            case 2: return "ROLE_SELLER";
-            case 3: return "ROLE_CUSTOMER";
-            default: return "ROLE_USER";
-        }
     }
 }

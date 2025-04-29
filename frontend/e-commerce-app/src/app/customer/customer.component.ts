@@ -17,7 +17,9 @@ export class CustomerComponent implements OnInit {
   products: Product[] = [];
   selectedCat: number | null = null;
   error = '';
-  user?: User;
+  user?: User | null;
+  successMessage: string = "";
+  cartItemCount: number = 0;
 
   constructor(
     private catSvc: CategoryService,
@@ -28,8 +30,9 @@ export class CustomerComponent implements OnInit {
 
   ngOnInit() {
     this.catSvc.getAll().subscribe(c => this.categories = c, e => this.error = e);
+    this.user = this.auth.getCurrentUser();
     this.load();
-
+    this.loadCartCount();
   }
 
   load() {
@@ -49,8 +52,24 @@ export class CustomerComponent implements OnInit {
   addToCart(p: Product) {
     this.cartSvc.add(p.productId, 1)
       .subscribe({
-        next: _ => alert('Added!'),
+        next: _ => {
+          this.loadCartCount(); // Refresh cart count
+          this.showSuccessMessage(`Added ${p.productName} to cart!`);
+        },
         error: e => this.error = e.message
       });
+  }
+
+  loadCartCount() {
+    this.cartSvc.list().subscribe(items => {
+      this.cartItemCount = items.length;
+    });
+  }
+
+  showSuccessMessage(message: string) {
+    this.successMessage = message;
+    setTimeout(() => {
+      this.successMessage = '';
+    }, 3000);
   }
 }

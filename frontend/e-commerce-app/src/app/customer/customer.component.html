@@ -22,5 +22,13 @@
         <button (click)="addToCart(p)">Add to Cart</button>
     </div>
 </div>
+<div class="cart-indicator">
+    <a [routerLink]="['/cart']">
+        Cart ({{cartItemCount || 0}})
+    </a>
+</div>
 
+<div *ngIf="successMessage" class="success-message">
+    {{successMessage}}
+</div>
 <div *ngIf="error" class="error">{{error}}</div>

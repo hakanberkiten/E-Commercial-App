@@ -29,19 +29,20 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                // Public endpoints - POST ve OPTIONS metodlarına izin ver
+                // Public authentication endpoints
                 .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/signup").permitAll()
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CORS preflight için
-                .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CORS preflight
                 
-                // Customer endpoints
-                .requestMatchers("/api/cart/**").hasRole("CUSTOMER")
-                .requestMatchers("/api/orders/**").hasRole("CUSTOMER")
+                // Public product and category endpoints
+                .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**").permitAll()
+                
+                // Customer endpoints - Fix role handling
+                .requestMatchers("/api/cart/**").hasAuthority("ROLE_CUSTOMER")  // Use hasAuthority instead
+                .requestMatchers("/api/orders/**").hasAuthority("ROLE_CUSTOMER") // Use hasAuthority instead
                 
                 // Everything else needs auth
                 .anyRequest().authenticated())
             
-            // JWT filtresini sadece korunan istekler için çalıştır
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             
             .sessionManagement(session -> session

@@ -93,7 +93,9 @@ export class AuthService {
     this.currentUserSubject.next(null);
     this.router.navigate(['/login']);
   }
-
+  getCurrentUser(): User | null {
+    return this.currentUser;
+  }
   handleLoginSuccess(): void {
     const userRole = this.getUserRole();
 
