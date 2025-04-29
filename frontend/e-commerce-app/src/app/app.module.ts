@@ -1,8 +1,8 @@
 // src/app/app.module.ts  📦
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import { Inject, NgModule, PLATFORM_ID } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { FlexLayoutModule } from '@angular/flex-layout';
 
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -17,6 +17,8 @@ import { SignupComponent } from './auth/signup/signup.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CustomerComponent } from './customer/customer.component';
 import { CartPageComponent } from './cart-page/cart-page.component';
+import { AuthInterceptor } from './core/interceptors/auth.interceptor';
+import { isPlatformBrowser } from '@angular/common';
 
 @NgModule({
   declarations: [AppComponent, ProductListComponent, LoginComponent, SignupComponent, CustomerComponent, CartPageComponent],
@@ -33,6 +35,20 @@ import { CartPageComponent } from './cart-page/cart-page.component';
 
     AppRoutingModule
   ],
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true
+    }
+    // Diğer sağlayıcılar
+  ],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    const isBrowser = isPlatformBrowser(platformId);
+    console.log(`Platform running in: ${isBrowser ? 'Browser' : 'Server'} mode`);
+  }
+}
