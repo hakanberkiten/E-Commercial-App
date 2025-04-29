@@ -1,116 +1,97 @@
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow-lg border-0">
-                <div class="card-header bg-primary text-white text-center py-4">
-                    <h2 class="mb-0">Create Your Account</h2>
-                    <p class="mb-0 mt-2 text-white-50">Join our shopping community today</p>
-                </div>
+<!-- src/app/auth/signup/signup.component.html -->
+<div class="min-vh-100 d-flex align-items-center bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
 
-                <div class="card-body p-4">
-                    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
-                        <!-- Name Row -->
-                        <div class="row mb-3">
-                            <div class="col-md-6 mb-3 mb-md-0">
-                                <label class="form-label" for="firstName">First Name</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
-                                    <input type="text" id="firstName" formControlName="firstName" class="form-control"
-                                        [ngClass]="{'is-invalid': signupForm.get('firstName')?.touched && signupForm.get('firstName')?.invalid}"
-                                        placeholder="Enter your first name">
+                <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                    <div class="card-header text-white text-center py-4"
+                        style="background: linear-gradient(135deg,#6a11cb 0,#2575fc)">
+                        <h2 class="mb-1">Create Your Account</h2>
+                        <small class="text-white-50">Join our shopping community today</small>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+
+                            <!-- first + last name -->
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <div class="form-floating">
+                                        <input type="text" id="firstName" formControlName="firstName"
+                                            class="form-control" placeholder="First Name">
+                                        <label for="firstName">First Name</label>
+                                    </div>
+                                    <div *ngIf="signupForm.get('firstName')?.invalid && signupForm.get('firstName')?.touched"
+                                        class="text-danger small mt-1">Required</div>
                                 </div>
-                                <div *ngIf="signupForm.get('firstName')?.touched && signupForm.get('firstName')?.invalid"
-                                    class="text-danger small mt-1">
-                                    First name is required
+                                <div class="col-6">
+                                    <div class="form-floating">
+                                        <input type="text" id="lastName" formControlName="lastName" class="form-control"
+                                            placeholder="Last Name">
+                                        <label for="lastName">Last Name</label>
+                                    </div>
+                                    <div *ngIf="signupForm.get('lastName')?.invalid && signupForm.get('lastName')?.touched"
+                                        class="text-danger small mt-1">Required</div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label" for="lastName">Last Name</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
-                                    <input type="text" id="lastName" formControlName="lastName" class="form-control"
-                                        [ngClass]="{'is-invalid': signupForm.get('lastName')?.touched && signupForm.get('lastName')?.invalid}"
-                                        placeholder="Enter your last name">
-                                </div>
-                                <div *ngIf="signupForm.get('lastName')?.touched && signupForm.get('lastName')?.invalid"
-                                    class="text-danger small mt-1">
-                                    Last name is required
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Email -->
-                        <div class="mb-3">
-                            <label class="form-label" for="email">Email Address</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                            <!-- email -->
+                            <div class="form-floating mb-3">
                                 <input type="email" id="email" formControlName="email" class="form-control"
-                                    [ngClass]="{'is-invalid': signupForm.get('email')?.touched && signupForm.get('email')?.invalid}"
                                     placeholder="name@example.com">
+                                <label for="email">Email address</label>
+                                <div *ngIf="signupForm.get('email')?.invalid && signupForm.get('email')?.touched"
+                                    class="text-danger small mt-1">
+                                    <span *ngIf="signupForm.get('email')?.errors?.['required']">Required</span>
+                                    <span *ngIf="signupForm.get('email')?.errors?.['email']">Invalid email</span>
+                                </div>
                             </div>
-                            <div *ngIf="signupForm.get('email')?.touched && signupForm.get('email')?.errors"
-                                class="text-danger small mt-1">
-                                <span *ngIf="signupForm.get('email')?.errors?.['required']">Email is required</span>
-                                <span *ngIf="signupForm.get('email')?.errors?.['email']">Please enter a valid email
-                                    address</span>
-                            </div>
-                        </div>
 
-                        <!-- Password -->
-                        <div class="mb-3">
-                            <label class="form-label" for="password">Password</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                            <!-- password -->
+                            <div class="form-floating mb-3">
                                 <input type="password" id="password" formControlName="password" class="form-control"
-                                    [ngClass]="{'is-invalid': signupForm.get('password')?.touched && signupForm.get('password')?.invalid}"
-                                    placeholder="Create a password">
+                                    placeholder="Password">
+                                <label for="password">Password</label>
+                                <div *ngIf="signupForm.get('password')?.invalid && signupForm.get('password')?.touched"
+                                    class="text-danger small mt-1">
+                                    <span *ngIf="signupForm.get('password')?.errors?.['required']">Required</span>
+                                    <span *ngIf="signupForm.get('password')?.errors?.['minlength']">Min 6 chars</span>
+                                </div>
                             </div>
-                            <div *ngIf="signupForm.get('password')?.touched && signupForm.get('password')?.errors"
-                                class="text-danger small mt-1">
-                                <span *ngIf="signupForm.get('password')?.errors?.['required']">Password is
-                                    required</span>
-                                <span *ngIf="signupForm.get('password')?.errors?.['minlength']">Password must be at
-                                    least 6 characters</span>
-                            </div>
-                            <div class="form-text">Must be at least 6 characters long</div>
-                        </div>
 
-                        <!-- Mobile Number -->
-                        <div class="mb-4">
-                            <label class="form-label" for="mobileNumber">Mobile Number</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light"><i class="bi bi-phone"></i></span>
+                            <!-- mobile -->
+                            <div class="form-floating mb-4">
                                 <input type="tel" id="mobileNumber" formControlName="mobileNumber" class="form-control"
-                                    [ngClass]="{'is-invalid': signupForm.get('mobileNumber')?.touched && signupForm.get('mobileNumber')?.invalid}"
-                                    placeholder="Enter your mobile number">
+                                    placeholder="Mobile Number">
+                                <label for="mobileNumber">Mobile Number</label>
+                                <div *ngIf="signupForm.get('mobileNumber')?.invalid && signupForm.get('mobileNumber')?.touched"
+                                    class="text-danger small mt-1">Required</div>
                             </div>
-                            <div *ngIf="signupForm.get('mobileNumber')?.touched && signupForm.get('mobileNumber')?.invalid"
-                                class="text-danger small mt-1">
-                                Mobile number is required
+
+                            <!-- global error -->
+                            <div *ngIf="errorMsg" class="alert alert-danger">
+                                {{ errorMsg }}
                             </div>
-                        </div>
 
-                        <!-- Error message -->
-                        <div *ngIf="errorMsg" class="alert alert-danger mb-3">
-                            {{ errorMsg }}
-                        </div>
+                            <!-- submit -->
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-primary btn-lg"
+                                    [disabled]="signupForm.invalid || loading">
+                                    <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+                                    Sign Up
+                                </button>
+                            </div>
 
-                        <!-- Submit button -->
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg"
-                                [disabled]="signupForm.invalid || loading">
-                                <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status"
-                                    aria-hidden="true"></span>
-                                Sign Up
-                            </button>
-                        </div>
-                    </form>
+                            <p class="text-center mb-0">
+                                Already have an account?
+                                <a routerLink="/login" class="fw-semibold text-decoration-none">Login</a>
+                            </p>
 
-                    <div class="text-center mt-4">
-                        <p class="mb-0">Already have an account? <a routerLink="/login"
-                                class="text-primary fw-bold">Login</a></p>
+                        </form>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>

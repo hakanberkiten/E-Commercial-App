@@ -104,7 +104,7 @@ export class AuthService {
     } else if (userRole === 'ROLE_SELLER') {
       this.router.navigate(['/seller']);
     } else {
-      this.router.navigate(['/customer']);
+      this.router.navigate(['/products']);
     }
   }
 

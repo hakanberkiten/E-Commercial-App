@@ -1,34 +1,133 @@
-<!-- src/app/customer/customer.component.html -->
-<h1 *ngIf="user">Hello, {{ user.firstName }}!</h1>
+<div class="customer-container">
+    <!-- Header with cart count -->
+    <header class="bg-white shadow-sm py-3 mb-4">
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-between">
+                <h1 class="h4 mb-0 text-primary">Shop Products</h1>
 
-<div class="filter">
-    <label>Category:</label>
-    <select #catSel (change)="onCategoryChange(catSel.value)">
-        <option value="">All</option>
-        <option *ngFor="let c of categories" [value]="c.categoryId">
-            {{ c.categoryName }}
-        </option>
-    </select>
+                <div class="d-flex align-items-center gap-3">
+                    <div *ngIf="user" class="d-none d-md-block">
+                        Welcome, <span class="fw-bold">{{user.firstName}}</span>
+                    </div>
+                    <a routerLink="/cart" class="btn btn-outline-primary position-relative">
+                        <i class="bi bi-cart3"></i> Cart
+                        <span *ngIf="cartItemCount > 0"
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            {{cartItemCount}}
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
 
+    <div class="container">
+        <div class="row g-4">
+            <!-- Category sidebar -->
+            <div class="col-lg-3">
+                <div class="card shadow-sm border-0 rounded-4 mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Categories</h5>
+                        <div class="list-group list-group-flush">
+                            <button (click)="onCategoryChange('')"
+                                class="list-group-item list-group-item-action border-0 rounded-3 mb-1"
+                                [class.active]="selectedCat === null">
+                                All Products
+                            </button>
+                            <button *ngFor="let cat of categories" (click)="onCategoryChange(cat.categoryId.toString())"
+                                class="list-group-item list-group-item-action border-0 rounded-3 mb-1"
+                                [class.active]="selectedCat === cat.categoryId">
+                                {{cat.categoryName}}
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-</div>
+                <!-- Mobile filters button (visible only on mobile) -->
+                <div class="d-lg-none mb-3">
+                    <button class="btn btn-primary w-100" type="button" data-bs-toggle="offcanvas"
+                        data-bs-target="#categoryOffcanvas">
+                        <i class="bi bi-funnel me-2"></i> Filter by Category
+                    </button>
+                </div>
 
-<div class="product-list">
-    <div *ngFor="let p of products" class="product-card">
-        <img [src]="p.image" alt="{{p.productName}}" />
-        <h3>{{p.productName}}</h3>
-        <p>{{p.description}}</p>
-        <p>Price: {{p.price | currency}}</p>
-        <button (click)="addToCart(p)">Add to Cart</button>
+                <!-- Mobile offcanvas filter -->
+                <div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="categoryOffcanvas"
+                    aria-labelledby="categoryOffcanvasLabel">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="categoryOffcanvasLabel">Categories</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <div class="list-group list-group-flush">
+                            <button (click)="onCategoryChange('')" class="list-group-item list-group-item-action"
+                                [class.active]="selectedCat === null" data-bs-dismiss="offcanvas">
+                                All Products
+                            </button>
+                            <button *ngFor="let cat of categories" (click)="onCategoryChange(cat.categoryId.toString())"
+                                class="list-group-item list-group-item-action"
+                                [class.active]="selectedCat === cat.categoryId" data-bs-dismiss="offcanvas">
+                                {{cat.categoryName}}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products grid -->
+            <div class="col-lg-9">
+                <!-- Error message -->
+                <div *ngIf="error" class="alert alert-danger mb-4">
+                    {{ error }}
+                </div>
+
+                <!-- Success toast -->
+                <div *ngIf="successMessage" class="toast-container position-fixed bottom-0 end-0 p-3">
+                    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header bg-success text-white">
+                            <i class="bi bi-check-circle me-2"></i>
+                            <strong class="me-auto">Success</strong>
+                            <button type="button" class="btn-close btn-close-white"
+                                (click)="successMessage = ''"></button>
+                        </div>
+                        <div class="toast-body">
+                            {{ successMessage }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- No products message -->
+                <div *ngIf="products.length === 0 && !error" class="text-center py-5">
+                    <i class="bi bi-search display-1 text-muted"></i>
+                    <h3 class="mt-3">No Products Found</h3>
+                    <p>Try selecting a different category or check back later.</p>
+                </div>
+
+                <!-- Products grid -->
+                <div *ngIf="products.length > 0" class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+                    <div class="col" *ngFor="let product of products">
+                        <div class="card product-card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+                            <div class="product-image-wrapper">
+                                <img [src]="product.image || 'assets/images/product-placeholder.jpg'"
+                                    class="card-img-top" [alt]="product.productName"
+                                    onerror="this.src='assets/images/product-placeholder.jpg'">
+                            </div>
+
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title product-title">{{ product.productName }}</h5>
+                                <p class="card-text text-muted mb-2">{{ product.description | slice:0:90 }}{{
+                                    product.description && product.description.length > 90 ? '...' : '' }}</p>
+                                <div class="d-flex justify-content-between align-items-center mt-auto">
+                                    <span class="fw-bold text-primary fs-5">${{ product.price.toFixed(2) }}</span>
+                                    <button class="btn btn-primary" (click)="addToCart(product)">
+                                        <i class="bi bi-cart-plus me-2"></i>Add to Cart
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-<div class="cart-indicator">
-    <a [routerLink]="['/cart']">
-        Cart ({{cartItemCount || 0}})
-    </a>
-</div>
-
-<div *ngIf="successMessage" class="success-message">
-    {{successMessage}}
-</div>
-<div *ngIf="error" class="error">{{error}}</div>

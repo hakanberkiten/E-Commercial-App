@@ -1,20 +1,85 @@
-<!-- src/app/cart-page/cart-page.component.html -->
-<h2>My Cart</h2>
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">My Cart</h4>
+                </div>
 
-<div *ngIf="items.length === 0">Your cart is empty</div>
+                <div class="card-body">
+                    <!-- Empty cart message -->
+                    <div *ngIf="items.length === 0" class="text-center py-5">
+                        <i class="bi bi-cart-x" style="font-size: 3rem;"></i>
+                        <p class="lead mt-3">Your cart is empty</p>
+                        <a routerLink="/products" class="btn btn-outline-primary mt-2">Continue Shopping</a>
+                    </div>
 
-<div *ngFor="let it of items" class="cart-item">
-    <span>{{ it.product.productName }}</span>
+                    <!-- Cart items -->
+                    <div *ngIf="items.length > 0" class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Product</th>
+                                    <th class="text-center">Quantity</th>
+                                    <th class="text-end">Price</th>
+                                    <th class="text-end">Subtotal</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let it of items">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img *ngIf="it.product.image" [src]="it.product.image"
+                                                alt="{{it.product.productName}}" class="me-3"
+                                                style="width: 50px; height: 50px; object-fit: cover;">
+                                            <span>{{ it.product.productName }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="input-group input-group-sm"
+                                            style="max-width: 120px; margin: 0 auto;">
+                                            <button class="btn btn-outline-secondary" type="button"
+                                                (click)="update(it, (it.quantityInCart - 1).toString())"
+                                                [disabled]="it.quantityInCart <= 1">-</button>
+                                            <input #qtyRef type="number" class="form-control text-center"
+                                                [value]="it.quantityInCart" min="1" (change)="update(it, qtyRef.value)">
+                                            <button class="btn btn-outline-secondary" type="button"
+                                                (click)="update(it, (it.quantityInCart + 1).toString())">+</button>
+                                        </div>
+                                    </td>
+                                    <td class="text-end">{{ it.product.price | currency }}</td>
+                                    <td class="text-end">{{ it.product.price * it.quantityInCart | currency }}</td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-outline-danger" (click)="remove(it)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold">Total:</td>
+                                    <td class="text-end fw-bold">{{ total | currency }}</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
 
-    <!-- 1) #qtyRef ile referans alıyoruz, .value kesin dolu -->
-    <input #qtyRef type="number" [value]="it.quantityInCart" (change)="update(it, qtyRef.value)" />
+                    <!-- Error message -->
+                    <div *ngIf="error" class="alert alert-danger mt-3">{{ error }}</div>
+                </div>
 
-    <span>x {{ it.product.price | currency }}</span>
-    <button (click)="remove(it)">Remove</button>
+                <div *ngIf="items.length > 0" class="card-footer d-flex justify-content-between">
+                    <a routerLink="/products" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Continue Shopping
+                    </a>
+                    <button class="btn btn-success">
+                        <i class="bi bi-credit-card me-2"></i>Proceed to Checkout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-
-<div *ngIf="items.length > 0">
-    <h3>Total: {{ total | currency }}</h3>
-</div>
-
-<div *ngIf="error" class="error">{{ error }}</div>

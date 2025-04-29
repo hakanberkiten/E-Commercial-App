@@ -10,11 +10,10 @@ import { AuthGuard } from './core/guards/auth.guard';
 
 const routes: Routes = [
   { path: '', redirectTo: 'products', pathMatch: 'full' },
-  { path: 'products', component: ProductListComponent },
   { path: 'login', component: LoginComponent },
   { path: 'signup', component: SignupComponent },
   {
-    path: 'customer',
+    path: 'products',
     component: CustomerComponent,
     canActivate: [AuthGuard],
     data: { role: 'ROLE_CUSTOMER' }

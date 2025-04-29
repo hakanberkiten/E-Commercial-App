@@ -4,12 +4,11 @@
     </div>
 
     <div class="links">
-        <a routerLink="/products">Products</a>
 
         <ng-container *ngIf="currentUser">
             <!-- Customer Links -->
             <ng-container *ngIf="isCustomer()">
-                <a routerLink="/customer">My Dashboard</a>
+                <a routerLink="/products">Products</a>
                 <a routerLink="/cart">Cart</a>
             </ng-container>
 
