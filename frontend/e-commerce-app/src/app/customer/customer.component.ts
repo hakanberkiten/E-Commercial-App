@@ -6,6 +6,7 @@ import { CartService } from '../core/services/cart.service';
 import { Category } from '../shared/models/category.model';
 import { Product } from '../shared/models/product.model';
 import { AuthService, User } from '../core/services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-customer',
@@ -25,7 +26,8 @@ export class CustomerComponent implements OnInit {
     private catSvc: CategoryService,
     private prodSvc: ProductService,
     private cartSvc: CartService,
-    private auth: AuthService
+    private auth: AuthService,
+    private router: Router
   ) { }
 
   ngOnInit() {
@@ -55,7 +57,9 @@ export class CustomerComponent implements OnInit {
     this.selectedCat = id ? +id : null;
     this.load();
   }
-
+  goToProductDetail(productId: number): void {
+    this.router.navigate(['/products', productId]);
+  }
   addToCart(p: Product) {
     this.cartSvc.add(p.productId, 1)
       .subscribe({

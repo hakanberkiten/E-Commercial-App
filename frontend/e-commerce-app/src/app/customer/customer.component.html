@@ -104,11 +104,13 @@
                 </div>
 
                 <!-- Products grid -->
-                <div *ngIf="products.length > 0" class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+                <div *ngIf="products.length > 0" class="row row-cols-1 row-cols-md-3 row-cols-lg-3 g-4">
                     <div class="col" *ngFor="let product of products">
-                        <div class="card product-card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+                        <!-- Tıklanabilir ürün kartı -->
+                        <div class="card h-100 product-card" (click)="goToProductDetail(product.productId)"
+                            style="cursor: pointer;">
                             <div class="product-image-wrapper bg-white border-bottom">
-                                <img style="width: 300px; height: 300px;"
+                                <img style="width: 100%; height: 200px; object-fit: contain;"
                                     [src]="product.image || 'assets/images/product-placeholder.jpg'"
                                     class="card-img-top product-image" [alt]="product.productName"
                                     onerror="this.src='assets/images/product-placeholder.jpg'">
@@ -120,7 +122,9 @@
                                     product.description && product.description.length > 90 ? '...' : '' }}</p>
                                 <div class="d-flex justify-content-between align-items-center mt-auto">
                                     <span class="fw-bold text-primary fs-5">${{ product.price.toFixed(2) }}</span>
-                                    <button class="btn btn-primary" (click)="addToCart(product)">
+                                    <!-- Event propagasyonu durdurarak Add to Cart butonu tıklandığında detay sayfasına gitmesini engelliyoruz -->
+                                    <button class="btn btn-primary"
+                                        (click)="addToCart(product); $event.stopPropagation()">
                                         <i class="bi bi-cart-plus me-2"></i>Add to Cart
                                     </button>
                                 </div>
