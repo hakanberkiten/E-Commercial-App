@@ -52,9 +52,15 @@ export class CustomerComponent implements OnInit {
   addToCart(p: Product) {
     this.cartSvc.add(p.productId, 1)
       .subscribe({
-        next: _ => {
-          this.loadCartCount(); // Refresh cart count
-          this.showSuccessMessage(`Added ${p.productName} to cart!`);
+        next: (item) => {
+          this.loadCartCount();
+
+          // Check if quantity is more than 1 (existing item)
+          if (item.quantityInCart > 1) {
+            this.showSuccessMessage(`Added another ${p.productName} to cart (${item.quantityInCart} total)`);
+          } else {
+            this.showSuccessMessage(`Added ${p.productName} to cart!`);
+          }
         },
         error: e => this.error = e.message
       });

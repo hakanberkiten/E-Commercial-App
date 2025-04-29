@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, switchMap } from 'rxjs';
 import { CartItem } from '../../shared/models/cartitem.model';
 
 @Injectable({ providedIn: 'root' })
@@ -9,8 +9,22 @@ export class CartService {
   list(): Observable<CartItem[]> {
     return this.http.get<CartItem[]>('/api/cart');
   }
-  add(productId: number, quantity: number) {
-    return this.http.post<CartItem>('/api/cart/items', { productId, quantity });
+  add(productId: number, quantity: number): Observable<CartItem> {
+    // First check if product already exists in cart
+    return this.list().pipe(
+      switchMap(items => {
+        // Find if product already exists in cart
+        const existingItem = items.find(item => item.product.productId === productId);
+
+        if (existingItem) {
+          // If exists, update quantity instead of adding new item
+          return this.update(existingItem.cartItemId, existingItem.quantityInCart + quantity);
+        } else {
+          // If doesn't exist, add new item
+          return this.http.post<CartItem>('/api/cart/items', { productId, quantity });
+        }
+      })
+    );
   }
   remove(itemId: number) {
     return this.http.delete(`/api/cart/items/${itemId}`);
