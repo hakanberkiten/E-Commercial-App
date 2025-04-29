@@ -1,0 +1,40 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #3f51b5;
+    color: white;
+}
+
+.brand a {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+}
+
+.links {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.links a {
+    color: white;
+    text-decoration: none;
+    transition: opacity 0.3s;
+}
+
+.links a:hover {
+    opacity: 0.8;
+}
+
+.logout {
+    cursor: pointer;
+}
+
+.user-greeting {
+    margin-left: 1rem;
+    font-weight: 500;
+}

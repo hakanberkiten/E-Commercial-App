@@ -1,0 +1,36 @@
+<nav class="navbar">
+    <div class="brand">
+        <a routerLink="/">E-Commerce App</a>
+    </div>
+
+    <div class="links">
+        <a routerLink="/products">Products</a>
+
+        <ng-container *ngIf="currentUser">
+            <!-- Customer Links -->
+            <ng-container *ngIf="isCustomer()">
+                <a routerLink="/customer">My Dashboard</a>
+                <a routerLink="/cart">Cart</a>
+            </ng-container>
+
+            <!-- Seller Links -->
+            <ng-container *ngIf="isSeller()">
+                <a routerLink="/seller">Seller Dashboard</a>
+            </ng-container>
+
+            <!-- Admin Links -->
+            <ng-container *ngIf="isAdmin()">
+                <a routerLink="/admin">Admin Dashboard</a>
+            </ng-container>
+
+            <!-- Common User Links -->
+            <a (click)="logout()" class="logout">Logout</a>
+            <span class="user-greeting">Hello, {{currentUser.firstName}}!</span>
+        </ng-container>
+
+        <ng-container *ngIf="!currentUser">
+            <a routerLink="/login">Login</a>
+            <a routerLink="/signup">Sign Up</a>
+        </ng-container>
+    </div>
+</nav>

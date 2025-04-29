@@ -1,4 +1,3 @@
-// src/app/app-routing.module.ts — Yeni route’lar
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
@@ -7,14 +6,25 @@ import { SignupComponent } from './auth/signup/signup.component';
 import { ProductListComponent } from './features/products/product-list/product-list.component';
 import { CustomerComponent } from './customer/customer.component';
 import { CartPageComponent } from './cart-page/cart-page.component';
+import { AuthGuard } from './core/guards/auth.guard';
 
 const routes: Routes = [
-  { path: '', redirectTo: 'signup', pathMatch: 'full' },
+  { path: '', redirectTo: 'products', pathMatch: 'full' },
   { path: 'products', component: ProductListComponent },
   { path: 'login', component: LoginComponent },
   { path: 'signup', component: SignupComponent },
-  { path: 'customer', component: CustomerComponent },
-  { path: 'cart', component: CartPageComponent },
+  {
+    path: 'customer',
+    component: CustomerComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'ROLE_CUSTOMER' }
+  },
+  {
+    path: 'cart',
+    component: CartPageComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'ROLE_CUSTOMER' }
+  },
 ];
 
 @NgModule({
