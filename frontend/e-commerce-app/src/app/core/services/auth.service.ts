@@ -48,14 +48,14 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
   private isBrowser: boolean;
-  
+
   constructor(
-    private http: HttpClient, 
+    private http: HttpClient,
     private router: Router,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
-    
+
     // Sadece tarayıcı ortamında localStorage erişimi yap
     if (this.isBrowser) {
       const storedUser = localStorage.getItem('currentUser');
@@ -64,15 +64,13 @@ export class AuthService {
       }
     }
   }
-  
+
   signup(data: SignupPayload): Observable<any> {
     return this.http.post('/api/auth/signup', data);
   }
-  
-  me(): Observable<User> {
-    return this.http.get<User>('/api/auth/me');
-  }
-  
+
+
+
   login(data: LoginPayload): Observable<LoginResponse> {
     return this.http.post<LoginResponse>('/api/auth/login', data)
       .pipe(
@@ -86,7 +84,7 @@ export class AuthService {
         })
       );
   }
-  
+
   logout(): void {
     if (this.isBrowser) {
       localStorage.removeItem('jwt_token');
@@ -95,10 +93,10 @@ export class AuthService {
     this.currentUserSubject.next(null);
     this.router.navigate(['/login']);
   }
-  
+
   handleLoginSuccess(): void {
     const userRole = this.getUserRole();
-    
+
     if (userRole === 'ROLE_ADMIN') {
       this.router.navigate(['/admin']);
     } else if (userRole === 'ROLE_SELLER') {
@@ -107,30 +105,30 @@ export class AuthService {
       this.router.navigate(['/customer']);
     }
   }
-  
+
   getToken(): string | null {
     if (this.isBrowser) {
       return localStorage.getItem('jwt_token');
     }
     return null;
   }
-  
+
   get currentUser(): User | null {
     return this.currentUserSubject.value;
   }
-  
+
   isLoggedIn(): boolean {
     return !!this.getToken();
   }
-  
+
   getUserRole(): string {
     const token = this.getToken();
     if (!token) return '';
-    
+
     try {
       const decoded = jwtDecode<JwtPayload>(token);
       const roleId = decoded.role;
-      
+
       switch (roleId) {
         case 1: return 'ROLE_ADMIN';
         case 2: return 'ROLE_SELLER';
@@ -141,7 +139,7 @@ export class AuthService {
       return '';
     }
   }
-  
+
   hasRole(role: string): boolean {
     return this.getUserRole() === role;
   }

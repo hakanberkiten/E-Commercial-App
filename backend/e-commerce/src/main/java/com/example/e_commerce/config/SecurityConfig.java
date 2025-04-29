@@ -29,26 +29,21 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                // Public endpoints
-                .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
+                // Public endpoints - POST ve OPTIONS metodlarına izin ver
+                .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/signup").permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CORS preflight için
                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
                 
                 // Customer endpoints
                 .requestMatchers("/api/cart/**").hasRole("CUSTOMER")
                 .requestMatchers("/api/orders/**").hasRole("CUSTOMER")
                 
-                // Seller endpoints
-                .requestMatchers(HttpMethod.POST, "/api/products/**").hasRole("SELLER")
-                .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("SELLER")
-                .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("SELLER")
-                
-                // Admin endpoints
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                
                 // Everything else needs auth
                 .anyRequest().authenticated())
+            
+            // JWT filtresini sadece korunan istekler için çalıştır
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
             

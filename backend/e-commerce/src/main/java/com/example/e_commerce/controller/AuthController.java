@@ -1,15 +1,18 @@
 package com.example.e_commerce.controller;
 
+import com.example.e_commerce.dto.SignupRequest;
+import com.example.e_commerce.dto.LoginRequest;
+import com.example.e_commerce.entity.Role;
 import com.example.e_commerce.entity.User;
+import com.example.e_commerce.repository.RoleRepository;
 import com.example.e_commerce.repository.UserRepository;
 import com.example.e_commerce.security.JwtUtils;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,53 +21,109 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    
-    private final UserRepository userRepo;
+
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
-    
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest req) {
-        User user = userRepo.findByEmail(req.getEmail())
+
+    @PostMapping("/signup")
+public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest req) {
+    try {
+        // Email kontrolü
+        if (userRepository.findByEmail(req.getEmail()).isPresent()) {
+            return ResponseEntity
+                .badRequest()
+                .body("Error: Email is already in use!");
+        }
+
+        // Yeni kullanıcı oluşturma
+        User user = new User();
+        user.setFirstName(req.getFirstName());
+        user.setLastName(req.getLastName());
+        user.setEmail(req.getEmail());
+        user.setPassword(passwordEncoder.encode(req.getPassword()));
+        user.setMobileNumber(req.getMobileNumber());
+        
+        // Customer rolünü ayarla (roleId = 3)
+        Role customerRole = roleRepository.findById(3)
+            .orElseThrow(() -> new RuntimeException("Error: Role CUSTOMER not found."));
+        user.setRole(customerRole);
+        
+        userRepository.save(user);
+        
+        // Başarılı bir şekilde yanıt dön
+        return ResponseEntity.ok().body(Map.of("message", "User registered successfully!"));
+    } catch (Exception e) {
+        // Tüm hataları loglama
+        e.printStackTrace();
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(Map.of("error", e.getMessage()));
+    }
+}
+
+@PostMapping("/login")
+public ResponseEntity<?> login(@Valid @RequestBody LoginRequest req) {
+    try {
+        User user = userRepository.findByEmail(req.getEmail())
             .orElse(null);
             
-        if (user == null || !user.getPassword().equals(req.getPassword())) {
+        if (user == null) {
             return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
-                .body("Invalid credentials");
+                .body(Map.of("message", "Invalid credentials"));
+        }
+        
+        boolean passwordMatches;
+        
+        // Check if password is BCrypt encoded
+        if (user.getPassword().startsWith("$2a$") || user.getPassword().startsWith("$2b$") || user.getPassword().startsWith("$2y$")) {
+            // Password is BCrypt encoded, use matcher
+            passwordMatches = passwordEncoder.matches(req.getPassword(), user.getPassword());
+        } else {
+            // For non-BCrypt passwords, do direct comparison (temporary!)
+            passwordMatches = req.getPassword().equals(user.getPassword());
+            
+            // Optional: Update to BCrypt if plain text password matches
+            if (passwordMatches) {
+                user.setPassword(passwordEncoder.encode(req.getPassword()));
+                userRepository.save(user);
+            }
+        }
+        
+        if (!passwordMatches) {
+            return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("message", "Invalid credentials"));
         }
         
         // JWT token üret
         String token = jwtUtils.generateToken(user.getEmail());
         
-        // Token ve user bilgilerini içeren yanıt oluştur
+        // Rest of your code remains the same...
+        Map<String, Object> userResponse = new HashMap<>();
+        userResponse.put("userId", user.getUserId());
+        userResponse.put("firstName", user.getFirstName());
+        userResponse.put("lastName", user.getLastName());
+        userResponse.put("email", user.getEmail());
+        userResponse.put("mobileNumber", user.getMobileNumber());
+        
+        Map<String, Object> roleMap = new HashMap<>();
+        roleMap.put("roleId", user.getRole().getRoleId());
+        roleMap.put("roleName", user.getRole().getRoleName());
+        userResponse.put("role", roleMap);
+        
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);
-        response.put("user", user);
+        response.put("user", userResponse);
         
         return ResponseEntity.ok(response);
-    }
-    
-    @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(Authentication auth) {
-        if (auth == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        
-        UserDetails userDetails = (UserDetails) auth.getPrincipal();
-        User user = userRepo.findByEmail(userDetails.getUsername())
-            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-            
-        return ResponseEntity.ok(user);
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(Map.of("message", "Error: " + e.getMessage()));
     }
 }
-
-class LoginRequest {
-    private String email;
-    private String password;
-    
-    // Getter/Setter'lar
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
 }

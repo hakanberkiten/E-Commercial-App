@@ -27,7 +27,6 @@ export class CustomerComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.auth.me().subscribe(u => this.user = u);
     this.catSvc.getAll().subscribe(c => this.categories = c, e => this.error = e);
     this.load();
 
