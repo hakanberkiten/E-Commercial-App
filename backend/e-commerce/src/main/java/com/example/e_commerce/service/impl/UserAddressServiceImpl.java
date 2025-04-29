@@ -32,7 +32,13 @@ public class UserAddressServiceImpl implements UserAddressService {
         ua.setAddress(address);
         return userAddressRepository.save(ua);
     }
+// UserAddressServiceImpl sınıfına ekleyin
 
+@Override
+public void deleteUserAddressByAddressId(Long addressId) {
+    List<UserAddress> userAddresses = userAddressRepository.findByAddressAddressId(addressId);
+    userAddressRepository.deleteAll(userAddresses);
+}
     @Override
     public List<UserAddress> getAllUserAddresses() {
         return userAddressRepository.findAll();

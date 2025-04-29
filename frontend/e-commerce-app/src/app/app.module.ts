@@ -20,9 +20,10 @@ import { CartPageComponent } from './cart-page/cart-page.component';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { isPlatformBrowser } from '@angular/common';
 import { NavbarComponent } from './core/components/navbar/navbar.component';
+import { ProfileComponent } from './core/components/profile/profile.component';
 
 @NgModule({
-  declarations: [AppComponent, ProductListComponent, LoginComponent, SignupComponent, CustomerComponent, CartPageComponent, NavbarComponent],
+  declarations: [AppComponent, ProductListComponent, LoginComponent, SignupComponent, CustomerComponent, CartPageComponent, NavbarComponent, ProfileComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,

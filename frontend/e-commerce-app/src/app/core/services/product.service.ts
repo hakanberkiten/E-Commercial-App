@@ -12,13 +12,11 @@ export class ProductService {
   getAll(): Observable<Product[]> {
     return this.http.get<Product[]>('/api/products/all');
   }
-  getByCategory(categoryId: number): Observable<Product[]> {
-    // Implementation for fetching products by category
-    // Replace the following line with actual API call logic
-    return new Observable<Product[]>(observer => {
-      observer.next([]); // Example: return an empty array
-      observer.complete();
-    });
+  getByCategory(categoryId: number | null): Observable<Product[]> {
+    if (categoryId === null) {
+      return this.getAll();
+    }
+    return this.http.get<Product[]>(`/api/products?categoryId=${categoryId}`);
   }
 
 }

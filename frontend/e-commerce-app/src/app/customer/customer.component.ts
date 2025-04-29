@@ -36,12 +36,19 @@ export class CustomerComponent implements OnInit {
   }
 
   load() {
-    if (this.selectedCat)
-      this.prodSvc.getByCategory(this.selectedCat)
-        .subscribe(p => this.products = p, e => this.error = e);
-    else
-      this.prodSvc.getAll()
-        .subscribe(p => this.products = p, e => this.error = e);
+    // Load categories if not already loaded
+    if (this.categories.length === 0) {
+      this.catSvc.getAll().subscribe({
+        next: (cats) => this.categories = cats,
+        error: (e) => this.error = e.message
+      });
+    }
+
+    // Load products based on selected category
+    this.prodSvc.getByCategory(this.selectedCat).subscribe({
+      next: (prods) => this.products = prods,
+      error: (e) => this.error = e.message
+    });
   }
 
   onCategoryChange(id: string) {

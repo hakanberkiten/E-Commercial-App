@@ -10,4 +10,5 @@ public interface UserAddressService {
     List<UserAddress> getAllUserAddresses();
     UserAddress getUserAddressById(Long id);
     void deleteUserAddress(Long id);
+    void deleteUserAddressByAddressId(Long addressId);
 }

@@ -24,6 +24,7 @@ export interface User {
   userId: number;
   firstName: string;
   lastName: string;
+  mobileNumber: string;
   email: string;
   role: {
     roleId: number;
@@ -42,7 +43,16 @@ interface JwtPayload {
   userId: number;
   exp: number;
 }
-
+export interface Address {
+  address_id?: string;
+  userId: string;
+  street: string;
+  city: string;
+  state: string;
+  pinCode: string;
+  country: string;
+  isDefault: boolean;
+}
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
@@ -65,12 +75,52 @@ export class AuthService {
     }
   }
 
+  getUserAddresses(userId: string): Observable<Address[]> {
+    return this.http.get<Address[]>(`/api/users/${userId}/addresses`);
+  }
+  
+  // Yeni adres ekle
+  addAddress(address: Address): Observable<Address> {
+    return this.http.post<Address>('/api/addresses', address);
+  }
+  
+  // Adres güncelle
+  updateAddress(address: Address): Observable<Address> {
+    return this.http.put<Address>(`/api/addresses/${address.address_id}`, address);
+  }
+  
+  // Adres sil
+  deleteAddress(addressId: string): Observable<any> {
+    return this.http.delete(`/api/addresses/${addressId}`);
+  }
+  
+  // Varsayılan adresi ayarla
+  setDefaultAddress(addressId: string, userId: string): Observable<any> {
+    return this.http.put(`/api/users/${userId}/addresses/default`, { addressId });
+  }
+
+  updateProfile(updatedProfile: { userId: string; firstName: string; lastName: string; mobileNumber: string }): Observable<User> {
+    return this.http.put<User>(`/api/users/${updatedProfile.userId}`, updatedProfile).pipe(
+      tap(updatedUser => {
+        if (this.isBrowser) {
+          localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+        }
+        this.currentUserSubject.next(updatedUser);
+      })
+    );
+  }
+
   signup(data: SignupPayload): Observable<any> {
     return this.http.post('/api/auth/signup', data);
   }
 
 
-
+  refreshCurrentUser(): void {
+    this.http.get<User>('/api/user/current').subscribe({
+      next: (user) => this.currentUserSubject.next(user),
+      error: (error) => this.currentUserSubject.next(null)
+    });
+  }
   login(data: LoginPayload): Observable<LoginResponse> {
     return this.http.post<LoginResponse>('/api/auth/login', data)
       .pipe(

@@ -1,0 +1,61 @@
+.avatar-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: bold;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: #2575fc;
+}
+
+.form-control[readonly] {
+    background-color: #f8f9fa;
+}
+
+.form-control[readonly]:not(.bg-light) {
+    cursor: not-allowed;
+}
+
+.avatar-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-weight: bold;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: #2575fc;
+}
+
+.form-control[readonly]:not(.bg-light) {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+}
+
+.rounded-4 {
+    border-radius: 0.5rem !important;
+}
+
+.card {
+    transition: all 0.3s ease;
+}
+
+.badge.bg-primary {
+    font-weight: normal;
+    padding: 0.35em 0.65em;
+}

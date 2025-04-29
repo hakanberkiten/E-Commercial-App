@@ -1,35 +1,113 @@
-<nav class="navbar">
-    <div class="brand">
-        <a routerLink="/">E-Commerce App</a>
-    </div>
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+    <div class="container">
+        <!-- Brand -->
+        <a class="navbar-brand fw-bold text-primary" routerLink="/">
+            <i class="bi bi-shop me-2"></i>E-Commerce App
+        </a>
 
-    <div class="links">
+        <!-- Mobile Toggle Button -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+            aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-        <ng-container *ngIf="currentUser">
-            <!-- Customer Links -->
-            <ng-container *ngIf="isCustomer()">
-                <a routerLink="/products">Products</a>
-                <a routerLink="/cart">Cart</a>
-            </ng-container>
+        <!-- Navbar Links -->
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
 
-            <!-- Seller Links -->
-            <ng-container *ngIf="isSeller()">
-                <a routerLink="/seller">Seller Dashboard</a>
-            </ng-container>
+                <!-- Authenticated User Links -->
+                <ng-container *ngIf="currentUser">
+                    <!-- Customer Links -->
+                    <ng-container *ngIf="isCustomer()">
+                        <li class="nav-item">
+                            <a class="nav-link" routerLink="/products" routerLinkActive="active">
+                                <i class="bi bi-grid me-1"></i> Products
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" routerLink="/cart" routerLinkActive="active">
+                                <i class="bi bi-cart3 me-1"></i> Cart
+                            </a>
+                        </li>
+                    </ng-container>
 
-            <!-- Admin Links -->
-            <ng-container *ngIf="isAdmin()">
-                <a routerLink="/admin">Admin Dashboard</a>
-            </ng-container>
+                    <!-- Seller Links -->
+                    <ng-container *ngIf="isSeller()">
+                        <li class="nav-item">
+                            <a class="nav-link" routerLink="/seller" routerLinkActive="active">
+                                <i class="bi bi-shop-window me-1"></i> Seller Dashboard
+                            </a>
+                        </li>
+                    </ng-container>
 
-            <!-- Common User Links -->
-            <a (click)="logout()" class="logout">Logout</a>
-            <span class="user-greeting">Hello, {{currentUser.firstName}}!</span>
-        </ng-container>
+                    <!-- Admin Links -->
+                    <ng-container *ngIf="isAdmin()">
+                        <li class="nav-item">
+                            <a class="nav-link" routerLink="/admin" routerLinkActive="active">
+                                <i class="bi bi-speedometer2 me-1"></i> Admin Dashboard
+                            </a>
+                        </li>
+                    </ng-container>
 
-        <ng-container *ngIf="!currentUser">
-            <a routerLink="/login">Login</a>
-            <a routerLink="/signup">Sign Up</a>
-        </ng-container>
+                    <!-- User Profile Dropdown -->
+                    <!-- User Profile Dropdown -->
+                    <li class="nav-item ms-lg-3">
+                        <div class="btn-group">
+                            <!-- Main button with user info -->
+                            <button type="button" class="btn nav-link d-flex align-items-center border-0"
+                                routerLink="/profile">
+                                <div class="avatar-circle bg-primary text-white me-2">
+                                    {{currentUser.firstName.charAt(0) || 'U'}}
+                                </div>
+                                <span>{{currentUser.firstName}}</span>
+                            </button>
+
+                            <!-- Dropdown toggle button -->
+                            <button type="button" class="btn nav-link dropdown-toggle dropdown-toggle-split border-0"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="visually-hidden">Toggle Dropdown</span>
+                            </button>
+
+                            <!-- Dropdown menu -->
+                            <!-- Dropdown menu -->
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                <li>
+                                    <a class="dropdown-item" routerLink="/profile">
+                                        <i class="bi bi-person me-2"></i>Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" routerLink="/orders">
+                                        <i class="bi bi-bag-check me-2"></i>My Orders
+                                    </a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <button class="dropdown-item text-danger" (click)="logout()">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                </ng-container>
+
+                <!-- Non-authenticated Links -->
+                <ng-container *ngIf="!currentUser">
+                    <li class="nav-item">
+                        <a class="nav-link" routerLink="/login" routerLinkActive="active">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" routerLink="/signup" routerLinkActive="active">
+                            <i class="bi bi-person-plus me-1"></i> Sign Up
+                        </a>
+                    </li>
+                </ng-container>
+            </ul>
+        </div>
     </div>
 </nav>

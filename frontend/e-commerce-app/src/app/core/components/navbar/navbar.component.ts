@@ -33,4 +33,12 @@ export class NavbarComponent implements OnInit {
   isAdmin(): boolean {
     return this.auth.getUserRole() === 'ROLE_ADMIN';
   }
+
+  toggleDropdown(event: Event) {
+    event.preventDefault();
+    const dropdown = document.getElementById('userDropdown');
+    if (dropdown) {
+      dropdown.classList.toggle('show');
+    }
+  }
 }

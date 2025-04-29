@@ -20,4 +20,11 @@ public class UserAddress {
     @ManyToOne
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
+
+
+
+@Column(name = "is_default", nullable = false)
+@Builder.Default
+private Boolean isDefault = false;
+
 }
