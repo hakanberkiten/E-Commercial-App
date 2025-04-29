@@ -37,4 +37,9 @@ public class ProductController {
     public void deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
     }
+
+    @GetMapping("/search")
+    public List<Product> searchProducts(@RequestParam String query) {
+        return productService.searchProducts(query);
+    }
 }

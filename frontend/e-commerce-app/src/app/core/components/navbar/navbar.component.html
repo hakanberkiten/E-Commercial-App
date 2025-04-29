@@ -13,8 +13,56 @@
 
         <!-- Navbar Links -->
         <div class="collapse navbar-collapse" id="navbarContent">
-            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <!-- Search Bar - Ortaya Ekledik -->
+            <div class="mx-auto d-none d-lg-block position-relative" style="width: 40%;">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search products..." aria-label="Search"
+                        [(ngModel)]="searchQuery" name="search" (input)="onSearchChange($event)"
+                        (focus)="onSearchFocus()" (blur)="onSearchBlur()">
+                    <button class="btn btn-outline-primary" type="button" (click)="submitSearch()">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
 
+                <!-- Search results dropdown -->
+                <div *ngIf="showSearchResults && searchQuery" class="search-results-dropdown shadow-sm">
+                    <!-- Loading indicator -->
+                    <div *ngIf="searchLoading" class="d-flex justify-content-center p-3">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+
+                    <!-- Results list -->
+                    <div *ngIf="!searchLoading && searchResults.length > 0">
+                        <div *ngFor="let product of searchResults" class="search-result-item"
+                            (mousedown)="goToProduct(product.id)">
+                            <div class="d-flex align-items-center p-2">
+                                <div class="search-result-img me-2">
+                                    <img [src]="product.imageUrl || 'assets/images/product-placeholder.png'"
+                                        alt="{{ product.name }}" class="img-fluid">
+                                </div>
+                                <div class="search-result-info">
+                                    <div class="search-result-name">{{ product.name }}</div>
+                                    <div class="search-result-price">${{ product.price.toFixed(2) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-2 text-center border-top">
+                            <a class="text-primary small" (mousedown)="submitSearch()">
+                                See all results for "{{ searchQuery }}"
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- No results message -->
+                    <div *ngIf="!searchLoading && searchResults.length === 0" class="p-3 text-center text-muted">
+                        No products found for "{{ searchQuery }}"
+                    </div>
+                </div>
+            </div>
+
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                 <!-- Authenticated User Links -->
                 <ng-container *ngIf="currentUser">
                     <!-- Customer Links -->

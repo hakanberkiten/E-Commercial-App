@@ -39,7 +39,11 @@ public class ReviewServiceImpl implements ReviewService {
         return reviewRepo.findById(id)
             .orElseThrow(() -> new RuntimeException("Review not found"));
     }
-
+// ReviewServiceImpl sınıfına implementasyonu ekleyin
+@Override
+public List<Review> getReviewsByProduct(Long productId) {
+    return reviewRepo.findByProductProductId(productId);
+}
     @Override
     public void deleteReview(Long id) {
         reviewRepo.deleteById(id);

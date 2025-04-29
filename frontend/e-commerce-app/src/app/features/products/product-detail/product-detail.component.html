@@ -1,0 +1,147 @@
+<div class="container mt-5 mb-5">
+    <!-- Loading spinner -->
+    <div *ngIf="loading" class="d-flex justify-content-center my-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  
+    <!-- Error message -->
+    <div *ngIf="error" class="alert alert-danger mb-4">{{ error }}</div>
+  
+    <!-- Success message -->
+    <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+      {{ successMessage }}
+      <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+    </div>
+  
+    <!-- Product details -->
+    <div *ngIf="!loading && product">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a routerLink="/">Home</a></li>
+          <li class="breadcrumb-item"><a routerLink="/products">Products</a></li>
+          <li class="breadcrumb-item active" aria-current="page">{{ product.productName }}</li>
+        </ol>
+      </nav>
+  
+      <div class="row">
+        <!-- Product image -->
+        <div class="col-md-5 mb-4">
+          <div class="card border-0">
+            <img [src]="product.image || 'assets/images/product-placeholder.png'" 
+                 class="card-img-top" [alt]="product.productName">
+          </div>
+        </div>
+  
+        <!-- Product info -->
+        <div class="col-md-7">
+          <h2 class="mb-3">{{ product.productName }}</h2>
+          
+          <div class="mb-3">
+            <span class="fs-4 fw-bold text-primary">${{ product.price?.toFixed(2) }}</span>
+          </div>
+  
+          <div class="mb-3">
+            <span class="badge bg-success me-2" *ngIf="product.quantityInStock > 0">In Stock</span>
+            <span class="badge bg-danger me-2" *ngIf="product.quantityInStock <= 0">Out of Stock</span>
+            <span class="text-muted" *ngIf="product.quantityInStock > 0">{{ product.quantityInStock }} units available</span>
+          </div>
+  
+          <p class="mb-4">{{ product.description }}</p>
+  
+          <!-- Quantity selector and Add to Cart -->
+          <div class="mb-4" *ngIf="product.quantityInStock > 0">
+            <div class="d-flex align-items-center">
+              <div class="input-group me-3" style="width: 130px;">
+                <button class="btn btn-outline-secondary" type="button" 
+                        (click)="decrementQuantity()" [disabled]="quantity <= 1">-</button>
+                <input type="text" class="form-control text-center" [value]="quantity" readonly>
+                <button class="btn btn-outline-secondary" type="button" 
+                        (click)="incrementQuantity()" [disabled]="quantity >= product.quantityInStock">+</button>
+              </div>
+  
+              <button class="btn btn-primary" (click)="addToCart()" [disabled]="product.quantityInStock <= 0">
+                <i class="bi bi-cart-plus me-2"></i>Add to Cart
+              </button>
+            </div>
+          </div>
+  
+          <div class="mb-4">
+            <h5>Product Information</h5>
+            <table class="table table-sm">
+              <tbody>
+                <tr>
+                  <th style="width: 30%">Category</th>
+                  <td>{{ product.category?.categoryName || 'N/A' }}</td>
+                </tr>
+                <tr>
+                  <th>Seller</th>
+                  <td>{{ product.seller?.username || 'N/A' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Review section -->
+      <div class="row mt-5">
+        <div class="col-12">
+          <h3 class="mb-4">Customer Reviews</h3>
+  
+          <!-- Review form for logged in users -->
+          <div *ngIf="currentUser" class="card shadow-sm mb-4">
+            <div class="card-body">
+              <h5 class="card-title">Write a Review</h5>
+              <form [formGroup]="reviewForm" (ngSubmit)="submitReview()">
+                <div class="mb-3">
+                  <textarea class="form-control" formControlName="content" 
+                            rows="4" placeholder="Share your thoughts about this product..."></textarea>
+                  <div *ngIf="reviewForm.get('content')?.invalid && reviewForm.get('content')?.touched" 
+                       class="text-danger small mt-1">
+                    Review must be at least 5 characters long.
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary" 
+                        [disabled]="reviewForm.invalid || reviewLoading">
+                  <span *ngIf="reviewLoading" class="spinner-border spinner-border-sm me-2"></span>
+                  Submit Review
+                </button>
+              </form>
+            </div>
+          </div>
+  
+          <!-- Login prompt for guests -->
+          <div *ngIf="!currentUser" class="alert alert-info mb-4">
+            <i class="bi bi-info-circle me-2"></i>
+            Please <a routerLink="/login" [queryParams]="{returnUrl: '/products/' + product.productId}">login</a> 
+            to leave a review.
+          </div>
+  
+          <!-- Reviews list -->
+          <div *ngIf="reviews.length === 0" class="text-center py-4 bg-light rounded mb-4">
+            <i class="bi bi-chat-square-text display-4 text-muted"></i>
+            <p class="lead mt-3">No reviews yet. Be the first to leave a review!</p>
+          </div>
+  
+          <div *ngIf="reviews.length > 0">
+            <div *ngFor="let review of reviews" class="card mb-3">
+              <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                  <div class="avatar-circle bg-primary text-white me-2" style="width: 35px; height: 35px;">
+                    {{ review.user?.firstName?.charAt(0)?.toUpperCase() || 'U' }}
+                  </div>
+                  <div>
+                    <h6 class="mb-0">{{ review.user?.firstName }} {{ review.user?.lastName }}</h6>
+                    <small class="text-muted">{{ formatDate(review.createdAt) }}</small>
+                  </div>
+                </div>
+                <p class="mb-0">{{ review.content }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

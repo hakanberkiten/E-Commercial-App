@@ -1,12 +1,16 @@
 package com.example.e_commerce.repository;
 
 import com.example.e_commerce.entity.Product;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
 public interface ProductRepository extends JpaRepository<Product, Long> {
-
     List<Product> findByCategoryCategoryId(Long categoryId);
+    
+    // Ürün ismine göre arama yapan metot
+    @Query("SELECT p FROM Product p WHERE LOWER(p.productName) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', :query, '%'))")
+    List<Product> searchProducts(@Param("query") String query);
 }

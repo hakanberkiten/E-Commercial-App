@@ -78,22 +78,24 @@ export class AuthService {
   getUserAddresses(userId: string): Observable<Address[]> {
     return this.http.get<Address[]>(`/api/users/${userId}/addresses`);
   }
-  
+
   // Yeni adres ekle
   addAddress(address: Address): Observable<Address> {
     return this.http.post<Address>('/api/addresses', address);
   }
-  
+
   // Adres güncelle
   updateAddress(address: Address): Observable<Address> {
     return this.http.put<Address>(`/api/addresses/${address.address_id}`, address);
   }
-  
+  changePassword(data: { userId: string, currentPassword: string, newPassword: string }): Observable<any> {
+    return this.http.put('/api/users/change-password', data);
+  }
   // Adres sil
   deleteAddress(addressId: string): Observable<any> {
     return this.http.delete(`/api/addresses/${addressId}`);
   }
-  
+
   // Varsayılan adresi ayarla
   setDefaultAddress(addressId: string, userId: string): Observable<any> {
     return this.http.put(`/api/users/${userId}/addresses/default`, { addressId });

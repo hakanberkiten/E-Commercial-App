@@ -25,6 +25,13 @@ export class ProfileComponent implements OnInit {
   addresses: any[] = [];
   selectedAddress: any = null;
 
+  // Şifre değiştirme için flag ve form
+  changePasswordMode = false;
+  passwordForm: FormGroup;
+  passwordLoading = false;
+  passwordSuccessMessage = '';
+  passwordErrorMessage = '';
+
   constructor(
     private auth: AuthService,
     private fb: FormBuilder,
@@ -47,6 +54,28 @@ export class ProfileComponent implements OnInit {
       buildingName: ['', Validators.required],
       isDefault: [false]
     });
+
+    // Şifre değiştirme formu
+    this.passwordForm = this.fb.group({
+      currentPassword: ['', Validators.required],
+      newPassword: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', Validators.required]
+    }, {
+      validators: this.passwordMatchValidator
+    });
+  }
+
+  // Şifre eşleşme kontrolü için validator
+  passwordMatchValidator(form: FormGroup) {
+    const newPassword = form.get('newPassword')?.value;
+    const confirmPassword = form.get('confirmPassword')?.value;
+
+    if (newPassword !== confirmPassword) {
+      form.get('confirmPassword')?.setErrors({ mismatch: true });
+      return { mismatch: true };
+    } else {
+      return null;
+    }
   }
 
   ngOnInit(): void {
@@ -223,6 +252,57 @@ export class ProfileComponent implements OnInit {
       error: (err) => {
         this.addressErrorMessage = 'Failed to update default address';
         console.error('Error updating default address:', err);
+      }
+    });
+  }
+
+  // Change Password modunu aç/kapat
+  toggleChangePasswordMode(): void {
+    this.changePasswordMode = !this.changePasswordMode;
+    if (this.changePasswordMode) {
+      this.editMode = false; // Profil düzenleme modunu kapat
+      this.editAddressMode = false; // Adres düzenleme modunu kapat
+      this.passwordForm.reset();
+    }
+    this.passwordSuccessMessage = '';
+    this.passwordErrorMessage = '';
+  }
+
+  // Şifre değiştirme işlemi
+  onPasswordSubmit(): void {
+    if (this.passwordForm.invalid) return;
+
+    this.passwordLoading = true;
+    this.passwordErrorMessage = '';
+    this.passwordSuccessMessage = '';
+
+    if (!this.currentUser?.userId) {
+      this.passwordLoading = false;
+      this.passwordErrorMessage = 'User ID is missing. Please try again.';
+      return;
+    }
+
+    const passwordData = {
+      userId: this.currentUser.userId.toString(),
+      currentPassword: this.passwordForm.value.currentPassword,
+      newPassword: this.passwordForm.value.newPassword
+    };
+
+    this.auth.changePassword(passwordData).subscribe({
+      next: () => {
+        this.passwordLoading = false;
+        this.passwordSuccessMessage = 'Password changed successfully!';
+        this.passwordForm.reset();
+
+        // 3 saniye sonra şifre değiştirme modunu kapat
+        setTimeout(() => {
+          this.changePasswordMode = false;
+          this.passwordSuccessMessage = '';
+        }, 3000);
+      },
+      error: (err) => {
+        this.passwordLoading = false;
+        this.passwordErrorMessage = err.error?.message || 'Failed to change password. Please try again.';
       }
     });
   }

@@ -29,7 +29,21 @@
                         <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
                     </div>
 
-                    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+                    <!-- Password change success/error messages -->
+                    <div *ngIf="passwordSuccessMessage" class="alert alert-success alert-dismissible fade show"
+                        role="alert">
+                        {{ passwordSuccessMessage }}
+                        <button type="button" class="btn-close" (click)="passwordSuccessMessage = ''"></button>
+                    </div>
+
+                    <div *ngIf="passwordErrorMessage" class="alert alert-danger alert-dismissible fade show"
+                        role="alert">
+                        {{ passwordErrorMessage }}
+                        <button type="button" class="btn-close" (click)="passwordErrorMessage = ''"></button>
+                    </div>
+
+                    <!-- Profile Edit Form -->
+                    <form *ngIf="!changePasswordMode" [formGroup]="profileForm" (ngSubmit)="onSubmit()">
                         <div class="row mb-4">
                             <div class="col-md-6 mb-3 mb-md-0">
                                 <label for="firstName" class="form-label">First Name</label>
@@ -67,9 +81,10 @@
                                 <button type="button" class="btn btn-primary px-4" (click)="toggleEditMode()">
                                     <i class="bi bi-pencil me-2"></i>Edit Profile
                                 </button>
-                                <a routerLink="/change-password" class="btn btn-outline-secondary ms-2">
+                                <button type="button" class="btn btn-outline-secondary ms-2"
+                                    (click)="toggleChangePasswordMode()">
                                     <i class="bi bi-key me-2"></i>Change Password
-                                </a>
+                                </button>
                             </ng-container>
 
                             <ng-container *ngIf="editMode">
@@ -82,6 +97,65 @@
                                     Cancel
                                 </button>
                             </ng-container>
+                        </div>
+                    </form>
+
+                    <!-- Password Change Form -->
+                    <form *ngIf="changePasswordMode" [formGroup]="passwordForm" (ngSubmit)="onPasswordSubmit()">
+                        <h5 class="mb-4">Change Password</h5>
+
+                        <!-- Current Password -->
+                        <div class="form-floating mb-3">
+                            <input type="password" id="currentPassword" formControlName="currentPassword"
+                                class="form-control" placeholder="Current Password">
+                            <label for="currentPassword">Current Password</label>
+                            <div *ngIf="passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched"
+                                class="text-danger mt-1 small">
+                                Current password is required
+                            </div>
+                        </div>
+
+                        <!-- New Password -->
+                        <div class="form-floating mb-3">
+                            <input type="password" id="newPassword" formControlName="newPassword" class="form-control"
+                                placeholder="New Password">
+                            <label for="newPassword">New Password</label>
+                            <div *ngIf="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched"
+                                class="text-danger mt-1 small">
+                                <span *ngIf="passwordForm.get('newPassword')?.errors?.['required']">New password is
+                                    required</span>
+                                <span *ngIf="passwordForm.get('newPassword')?.errors?.['minlength']">
+                                    Password must be at least 6 characters
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="form-floating mb-4">
+                            <input type="password" id="confirmPassword" formControlName="confirmPassword"
+                                class="form-control" placeholder="Confirm Password">
+                            <label for="confirmPassword">Confirm Password</label>
+                            <div *ngIf="passwordForm.get('confirmPassword')?.invalid && passwordForm.get('confirmPassword')?.touched"
+                                class="text-danger mt-1 small">
+                                <span *ngIf="passwordForm.get('confirmPassword')?.errors?.['required']">
+                                    Please confirm your password
+                                </span>
+                                <span *ngIf="passwordForm.get('confirmPassword')?.errors?.['mismatch']">
+                                    Passwords don't match
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex">
+                            <button type="submit" class="btn btn-primary px-4"
+                                [disabled]="passwordForm.invalid || passwordLoading">
+                                <span *ngIf="passwordLoading" class="spinner-border spinner-border-sm me-2"></span>
+                                Change Password
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary ms-2"
+                                (click)="toggleChangePasswordMode()">
+                                Cancel
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -111,25 +185,28 @@
                         </button>
                     </div>
 
-                    <!-- Address Form -->
+                    <!-- Address Form - Düzeltilmiş yerleşim -->
                     <div *ngIf="editAddressMode" class="mb-4 p-3 border rounded bg-light">
                         <h5 class="mb-3">{{ selectedAddress ? 'Edit Address' : 'Add New Address' }}</h5>
                         <form [formGroup]="addressForm" (ngSubmit)="onAddressSubmit()">
+                            <!-- Building Name ve Street Address tek sütunda -->
                             <div class="row mb-3">
                                 <div class="col-md-12 mb-3">
+                                    <label for="buildingName" class="form-label">Building Name</label>
+                                    <input type="text" id="buildingName" formControlName="buildingName"
+                                        class="form-control">
+                                    <div *ngIf="addressForm.get('buildingName')?.invalid && addressForm.get('buildingName')?.touched"
+                                        class="text-danger mt-1 small">Building name is required</div>
+                                </div>
+                                <div class="col-md-12">
                                     <label for="street" class="form-label">Street Address</label>
                                     <input type="text" id="street" formControlName="street" class="form-control">
                                     <div *ngIf="addressForm.get('street')?.invalid && addressForm.get('street')?.touched"
                                         class="text-danger mt-1 small">Street address is required</div>
                                 </div>
-
-                                <label for="buildingName" class="form-label">Building Name</label>
-                                <input type="text" id="buildingName" formControlName="buildingName"
-                                    class="form-control">
-                                <div *ngIf="addressForm.get('buildingName')?.invalid && addressForm.get('buildingName')?.touched"
-                                    class="text-danger mt-1 small">Building name is required</div>
                             </div>
 
+                            <!-- City ve State yan yana -->
                             <div class="row mb-3">
                                 <div class="col-md-6 mb-3 mb-md-0">
                                     <label for="city" class="form-label">City</label>
@@ -145,6 +222,7 @@
                                 </div>
                             </div>
 
+                            <!-- ZIP Code ve Country yan yana -->
                             <div class="row mb-3">
                                 <div class="col-md-6 mb-3 mb-md-0">
                                     <label for="zipCode" class="form-label">ZIP Code</label>
@@ -160,6 +238,7 @@
                                 </div>
                             </div>
 
+                            <!-- Default address checkbox -->
                             <div class="form-check mb-3">
                                 <input class="form-check-input" type="checkbox" id="isDefault"
                                     formControlName="isDefault">
@@ -168,6 +247,7 @@
                                 </label>
                             </div>
 
+                            <!-- Form butonları -->
                             <div class="d-flex">
                                 <button type="submit" class="btn btn-primary"
                                     [disabled]="addressForm.invalid || addressLoading">

@@ -8,6 +8,7 @@ import { CustomerComponent } from './customer/customer.component';
 import { CartPageComponent } from './cart-page/cart-page.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { ProfileComponent } from './core/components/profile/profile.component';
+import { ProductDetailComponent } from './features/products/product-detail/product-detail.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'products', pathMatch: 'full' },
@@ -16,6 +17,12 @@ const routes: Routes = [
   {
     path: 'products',
     component: CustomerComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'ROLE_CUSTOMER' }
+  },
+  {
+    path: 'products/:id', // Ürün detayı için yeni route
+    component: ProductDetailComponent, // Daha önce oluşturduğumuz component'i kullan
     canActivate: [AuthGuard],
     data: { role: 'ROLE_CUSTOMER' }
   },

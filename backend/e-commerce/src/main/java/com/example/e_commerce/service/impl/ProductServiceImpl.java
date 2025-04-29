@@ -17,7 +17,13 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository; // Assuming you have a UserRepository to fetch User details
 
-
+    @Override
+    public List<Product> searchProducts(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return getAllProducts();
+        }
+        return productRepository.searchProducts(query);
+    }
     @Override
 // ProductServiceImpl.java
 public Product saveProduct(Product product) {

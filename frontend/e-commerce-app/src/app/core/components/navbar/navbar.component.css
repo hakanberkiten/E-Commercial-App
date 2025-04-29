@@ -81,3 +81,64 @@
 .btn-group .btn.nav-link:hover {
     background-color: rgba(0, 0, 0, 0.04);
 }
+
+/* Arama sonuçları dropdown */
+.search-container {
+    position: relative;
+}
+
+.search-results-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 0 0 4px 4px;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.search-result-item {
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.search-result-item:hover {
+    background-color: #f8f9fa;
+}
+
+.search-result-img {
+    width: 50px;
+    height: 50px;
+    overflow: hidden;
+    border-radius: 4px;
+}
+
+.search-result-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.search-result-name {
+    font-weight: 500;
+    color: #000;
+    /* Ürün isimlerini siyah yap */
+}
+
+.search-result-price {
+    font-size: 0.9em;
+    color: #555;
+}
+
+.no-results {
+    color: #6c757d;
+}
+
+@media (max-width: 992px) {
+    .search-container {
+        margin: 10px 0;
+    }
+}
