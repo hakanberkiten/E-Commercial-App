@@ -23,6 +23,9 @@ export class ProductDetailComponent implements OnInit {
   currentUser: any;
   quantity = 1;
 
+  // Add new property
+  hasUserReviewed = false;
+
   constructor(
     private route: ActivatedRoute,
     private productService: ProductService,
@@ -32,7 +35,8 @@ export class ProductDetailComponent implements OnInit {
     private fb: FormBuilder
   ) {
     this.reviewForm = this.fb.group({
-      content: ['', [Validators.required, Validators.minLength(5)]]
+      content: ['', [Validators.required, Validators.minLength(5)]],
+      reviewPoint: [0, [Validators.required, Validators.min(1), Validators.max(5)]]
     });
   }
 
@@ -67,13 +71,30 @@ export class ProductDetailComponent implements OnInit {
 
   loadProductReviews(productId: number): void {
     this.reviewService.getReviewsByProduct(productId).subscribe({
-      next: (data) => {
-        this.reviews = data;
+      next: (reviews) => {
+        this.reviews = reviews;
+
+        // Check if current user has already reviewed this product
+        if (this.currentUser) {
+          this.hasUserReviewed = this.reviews.some(review =>
+            review.user && review.user.userId === this.currentUser.userId
+          );
+        }
       },
-      error: (err) => {
-        console.error('Error loading reviews:', err);
+      error: (error) => {
+        console.error('Error loading reviews:', error);
       }
     });
+  }
+
+  // Yıldız ratingi ayarlama
+  setRating(rating: number): void {
+    this.reviewForm.patchValue({ reviewPoint: rating });
+  }
+
+  // Yarım yıldız hesaplama
+  roundHalf(value: number): number {
+    return Math.ceil(value * 2) / 2;
   }
 
   submitReview(): void {
@@ -82,6 +103,7 @@ export class ProductDetailComponent implements OnInit {
     this.reviewLoading = true;
     const reviewData = {
       content: this.reviewForm.value.content,
+      reviewPoint: this.reviewForm.value.reviewPoint,
       user: {
         userId: this.currentUser.userId
       },
@@ -94,10 +116,16 @@ export class ProductDetailComponent implements OnInit {
       next: (response) => {
         this.reviewLoading = false;
         this.successMessage = 'Your review has been submitted!';
-        this.reviewForm.reset();
-        // Yeni yorumu ekle
+        this.reviewForm.reset({
+          content: '',
+          reviewPoint: 0
+        });
+
+        // Yeni yorumu ekle ve ürün detaylarını güncelle
         this.loadProductReviews(this.product.productId);
-        
+        this.loadProductDetails(this.product.productId);
+        this.hasUserReviewed = true;
+
         // 3 saniye sonra success mesajını kaldır
         setTimeout(() => {
           this.successMessage = '';
@@ -105,7 +133,12 @@ export class ProductDetailComponent implements OnInit {
       },
       error: (error) => {
         this.reviewLoading = false;
-        this.error = 'Failed to submit review. Please try again.';
+        if (error.error && error.error.message === "You have already reviewed this product") {
+          this.error = 'You have already reviewed this product.';
+          this.hasUserReviewed = true;
+        } else {
+          this.error = 'Failed to submit review. Please try again.';
+        }
         console.error('Review submission error:', error);
       }
     });
@@ -120,7 +153,7 @@ export class ProductDetailComponent implements OnInit {
     this.cartService.add(this.product.productId, this.quantity).subscribe({
       next: (response) => {
         this.successMessage = `${this.product.productName} added to your cart!`;
-        
+
         // 3 saniye sonra success mesajını kaldır
         setTimeout(() => {
           this.successMessage = '';
@@ -147,9 +180,9 @@ export class ProductDetailComponent implements OnInit {
 
   formatDate(dateString: string): string {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
       day: 'numeric'
     });
   }

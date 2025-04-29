@@ -33,4 +33,15 @@ export class CartService {
     return this.http.put<CartItem>(`/api/cart/items/${itemId}`, null, { params: { quantity } });
   }
 
+  getCartItemCount(): Observable<number> {
+    return this.list().pipe(
+      switchMap(items => {
+        const totalCount = items.reduce((count, item) => count + item.quantityInCart, 0);
+        return new Observable<number>(observer => {
+          observer.next(totalCount);
+          observer.complete();
+        });
+      })
+    );
+  }
 }

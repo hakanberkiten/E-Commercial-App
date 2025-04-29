@@ -11,7 +11,9 @@ export class ReviewService {
   getReviewsByProduct(productId: number): Observable<any[]> {
     return this.http.get<any[]>(`/api/reviews/product/${productId}`);
   }
-
+  getProductRating(productId: number): Observable<any> {
+    return this.http.get<any>(`/api/reviews/product/${productId}/rating`);
+  }
   addReview(review: any): Observable<any> {
     return this.http.post<any>('/api/reviews/save', review);
   }

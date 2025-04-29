@@ -12,7 +12,6 @@ import java.util.List;
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
 public class ProductController {
-
     private final ProductService productService;
 
     @PostMapping("/save")
@@ -41,5 +40,17 @@ public class ProductController {
     @GetMapping("/search")
     public List<Product> searchProducts(@RequestParam String query) {
         return productService.searchProducts(query);
+    }
+    @GetMapping("/filter")
+    public List<Product> filterProducts(
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false, defaultValue = "0.0") Double minPrice, 
+            @RequestParam(required = false, defaultValue = "999999.99") Double maxPrice) {
+        
+        if (categoryId != null && categoryId > 0) {
+            return productService.getByCategoryAndPriceRange(categoryId, minPrice, maxPrice);
+        } else {
+            return productService.getByPriceRange(minPrice, maxPrice);
+        }
     }
 }

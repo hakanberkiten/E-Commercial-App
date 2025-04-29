@@ -22,6 +22,9 @@ public class Review {
     private Product product;
 @Column(name = "created_at")
 private Date createdAt;
+ // Yeni eklenen değerlendirme puanı kolonu (1-5 arası)
+ @Column(name = "review_point", nullable = false)
+ private Integer reviewPoint;
 
 @PrePersist
 protected void onCreate() {

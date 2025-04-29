@@ -26,6 +26,27 @@
             <!-- Category sidebar -->
             <div class="col-lg-3">
                 <div class="card shadow-sm border-0 rounded-4 mb-4">
+                    <!-- Fiyat Filtreleme bölümü -->
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Filter by Price</h5>
+                        <div class="mb-3">
+                            <label for="minPrice" class="form-label">Min Price ($)</label>
+                            <input type="number" id="minPrice" class="form-control" [(ngModel)]="minPrice"
+                                (change)="applyFilters()" min="0">
+                        </div>
+                        <div class="mb-3">
+                            <label for="maxPrice" class="form-label">Max Price ($)</label>
+                            <input type="number" id="maxPrice" class="form-control" [(ngModel)]="maxPrice"
+                                (change)="applyFilters()" min="0">
+                        </div>
+                        <div class="d-grid">
+                            <button class="btn btn-primary" (click)="applyFilters()">Apply Filters</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kategori filtreleme - mevcut kod -->
+                <div class="card shadow-sm border-0 rounded-4 mb-4">
                     <div class="card-body">
                         <h5 class="card-title mb-3">Categories</h5>
                         <div class="list-group list-group-flush">
@@ -118,11 +139,23 @@
 
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title product-title">{{ product.productName }}</h5>
+
+                                <!-- Yıldız puanı gösterimi -->
+                                <div class="mb-2">
+                                    <span *ngFor="let star of [1,2,3,4,5]">
+                                        <i class="bi"
+                                        [ngClass]="star <= (+(product.productRate ?? 0)) ? 'bi-star-fill text-warning' : (star <= roundHalf(+(product.productRate ?? 0)) ? 'bi-star-half text-warning' : 'bi-star text-muted')"                                            style="font-size: 0.9rem;"></i>
+                                    </span>
+                                    <span class="ms-1 text-muted small" *ngIf="(product.reviewCount ?? 0) > 0">({{
+                                        product.reviewCount ?? 0 }})</span>
+                                </div>
+
                                 <p class="card-text text-muted mb-2">{{ product.description | slice:0:90 }}{{
                                     product.description && product.description.length > 90 ? '...' : '' }}</p>
+
                                 <div class="d-flex justify-content-between align-items-center mt-auto">
-                                    <span class="fw-bold text-primary fs-5">${{ product.price.toFixed(2) }}</span>
-                                    <!-- Event propagasyonu durdurarak Add to Cart butonu tıklandığında detay sayfasına gitmesini engelliyoruz -->
+                                    <span class="fw-bold text-primary fs-5">${{ (product.price.toFixed(2) || '0.00')
+                                        }}</span>
                                     <button class="btn btn-primary"
                                         (click)="addToCart(product); $event.stopPropagation()">
                                         <i class="bi bi-cart-plus me-2"></i>Add to Cart

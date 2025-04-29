@@ -1,12 +1,11 @@
 // src/app/core/services/product.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { map, Observable } from 'rxjs';
 import { Product } from '../../shared/models/product.model';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
-
   constructor(private http: HttpClient) { }
 
   getAll(): Observable<Product[]> {
@@ -37,5 +36,19 @@ export class ProductService {
 
   getProductById(id: number): Observable<any> {
     return this.http.get<any>(`/api/products/${id}`);
+  }
+
+  // Filtreleme metodu
+  getFilteredProducts(categoryId: number | null, minPrice: number, maxPrice: number): Observable<Product[]> {
+    let params = new HttpParams();
+
+    if (categoryId !== null && categoryId > 0) {
+      params = params.set('categoryId', categoryId.toString());
+    }
+
+    params = params.set('minPrice', minPrice.toString());
+    params = params.set('maxPrice', maxPrice.toString());
+
+    return this.http.get<Product[]>('/api/products/filter', { params });
   }
 }

@@ -10,5 +10,10 @@ public interface ReviewService {
     List<Review> getAllReviews();
     Review getReviewById(Long id);
     void deleteReview(Long id);
-List<Review> getReviewsByProduct(Long productId);
+    List<Review> getReviewsByProduct(Long productId);
+    
+    // Yeni eklenen metodlar
+    Double calculateAverageRating(Long productId);
+    Integer countReviewsByProduct(Long productId);
+    void updateProductRating(Long productId);
 }

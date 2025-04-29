@@ -1,4 +1,3 @@
-// src/app/customer/customer.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CategoryService } from '../core/services/category.service';
 import { ProductService } from '../core/services/product.service';
@@ -21,7 +20,9 @@ export class CustomerComponent implements OnInit {
   user?: User | null;
   successMessage: string = "";
   cartItemCount: number = 0;
-
+  loading: boolean = false;
+  minPrice: number = 0;
+  maxPrice: number = 10000; // M
   constructor(
     private catSvc: CategoryService,
     private prodSvc: ProductService,
@@ -77,6 +78,27 @@ export class CustomerComponent implements OnInit {
       });
   }
 
+  applyFilters() {
+    this.loading = true;
+    this.error = '';
+
+    this.prodSvc.getFilteredProducts(
+      this.selectedCat,
+      this.minPrice,
+      this.maxPrice
+    ).subscribe({
+      next: (products) => {
+        this.products = products;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading filtered products:', err);
+        this.error = 'Failed to load products. Please try again.';
+        this.loading = false;
+      }
+    });
+  }
+
   loadCartCount() {
     this.cartSvc.list().subscribe(items => {
       this.cartItemCount = items.length;
@@ -88,5 +110,12 @@ export class CustomerComponent implements OnInit {
     setTimeout(() => {
       this.successMessage = '';
     }, 3000);
+  }
+
+  // Customer component'e roundHalf metodunu ekleyelim
+
+  // Yarım yıldız hesaplama
+  roundHalf(value: number): number {
+    return Math.ceil(value * 2) / 2;
   }
 }

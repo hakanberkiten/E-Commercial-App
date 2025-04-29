@@ -13,10 +13,9 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
-
     private final ProductRepository productRepository;
-    private final UserRepository userRepository; // Assuming you have a UserRepository to fetch User details
-
+    private final UserRepository userRepository;
+    
     @Override
     public List<Product> searchProducts(String query) {
         if (query == null || query.trim().isEmpty()) {
@@ -63,4 +62,17 @@ public Product saveProduct(Product product) {
     public List<Product> getByCategory(Long categoryId) {
         return productRepository.findByCategoryCategoryId(categoryId);
       }
+
+    @Override
+    public List<Product> getByPriceRange(Double minPrice, Double maxPrice) {
+        return productRepository.findByPriceRange(minPrice, maxPrice);
+    }
+    
+    @Override
+    public List<Product> getByCategoryAndPriceRange(Long categoryId, Double minPrice, Double maxPrice) {
+        if (categoryId == null || categoryId <= 0) {
+            return getByPriceRange(minPrice, maxPrice);
+        }
+        return productRepository.findByCategoryAndPriceRange(categoryId, minPrice, maxPrice);
+    }
 }

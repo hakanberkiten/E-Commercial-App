@@ -29,8 +29,16 @@ public class Product {
 
     @Column(nullable = false)
     private Integer quantityInStock;
-
     // Category bağlantısı
+
+    @Column(name = "product_rate", nullable = false, columnDefinition = "DECIMAL(3,2) DEFAULT 0.0")
+    @Builder.Default
+    private Double productRate = 0.0;
+    
+    // Yeni eklenen toplam değerlendirme sayısı kolonu
+    @Column(name = "review_count", nullable = false, columnDefinition = "INT DEFAULT 0")
+    @Builder.Default
+    private Integer reviewCount = 0;
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
