@@ -23,9 +23,11 @@ import { NavbarComponent } from './core/components/navbar/navbar.component';
 import { ProfileComponent } from './core/components/profile/profile.component';
 import { ProductDetailComponent } from './features/products/product-detail/product-detail.component';
 import { SellerDashboardComponent } from './core/components/seller-dashboard/seller-dashboard.component';
+import { AdminDashboardComponent } from './core/components/admin-dashboard/admin-dashboard.component';
+import { ErrorInterceptor } from './core/interceptors/error.interceptor';
 
 @NgModule({
-  declarations: [AppComponent, ProductListComponent, LoginComponent, SignupComponent, CustomerComponent, CartPageComponent, NavbarComponent, ProfileComponent, ProductDetailComponent, SellerDashboardComponent],
+  declarations: [AppComponent, ProductListComponent, LoginComponent, SignupComponent, CustomerComponent, CartPageComponent, NavbarComponent, ProfileComponent, ProductDetailComponent, SellerDashboardComponent, AdminDashboardComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
@@ -44,7 +46,10 @@ import { SellerDashboardComponent } from './core/components/seller-dashboard/sel
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
       multi: true
-    }
+    },
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+
+
     // Diğer sağlayıcılar
   ],
   bootstrap: [AppComponent]

@@ -30,6 +30,8 @@ export interface User {
     roleId: number;
     roleName: string;
   };
+  active: boolean; // Add this property
+
 }
 
 interface LoginResponse {

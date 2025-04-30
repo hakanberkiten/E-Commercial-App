@@ -1,0 +1,166 @@
+<div class="admin-dashboard">
+    <!-- Header -->
+    <div class="dashboard-header">
+        <h1>Admin Dashboard</h1>
+        <p>Manage users, products, and orders</p>
+    </div>
+
+    <!-- Alert Messages -->
+    <div *ngIf="successMessage" class="alert alert-success">
+        {{ successMessage }}
+    </div>
+    <div *ngIf="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+        <button [class.active]="activeTab === 'users'" (click)="setActiveTab('users')">Users</button>
+        <button [class.active]="activeTab === 'products'" (click)="setActiveTab('products')">Products</button>
+        <button [class.active]="activeTab === 'orders'" (click)="setActiveTab('orders')">Orders</button>
+    </div>
+
+    <!-- User Management Tab -->
+    <div *ngIf="activeTab === 'users'" class="tab-content">
+        <h2>User Management</h2>
+
+        <div *ngIf="loadingRoles || loadingUsers" class="loading-spinner">
+            Loading users...
+        </div>
+
+        <table *ngIf="!loadingUsers && !loadingRoles && users.length > 0" class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let user of users">
+                    <td>{{ user.userId }}</td>
+                    <td>{{ user.firstName }} {{ user.lastName }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        <span *ngIf="user.role">{{ user.role.roleName }}</span>
+                        <span *ngIf="!user.role">No role assigned</span>
+                    </td>
+                    <td>
+                        <span [class]="user.active ? 'active' : 'inactive'">
+                            {{ user.active ? 'Active' : 'Inactive' }}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <button (click)="setUserRole(user, roleIds.CUSTOMER)" class="btn-small">Set Customer</button>
+                        <button (click)="setUserRole(user, roleIds.SELLER)" class="btn-small">Set Seller</button>
+                        <button (click)="setUserRole(user, roleIds.ADMIN)" class="btn-small">Set Admin</button>
+                        <button (click)="toggleUserStatus(user)" class="btn-small">
+                            {{ user.active ? 'Deactivate' : 'Activate' }}
+                        </button>
+                        <button (click)="resetUserPassword(user.userId)" class="btn-small">Reset Password</button>
+                        <button (click)="deleteUser(user.userId)" class="btn-small btn-danger">Delete</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div *ngIf="!loadingUsers && !loadingRoles && users.length === 0" class="empty-state">
+            No users found.
+        </div>
+    </div>
+
+    <!-- Product Management Tab -->
+    <div *ngIf="activeTab === 'products'" class="tab-content">
+        <h2>Product Management</h2>
+
+        <div *ngIf="loadingProducts" class="loading-spinner">
+            Loading products...
+        </div>
+
+        <table *ngIf="!loadingProducts && products.length > 0" class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Seller</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let product of products">
+                    <td>{{ product.productId }}</td>
+                    <td>
+                        <img [src]="product.image" alt="{{ product.productName }}" class="product-thumbnail">
+                    </td>
+                    <td>{{ product.productName }}</td>
+                    <td>{{ product.category?.categoryName }}</td>
+                    <td>${{ product.price?.toFixed(2) }}</td>
+                    <td>{{ product.seller?.firstName }} {{ product.seller?.lastName }}</td>
+                    <td>{{ product.quantityInStock }}</td>
+                    <td class="actions">
+                        <button (click)="deleteProduct(product.productId)" class="btn-small btn-danger">Delete</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div *ngIf="!loadingProducts && products.length === 0" class="empty-state">
+            No products found.
+        </div>
+    </div>
+
+    <!-- Order Management Tab -->
+    <div *ngIf="activeTab === 'orders'" class="tab-content">
+        <h2>Order Management</h2>
+
+        <div *ngIf="loadingOrders" class="loading-spinner">
+            Loading orders...
+        </div>
+
+        <table *ngIf="!loadingOrders && orders.length > 0" class="data-table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let order of orders">
+                    <td>{{ order.orderId }}</td>
+                    <td>{{ order.user?.firstName }} {{ order.user?.lastName }}</td>
+                    <td>{{ order.orderDate | date:'medium' }}</td>
+                    <td>${{ order.totalAmount?.toFixed(2) }}</td>
+                    <td>
+                        <span [class]="'status-' + (order.orderStatus | lowercase)">
+                            {{ order.orderStatus }}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <button (click)="updateOrderStatus(order.orderId, 'PROCESSING')"
+                            class="btn-small">Processing</button>
+                        <button (click)="updateOrderStatus(order.orderId, 'SHIPPED')" class="btn-small">Shipped</button>
+                        <button (click)="updateOrderStatus(order.orderId, 'DELIVERED')"
+                            class="btn-small">Delivered</button>
+                        <button (click)="updateOrderStatus(order.orderId, 'CANCELLED')"
+                            class="btn-small btn-danger">Cancel</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div *ngIf="!loadingOrders && orders.length === 0" class="empty-state">
+            No orders found.
+        </div>
+    </div>
+</div>

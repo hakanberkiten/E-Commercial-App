@@ -13,27 +13,31 @@ export class AuthGuard {
         state: RouterStateSnapshot
     ): Observable<boolean> | Promise<boolean> | boolean {
         if (!this.auth.isLoggedIn()) {
-            this.router.navigate(['/login']);
+            this.router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
             return false;
         }
 
-        // Rol kontrolü yapılacaksa
-        const requiredRole = route.data['role'] as string;
-        if (requiredRole && !this.auth.hasRole(requiredRole)) {
-            // Kullanıcı rolüne göre uygun sayfaya yönlendir
+        // Check for required roles
+        const requiredRoles = route.data['roles'] as string[];
+        if (requiredRoles && requiredRoles.length > 0) {
             const userRole = this.auth.getUserRole();
 
-            if (userRole === 'ROLE_ADMIN') {
-                this.router.navigate(['/admin']);
-            } else if (userRole === 'ROLE_SELLER') {
-                this.router.navigate(['/seller']);
-            } else if (userRole === 'ROLE_CUSTOMER') {
-                this.router.navigate(['/customer']);
-            } else {
-                this.router.navigate(['/login']);
-            }
+            // Check if user has any of the required roles
+            const hasRequiredRole = requiredRoles.some(role =>
+                userRole === `ROLE_${role}` || userRole === role
+            );
 
-            return false;
+            if (!hasRequiredRole) {
+                // Redirect based on user's role
+                if (userRole === 'ROLE_ADMIN' || userRole === 'ADMIN') {
+                    this.router.navigate(['/admin/dashboard']);
+                } else if (userRole === 'ROLE_SELLER' || userRole === 'SELLER') {
+                    this.router.navigate(['/seller-dashboard']);
+                } else {
+                    this.router.navigate(['/products']);
+                }
+                return false;
+            }
         }
 
         return true;

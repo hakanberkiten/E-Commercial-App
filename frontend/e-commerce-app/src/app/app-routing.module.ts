@@ -10,6 +10,7 @@ import { AuthGuard } from './core/guards/auth.guard';
 import { ProfileComponent } from './core/components/profile/profile.component';
 import { ProductDetailComponent } from './features/products/product-detail/product-detail.component';
 import { SellerDashboardComponent } from './core/components/seller-dashboard/seller-dashboard.component';
+import { AdminDashboardComponent } from './core/components/admin-dashboard/admin-dashboard.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'products', pathMatch: 'full' },
@@ -43,6 +44,12 @@ const routes: Routes = [
     component: CartPageComponent,
     canActivate: [AuthGuard],
     data: { role: 'ROLE_CUSTOMER' }
+  },
+  {
+    path: 'admin/dashboard',
+    component: AdminDashboardComponent,
+    canActivate: [AuthGuard],
+    data: { roles: ['ADMIN'] }  // This format works with our updated guard
   },
 ];
 

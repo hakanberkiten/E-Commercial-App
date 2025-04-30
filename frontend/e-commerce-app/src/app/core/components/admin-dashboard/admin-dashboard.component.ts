@@ -1,0 +1,242 @@
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ProductService } from '../../services/product.service';
+import { OrderService } from '../../services/order.service';
+import { User, AuthService } from '../../services/auth.service';
+
+@Component({
+  selector: 'app-admin-dashboard',
+  standalone: false,
+  templateUrl: './admin-dashboard.component.html',
+  styleUrl: './admin-dashboard.component.css'
+})
+export class AdminDashboardComponent implements OnInit {
+  // Active tab tracking
+  activeTab: string = 'users';
+
+  // User management
+  users: User[] = [];
+  selectedUser: User | null = null;
+  roles: any[] = []; // To store available roles
+
+  // Product management
+  products: any[] = [];
+  selectedProduct: any = null;
+
+  // Order management
+  orders: any[] = [];
+
+  // Messages and alerts
+  successMessage: string = '';
+  errorMessage: string = '';
+
+  // Loading states
+  loadingUsers: boolean = false;
+  loadingProducts: boolean = false;
+  loadingOrders: boolean = false;
+  loadingRoles: boolean = false;
+
+  // Role constants for easier reference
+  roleIds = {
+    ADMIN: 1,
+    SELLER: 2,
+    CUSTOMER: 3
+  };
+
+  constructor(
+    private http: HttpClient,
+    private formBuilder: FormBuilder,
+    private productService: ProductService,
+    private orderService: OrderService,
+    private authService: AuthService
+  ) { }
+
+  ngOnInit(): void {
+    this.loadAllRoles();
+    this.loadAllUsers();
+    this.loadAllProducts();
+    this.loadAllOrders();
+  }
+
+  // Tab management
+  setActiveTab(tab: string): void {
+    this.activeTab = tab;
+  }
+
+  // Load available roles
+  loadAllRoles(): void {
+    this.loadingRoles = true;
+    this.http.get<any[]>('/api/roles').subscribe({
+      next: (data) => {
+        this.roles = data;
+        this.loadingRoles = false;
+        console.log('Roles loaded:', this.roles);
+      },
+      error: (error) => {
+        console.error('Failed to load roles:', error);
+        this.loadingRoles = false;
+        this.errorMessage = 'Failed to load roles: ' + error.message;
+        setTimeout(() => this.errorMessage = '', 3000);
+      }
+    });
+  }
+
+  // User management methods
+  loadAllUsers(): void {
+    this.loadingUsers = true;
+    this.http.get<User[]>('/api/users').subscribe({
+      next: (data) => {
+        this.users = data;
+        this.loadingUsers = false;
+        console.log('Users loaded:', this.users);
+      },
+      error: (error) => {
+        this.errorMessage = 'Failed to load users: ' + error.message;
+        this.loadingUsers = false;
+        setTimeout(() => this.errorMessage = '', 3000);
+      }
+    });
+  }
+
+  // Get role name by ID
+  getRoleName(roleId: number): string {
+    const role = this.roles.find(r => r.roleId === roleId);
+    return role ? role.roleName : 'Unknown';
+  }
+
+  // Set user role
+  setUserRole(user: User, roleId: number): void {
+    const payload = { roleId: roleId };
+
+    // Clear any previous messages
+    this.successMessage = '';
+    this.errorMessage = '';
+
+    // Log the request for debugging
+    console.log(`Setting user ${user.userId} to role ${roleId}`);
+
+    this.http.put(`/api/users/${user.userId}/role`, payload).subscribe({
+      next: (response) => {
+        console.log('Role update successful:', response);
+        const roleName = this.getRoleName(roleId);
+        this.successMessage = `Updated ${user.firstName}'s role to ${roleName} successfully`;
+        this.loadAllUsers(); // Refresh user list
+        setTimeout(() => this.successMessage = '', 3000);
+      },
+      error: (error) => {
+        console.error('Role update failed:', error);
+        this.errorMessage = `Failed to update role: ${error.message || 'Server error occurred'}`;
+        setTimeout(() => this.errorMessage = '', 3000);
+      }
+    });
+  }
+
+  toggleUserStatus(user: User): void {
+    const newStatus = !user.active;
+    this.http.patch(`/api/users/${user.userId}/status`, { active: newStatus }).subscribe({
+      next: () => {
+        this.successMessage = `User ${newStatus ? 'activated' : 'deactivated'} successfully`;
+        this.loadAllUsers(); // Refresh user list
+        setTimeout(() => this.successMessage = '', 3000);
+      },
+      error: (error) => {
+        this.errorMessage = `Failed to update user status: ${error.message}`;
+        setTimeout(() => this.errorMessage = '', 3000);
+      }
+    });
+  }
+
+  deleteUser(userId: number): void {
+    if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      this.http.delete(`/api/users/${userId}`).subscribe({
+        next: () => {
+          this.successMessage = 'User deleted successfully';
+          this.loadAllUsers(); // Refresh user list
+          setTimeout(() => this.successMessage = '', 3000);
+        },
+        error: (error) => {
+          this.errorMessage = `Failed to delete user: ${error.message}`;
+          setTimeout(() => this.errorMessage = '', 3000);
+        }
+      });
+    }
+  }
+
+  resetUserPassword(userId: number): void {
+    if (confirm('Are you sure you want to reset this user\'s password?')) {
+      this.http.post(`/api/users/${userId}/reset-password`, {}).subscribe({
+        next: () => {
+          this.successMessage = 'Password reset successfully. User will receive an email with instructions.';
+          setTimeout(() => this.successMessage = '', 3000);
+        },
+        error: (error) => {
+          this.errorMessage = `Failed to reset password: ${error.message}`;
+          setTimeout(() => this.errorMessage = '', 3000);
+        }
+      });
+    }
+  }
+
+  // Product management methods
+  loadAllProducts(): void {
+    this.loadingProducts = true;
+    this.http.get<any[]>('/api/products/all').subscribe({
+      next: (data) => {
+        this.products = data;
+        this.loadingProducts = false;
+      },
+      error: (error) => {
+        this.errorMessage = 'Failed to load products: ' + error.message;
+        this.loadingProducts = false;
+        setTimeout(() => this.errorMessage = '', 3000);
+      }
+    });
+  }
+
+  deleteProduct(productId: number): void {
+    if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+      this.productService.deleteProduct(productId).subscribe({
+        next: () => {
+          this.successMessage = 'Product deleted successfully';
+          this.loadAllProducts(); // Refresh product list
+          setTimeout(() => this.successMessage = '', 3000);
+        },
+        error: (error) => {
+          this.errorMessage = `Failed to delete product: ${error.message}`;
+          setTimeout(() => this.errorMessage = '', 3000);
+        }
+      });
+    }
+  }
+
+  // Order management methods
+  loadAllOrders(): void {
+    this.loadingOrders = true;
+    this.http.get<any[]>('/api/orders/all').subscribe({
+      next: (data) => {
+        this.orders = data;
+        this.loadingOrders = false;
+      },
+      error: (error) => {
+        this.errorMessage = 'Failed to load orders: ' + error.message;
+        this.loadingOrders = false;
+        setTimeout(() => this.errorMessage = '', 3000);
+      }
+    });
+  }
+
+  updateOrderStatus(orderId: number, status: string): void {
+    this.orderService.updateOrderStatus(orderId, status).subscribe({
+      next: () => {
+        this.successMessage = 'Order status updated successfully';
+        this.loadAllOrders(); // Refresh order list
+        setTimeout(() => this.successMessage = '', 3000);
+      },
+      error: (error) => {
+        this.errorMessage = `Failed to update order status: ${error.message}`;
+        setTimeout(() => this.errorMessage = '', 3000);
+      }
+    });
+  }
+}
