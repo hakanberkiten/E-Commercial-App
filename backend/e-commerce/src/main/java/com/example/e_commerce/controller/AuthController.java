@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -67,30 +68,9 @@ public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest req) {
 public ResponseEntity<?> login(@Valid @RequestBody LoginRequest req) {
     try {
         User user = userRepository.findByEmail(req.getEmail())
-            .orElse(null);
-            
-        if (user == null) {
-            return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("message", "Invalid credentials"));
-        }
+            .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + req.getEmail()));
         
-        boolean passwordMatches;
-        
-        // Check if password is BCrypt encoded
-        if (user.getPassword().startsWith("$2a$") || user.getPassword().startsWith("$2b$") || user.getPassword().startsWith("$2y$")) {
-            // Password is BCrypt encoded, use matcher
-            passwordMatches = passwordEncoder.matches(req.getPassword(), user.getPassword());
-        } else {
-            // For non-BCrypt passwords, do direct comparison (temporary!)
-            passwordMatches = req.getPassword().equals(user.getPassword());
-            
-            // Optional: Update to BCrypt if plain text password matches
-            if (passwordMatches) {
-                user.setPassword(passwordEncoder.encode(req.getPassword()));
-                userRepository.save(user);
-            }
-        }
+        boolean passwordMatches = passwordEncoder.matches(req.getPassword(), user.getPassword());
         
         if (!passwordMatches) {
             return ResponseEntity
@@ -98,16 +78,23 @@ public ResponseEntity<?> login(@Valid @RequestBody LoginRequest req) {
                 .body(Map.of("message", "Invalid credentials"));
         }
         
-        // JWT token üret
+        // Check if user is active
+        if (!user.getActive()) {
+            return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("message", "Account is disabled"));
+        }
+        
+        // Generate JWT token with current role information
         String token = jwtUtils.generateToken(user.getEmail());
         
-        // Rest of your code remains the same...
         Map<String, Object> userResponse = new HashMap<>();
         userResponse.put("userId", user.getUserId());
         userResponse.put("firstName", user.getFirstName());
         userResponse.put("lastName", user.getLastName());
         userResponse.put("email", user.getEmail());
         userResponse.put("mobileNumber", user.getMobileNumber());
+        userResponse.put("active", user.getActive());
         
         Map<String, Object> roleMap = new HashMap<>();
         roleMap.put("roleId", user.getRole().getRoleId());
@@ -119,11 +106,14 @@ public ResponseEntity<?> login(@Valid @RequestBody LoginRequest req) {
         response.put("user", userResponse);
         
         return ResponseEntity.ok(response);
+    } catch (UsernameNotFoundException e) {
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(Map.of("message", "Invalid credentials"));
     } catch (Exception e) {
-        e.printStackTrace();
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(Map.of("message", "Error: " + e.getMessage()));
+            .body(Map.of("message", "Login failed: " + e.getMessage()));
     }
 }
 }

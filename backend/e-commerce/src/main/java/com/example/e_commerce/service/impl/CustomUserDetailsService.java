@@ -3,6 +3,9 @@ package com.example.e_commerce.service.impl;
 import com.example.e_commerce.entity.User;
 import com.example.e_commerce.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -16,6 +19,7 @@ import java.util.Collections;
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final Logger logger = LoggerFactory.getLogger(CustomUserDetailsService.class);
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -30,9 +34,22 @@ public class CustomUserDetailsService implements UserDetailsService {
             default: roleName = "ROLE_USER";
         }
         
+        // Add detailed logging
+        logger.info("User {} has role: {} (ID: {})", email, roleName, user.getRole().getRoleId());
+        
+        // Check if user is active
+        if (!user.getActive()) {
+            logger.warn("User {} is inactive, denying authentication", email);
+            throw new DisabledException("User account is disabled");
+        }
+        
         return new org.springframework.security.core.userdetails.User(
             user.getEmail(),
             user.getPassword(),
+            user.getActive(), // Account enabled/disabled
+            true, // accountNonExpired
+            true, // credentialsNonExpired
+            true, // accountNonLocked
             Collections.singletonList(new SimpleGrantedAuthority(roleName))
         );
     }

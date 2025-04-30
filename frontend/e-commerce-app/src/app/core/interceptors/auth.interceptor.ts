@@ -3,9 +3,10 @@ import {
     HttpRequest,
     HttpHandler,
     HttpEvent,
-    HttpInterceptor
+    HttpInterceptor,
+    HttpResponse
 } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
 import { AuthService } from '../services/auth.service';
 
@@ -30,6 +31,24 @@ export class AuthInterceptor implements HttpInterceptor {
             });
         }
 
-        return next.handle(request);
+        // Handle response and check for token invalidation
+        return next.handle(request).pipe(
+            tap(event => {
+                if (event instanceof HttpResponse) {
+                    if (event.headers.get('X-Token-Invalid') === 'true') {
+                        const reason = event.headers.get('X-Token-Invalid-Reason');
+
+                        if (reason === 'role-changed') {
+                            console.warn('Your role has changed. Please log in again for security reasons.');
+                            // Force logout and redirect to login
+                            if (isPlatformBrowser(this.platformId)) {
+                                this.authService.logout();
+                                alert('Your user role has been updated. Please log in again to continue.');
+                            }
+                        }
+                    }
+                }
+            })
+        );
     }
 }

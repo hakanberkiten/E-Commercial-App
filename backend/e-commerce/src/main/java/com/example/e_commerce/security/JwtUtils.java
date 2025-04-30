@@ -7,6 +7,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.security.Key;
 import java.util.Date;
@@ -20,22 +21,19 @@ public class JwtUtils {
     private final long validityMs = 3600_000; // 1 saat
     private final UserRepository userRepository;
 
-    public String generateToken(String username) {
-        // Kullanıcıyı veritabanından al
-        User user = userRepository.findByEmail(username)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // Claims (token içeriği) oluştur
+    public String generateToken(String email) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        
         Map<String, Object> claims = new HashMap<>();
-        claims.put("role", user.getRole().getRoleId());
         claims.put("userId", user.getUserId());
-
-        Date now = new Date();
+        claims.put("role", user.getRole().getRoleId());
+        
         return Jwts.builder()
             .setClaims(claims)
-            .setSubject(username)
-            .setIssuedAt(now)
-            .setExpiration(new Date(now.getTime() + validityMs))
+            .setSubject(email)
+            .setIssuedAt(new Date())
+            .setExpiration(new Date(System.currentTimeMillis() + validityMs))
             .signWith(key)
             .compact();
     }
@@ -45,7 +43,8 @@ public class JwtUtils {
     }
 
     public Integer getUserRole(String token) {
-        return getClaims(token).get("role", Integer.class);
+        Claims claims = getClaims(token);
+        return claims.get("role", Integer.class);
     }
 
     public Long getUserId(String token) {

@@ -6,76 +6,86 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import com.example.e_commerce.service.impl.CustomUserDetailsService;
+import com.example.e_commerce.repository.UserRepository;
+import com.example.e_commerce.entity.User;
 
 import java.io.IOException;
 
-/**
- * Bu filtre:
- * 1. Authorization header’daki "Bearer <token>" bilgisini okur.
- * 2. JwtUtils ile token’ın geçerli olup olmadığını kontrol eder.
- * 3. Geçerliyse token’dan çıkarılan username ile
- *    CustomUserDetailsService.loadUserByUsername(...) çağrılır.
- * 4. UserDetails’ı Spring Security context’e set eder.
- * 5. Sonra isteği devam ettirir.
- */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
-    private final CustomUserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
+    private final UserRepository userRepository;
+    private final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
 
     @Override
     protected void doFilterInternal(
-            HttpServletRequest  request,
+            HttpServletRequest request,
             HttpServletResponse response,
-            FilterChain         filterChain
+            FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // 1️⃣ Header’dan token’ı çek
         String authHeader = request.getHeader("Authorization");
-        String token      = null;
-        String username   = null;
+        String token = null;
+        String username = null;
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token    = authHeader.substring(7);       // “Bearer ” kısmını at
+            token = authHeader.substring(7);
             try {
-                username = jwtUtils.getUsername(token); // Token’dan subject (=email) al
+                username = jwtUtils.getUsername(token);
             } catch (JwtException ex) {
-                // Token geçersiz veya süresi dolmuş
                 logger.warn("JWT validation failed: " + ex.getMessage());
             }
         }
 
-        // 2️⃣ Eğer token geçerliyse ve henüz authenticate edilmediyse...
-        if (username != null &&
-            SecurityContextHolder.getContext().getAuthentication() == null &&
-            jwtUtils.validateToken(token)
-        ) {
-            // 3️⃣ Gerçek UserDetails’ı DB’den (veya cache’den) yükle
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            // Load user details from database
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-            // 4️⃣ Spring’e “bu istek, bu user tarafından geliyor” de
-            var authToken = new UsernamePasswordAuthenticationToken(
-                    userDetails,           // principal
-                    null,                  // credentials zaten token’la doğrulandı
-                    userDetails.getAuthorities()
-            );
-            authToken.setDetails(
-                new WebAuthenticationDetailsSource().buildDetails(request)
-            );
-
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+            
+            // Get token role ID and current role ID for comparison
+            Integer tokenRoleId = jwtUtils.getUserRole(token);
+            
+            // Load current user from database to get current role
+            User currentUser = userRepository.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            Integer currentRoleId = currentUser.getRole().getRoleId();
+            
+            // Log role comparison information
+            logger.info("User {} - Token role ID: {}, Current DB role ID: {}", 
+                    username, tokenRoleId, currentRoleId);
+            
+            // Check if roles match
+            boolean rolesMatch = tokenRoleId.equals(currentRoleId);
+            
+            // Only validate the token if the role hasn't changed
+            if (jwtUtils.validateToken(token) && rolesMatch) {
+                // Authenticate the user
+                var authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
+                
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            } else if (!rolesMatch) {
+                // If role is different, add header to signal token invalidation
+                logger.warn("User {} role changed from {} to {}, token invalidated", 
+                        username, tokenRoleId, currentRoleId);
+                response.setHeader("X-Token-Invalid", "true");
+                response.setHeader("X-Token-Invalid-Reason", "role-changed");
+            }
         }
 
-        // 5️⃣ İsteği zincirde devam ettir
         filterChain.doFilter(request, response);
     }
 }
