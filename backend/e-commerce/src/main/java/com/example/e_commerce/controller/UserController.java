@@ -55,140 +55,149 @@ public class UserController {
 
     // Mevcut UserController sınıfına ekleyin
 
-@GetMapping("/{userId}/addresses")
-public ResponseEntity<?> getUserAddresses(@PathVariable Long userId) {
-    try {
-        List<AddressDTO> addresses = userService.getUserAddresses(userId);
-        return ResponseEntity.ok(addresses);
-    } catch (Exception e) {
-        return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+    @GetMapping("/{userId}/addresses")
+    public ResponseEntity<?> getUserAddresses(@PathVariable Long userId) {
+        try {
+            List<AddressDTO> addresses = userService.getUserAddresses(userId);
+            return ResponseEntity.ok(addresses);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
-}
 
-@PutMapping("/{userId}/addresses/default")
-public ResponseEntity<?> setDefaultAddress(@PathVariable Long userId, @RequestBody Map<String, String> payload) {
-    try {
-        String addressId = payload.get("addressId");
-        if (addressId == null) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Address ID is required"));
+    @PutMapping("/{userId}/addresses/default")
+    public ResponseEntity<?> setDefaultAddress(@PathVariable Long userId, @RequestBody Map<String, String> payload) {
+        try {
+            String addressId = payload.get("addressId");
+            if (addressId == null) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Address ID is required"));
+            }
+            
+            userService.setDefaultAddress(userId, Long.valueOf(addressId));
+            return ResponseEntity.ok(Map.of("message", "Default address updated successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
-        
-        userService.setDefaultAddress(userId, Long.valueOf(addressId));
-        return ResponseEntity.ok(Map.of("message", "Default address updated successfully"));
-    } catch (Exception e) {
-        return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
     }
-}
 
-
-@PutMapping("/change-password")
-public ResponseEntity<?> changePassword(@RequestBody Map<String, String> passwordData) {
-    try {
-        Long userId = Long.valueOf(passwordData.get("userId"));
-        String currentPassword = passwordData.get("currentPassword");
-        String newPassword = passwordData.get("newPassword");
-        
-        User user = userService.getUserById(userId);
-        if (user == null) {
-            return ResponseEntity.badRequest().body(Map.of("message", "User not found"));
+    @PutMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> passwordData) {
+        try {
+            Long userId = Long.valueOf(passwordData.get("userId"));
+            String currentPassword = passwordData.get("currentPassword");
+            String newPassword = passwordData.get("newPassword");
+            
+            User user = userService.getUserById(userId);
+            if (user == null) {
+                return ResponseEntity.badRequest().body(Map.of("message", "User not found"));
+            }
+            
+            // Mevcut şifreyi kontrol et
+            boolean passwordMatches;
+            if (user.getPassword().startsWith("$2a$") || user.getPassword().startsWith("$2b$") || user.getPassword().startsWith("$2y$")) {
+                passwordMatches = passwordEncoder.matches(currentPassword, user.getPassword());
+            } else {
+                passwordMatches = currentPassword.equals(user.getPassword());
+            }
+            
+            if (!passwordMatches) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Current password is incorrect"));
+            }
+            
+            // Şifreyi güncelle
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userService.saveUser(user);
+            
+            return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
-        
-        // Mevcut şifreyi kontrol et
-        boolean passwordMatches;
-        if (user.getPassword().startsWith("$2a$") || user.getPassword().startsWith("$2b$") || user.getPassword().startsWith("$2y$")) {
-            passwordMatches = passwordEncoder.matches(currentPassword, user.getPassword());
-        } else {
-            passwordMatches = currentPassword.equals(user.getPassword());
-        }
-        
-        if (!passwordMatches) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Current password is incorrect"));
-        }
-        
-        // Şifreyi güncelle
-        user.setPassword(passwordEncoder.encode(newPassword));
-        userService.saveUser(user);
-        
-        return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
-    } catch (Exception e) {
-        return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
     }
-}
 
-@PutMapping("/{userId}/role")
-public ResponseEntity<?> updateUserRole(@PathVariable Long userId, @RequestBody Map<String, Integer> roleData) {
-    try {
-        Integer roleId = roleData.get("roleId");
-        if (roleId == null) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Role ID is required"));
+    @PutMapping("/{userId}/role")
+    public ResponseEntity<?> updateUserRole(@PathVariable Long userId, @RequestBody Map<String, Integer> roleData) {
+        try {
+            Integer roleId = roleData.get("roleId");
+            if (roleId == null) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Role ID is required"));
+            }
+            
+            User user = userService.getUserById(userId);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found"));
+            }
+            
+            Role role = roleRepository.findById(roleId)
+                    .orElseThrow(() -> new RuntimeException("Role not found with id: " + roleId));
+            
+            user.setRole(role);
+            userService.saveUser(user);
+            
+            return ResponseEntity.ok(Map.of("message", "User role updated successfully"));
+        } catch (Exception e) {
+            // Log the exception for server-side debugging
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Error updating user role: " + e.getMessage()));
         }
-        
-        User user = userService.getUserById(userId);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found"));
-        }
-        
-        Role role = roleRepository.findById(roleId)
-                .orElseThrow(() -> new RuntimeException("Role not found with id: " + roleId));
-        
-        user.setRole(role);
-        userService.saveUser(user);
-        
-        return ResponseEntity.ok(Map.of("message", "User role updated successfully"));
-    } catch (Exception e) {
-        // Log the exception for server-side debugging
-        e.printStackTrace();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "Error updating user role: " + e.getMessage()));
     }
-}
 
-@PatchMapping("/{userId}/status")
-public ResponseEntity<?> updateUserStatus(@PathVariable Long userId, @RequestBody Map<String, Boolean> statusData) {
-    try {
-        Boolean active = statusData.get("active");
-        if (active == null) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Active status is required"));
+    @PatchMapping("/{userId}/status")
+    public ResponseEntity<?> updateUserStatus(@PathVariable Long userId, @RequestBody Map<String, Boolean> statusData) {
+        try {
+            Boolean active = statusData.get("active");
+            if (active == null) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Active status is required"));
+            }
+            
+            User user = userService.getUserById(userId);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found"));
+            }
+            
+            // Add active field to your User entity if it doesn't exist
+            user.setActive(active);
+            userService.saveUser(user);
+            
+            return ResponseEntity.ok(Map.of("message", "User status updated successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Error updating user status: " + e.getMessage()));
         }
-        
-        User user = userService.getUserById(userId);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found"));
-        }
-        
-        // Add active field to your User entity if it doesn't exist
-        user.setActive(active);
-        userService.saveUser(user);
-        
-        return ResponseEntity.ok(Map.of("message", "User status updated successfully"));
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "Error updating user status: " + e.getMessage()));
     }
-}
 
-@PostMapping("/{userId}/reset-password")
-public ResponseEntity<?> resetUserPassword(@PathVariable Long userId) {
-    try {
-        User user = userService.getUserById(userId);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found"));
+    @PostMapping("/{userId}/reset-password")
+    public ResponseEntity<?> resetUserPassword(@PathVariable Long userId) {
+        try {
+            User user = userService.getUserById(userId);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found"));
+            }
+            
+            // Generate a random temporary password
+            String tempPassword = UUID.randomUUID().toString().substring(0, 8);
+            user.setPassword(passwordEncoder.encode(tempPassword));
+            userService.saveUser(user);
+            
+            // In a real application, you would send an email with the temporary password
+            // For now, we'll just return it in the response
+            return ResponseEntity.ok(Map.of(
+                "message", "Password reset successfully",
+                "temporaryPassword", tempPassword
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Error resetting password: " + e.getMessage()));
         }
-        
-        // Generate a random temporary password
-        String tempPassword = UUID.randomUUID().toString().substring(0, 8);
-        user.setPassword(passwordEncoder.encode(tempPassword));
-        userService.saveUser(user);
-        
-        // In a real application, you would send an email with the temporary password
-        // For now, we'll just return it in the response
-        return ResponseEntity.ok(Map.of(
-            "message", "Password reset successfully",
-            "temporaryPassword", tempPassword
-        ));
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "Error resetting password: " + e.getMessage()));
     }
-}
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long userId) {
+        try {
+            userService.deleteUserWithAllData(userId);
+            return ResponseEntity.ok(Map.of("message", "User and all associated data deleted successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
 }

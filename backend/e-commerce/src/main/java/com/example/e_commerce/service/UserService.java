@@ -14,5 +14,5 @@ public interface UserService {
     List<AddressDTO> getUserAddresses(Long userId);
     void setDefaultAddress(Long userId, Long addressId);
     Optional<User> findByEmail(String email);
-
+    void deleteUserWithAllData(Long userId);
 }

@@ -154,15 +154,15 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   deleteUser(userId: number): void {
-    if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+    if (confirm('WARNING: This will permanently delete this user and ALL associated data including:\n\n- Orders\n- Reviews\n- Shopping Cart\n- Addresses\n- Payment Methods\n- All other user data\n\nThis action CANNOT be undone. Are you sure?')) {
       this.http.delete(`/api/users/${userId}`).subscribe({
         next: () => {
-          this.successMessage = 'User deleted successfully';
+          this.successMessage = 'User and all associated data deleted successfully';
           this.loadAllUsers(); // Refresh user list
           setTimeout(() => this.successMessage = '', 3000);
         },
         error: (error) => {
-          this.errorMessage = `Failed to delete user: ${error.message}`;
+          this.errorMessage = `Failed to delete user: ${error.message || 'Unknown error'}`;
           setTimeout(() => this.errorMessage = '', 3000);
         }
       });

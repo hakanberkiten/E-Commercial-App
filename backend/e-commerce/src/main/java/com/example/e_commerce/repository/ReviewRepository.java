@@ -4,6 +4,7 @@ package com.example.e_commerce.repository;
 import java.util.List;
 
 import com.example.e_commerce.entity.Review;
+import com.example.e_commerce.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,4 +22,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Integer countReviewsByProduct(@Param("productId") Long productId);
     
     boolean existsByUserUserIdAndProductProductId(Long userId, Long productId);
+
+    void deleteAllByUser(User user);
 }
