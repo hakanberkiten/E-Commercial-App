@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { CategoryService } from '../../services/category.service';
+import { Category } from '../../../shared/models/category.model';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ProductService } from '../../../core/services/product.service';
 import { OrderService } from '../../../core/services/order.service';
@@ -17,7 +19,13 @@ export class SellerDashboardComponent implements OnInit {
   productForm: FormGroup;
   isEditing = false;
 
+  categories: Category[] = [];
+  selectedCategoryId: number | null = null;
+  isLoading = false;
+  error: string | null = null;
+
   constructor(
+    private categoryService: CategoryService,
     private productService: ProductService,
     private orderService: OrderService,
     private authService: AuthService,
@@ -35,8 +43,31 @@ export class SellerDashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadCategories();
     this.loadSellerProducts();
     this.loadSellerOrders();
+  }
+
+  loadCategories(): void {
+    this.isLoading = true;
+    this.error = null;
+
+    this.categoryService.getAll().subscribe({
+      next: (categories) => {
+        this.categories = categories;
+        this.isLoading = false;
+        console.log('Categories loaded:', this.categories);
+      },
+      error: (err) => {
+        this.error = 'Failed to load categories. Please try again.';
+        this.isLoading = false;
+        console.error('Error loading categories:', err);
+      }
+    });
+  }
+
+  onCategoryChange(categoryId: string): void {
+    this.selectedCategoryId = categoryId ? parseInt(categoryId, 10) : null;
   }
 
   loadSellerProducts() {

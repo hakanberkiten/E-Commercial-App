@@ -1,47 +1,68 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, switchMap } from 'rxjs';
+import { BehaviorSubject, Observable, switchMap, tap } from 'rxjs';
 import { CartItem } from '../../shared/models/cartitem.model';
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
-  constructor(private http: HttpClient) { }
+  // Add a BehaviorSubject to track cart items count
+  private cartItemCountSubject = new BehaviorSubject<number>(0);
+  // Expose it as an observable for components to subscribe to
+  public cartItemCount$ = this.cartItemCountSubject.asObservable();
+
+  constructor(private http: HttpClient) {
+    // Initial load of cart count
+    this.refreshCartCount();
+  }
+
+  // Method to refresh the cart count
+  private refreshCartCount(): void {
+    this.list().subscribe(items => {
+      // Count unique products
+      const distinctProductIds = new Set();
+      items.forEach(item => {
+        distinctProductIds.add(item.product.productId);
+      });
+      this.cartItemCountSubject.next(distinctProductIds.size);
+    });
+  }
+
   list(): Observable<CartItem[]> {
     return this.http.get<CartItem[]>('/api/cart');
   }
+
   add(productId: number, quantity: number): Observable<CartItem> {
-    // First check if product already exists in cart
     return this.list().pipe(
       switchMap(items => {
-        // Find if product already exists in cart
         const existingItem = items.find(item => item.product.productId === productId);
 
         if (existingItem) {
-          // If exists, update quantity instead of adding new item
           return this.update(existingItem.cartItemId, existingItem.quantityInCart + quantity);
         } else {
-          // If doesn't exist, add new item
-          return this.http.post<CartItem>('/api/cart/items', { productId, quantity });
+          return this.http.post<CartItem>('/api/cart/items', { productId, quantity })
+            .pipe(
+              tap(() => this.refreshCartCount()) // Update count after adding
+            );
         }
       })
     );
   }
-  remove(itemId: number) {
-    return this.http.delete(`/api/cart/items/${itemId}`);
+
+  remove(itemId: number): Observable<any> {
+    return this.http.delete(`/api/cart/items/${itemId}`)
+      .pipe(
+        tap(() => this.refreshCartCount()) // Update count after removing
+      );
   }
-  update(itemId: number, quantity: number) {
-    return this.http.put<CartItem>(`/api/cart/items/${itemId}`, null, { params: { quantity } });
+
+  update(itemId: number, quantity: number): Observable<CartItem> {
+    return this.http.put<CartItem>(`/api/cart/items/${itemId}`, null, { params: { quantity } })
+      .pipe(
+        tap(() => this.refreshCartCount()) // Update count after updating
+      );
   }
 
   getCartItemCount(): Observable<number> {
-    return this.list().pipe(
-      switchMap(items => {
-        const totalCount = items.reduce((count, item) => count + item.quantityInCart, 0);
-        return new Observable<number>(observer => {
-          observer.next(totalCount);
-          observer.complete();
-        });
-      })
-    );
+    return this.cartItemCount$;
   }
 }

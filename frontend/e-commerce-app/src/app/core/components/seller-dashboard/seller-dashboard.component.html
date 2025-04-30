@@ -152,20 +152,35 @@
                             <input type="text" class="form-control" formControlName="imageUrl">
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Category</label>
-                            <select class="form-select" formControlName="category">
-                                <option value="">Select Category</option>
-                                <!-- Ideally, these would be loaded from backend -->
-                                <option value="1">Electronics</option>
-                                <option value="2">Clothing</option>
-                                <option value="3">Home & Kitchen</option>
-                                <option value="4">Books</option>
-                            </select>
-                            <div *ngIf="productForm.controls['category'].invalid && productForm.controls['category'].touched"
-                                class="text-danger">
-                                Category is required
+                        <!-- Category selection section -->
+                        <div class="form-group mb-3">
+                            <label for="categorySelect" class="form-label">Product Category</label>
+
+                            <!-- Loading indicator -->
+                            <div *ngIf="isLoading" class="d-flex align-items-center">
+                                <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <span>Loading categories...</span>
                             </div>
+
+                            <!-- Error message -->
+                            <div *ngIf="error" class="alert alert-danger">
+                                {{ error }}
+                                <button class="btn btn-sm btn-outline-danger ms-2"
+                                    (click)="loadCategories()">Retry</button>
+                            </div>
+
+                            <!-- Category dropdown - using formControlName instead of ngModel -->
+                            <select id="categorySelect" class="form-select" formControlName="category"
+                                [disabled]="isLoading">
+                                <option [ngValue]="null">Select a category</option>
+                                <option *ngFor="let category of categories" [ngValue]="category.categoryId">
+                                    {{ category.categoryName }}
+                                </option>
+                            </select>
+
+                            <div class="form-text">Select the appropriate category for your product</div>
                         </div>
 
                         <div class="d-grid gap-2">

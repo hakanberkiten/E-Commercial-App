@@ -25,22 +25,23 @@
             </ol>
         </nav>
 
-        <div class="row">
+        <div class="row g-4">
             <!-- Product image -->
-            <div class="col-md-5 mb-4">
-                <div class="card border-0">
-                    <img [src]="product.image || 'assets/images/product-placeholder.png'" class="card-img-top"
+            <div class="col-md-5">
+                <div class="card border-0 shadow-sm">
+                    <img [src]="product.image || 'assets/images/product-placeholder.png'" class="card-img-top rounded"
                         [alt]="product.productName">
                 </div>
             </div>
 
-            <!-- Product info bölümüne ürün puanı ekleyelim -->
+            <!-- Product info -->
             <div class="col-md-7">
-                <h2 class="mb-3">{{ product.productName }}</h2>
+                <div class="card border-0 shadow-sm p-4">
+                    <h2 class="mb-3">{{ product.productName }}</h2>
 
-                <!-- Ürün puanı -->
-                <div class="mb-3 d-flex align-items-center">
-                    <div class="rating-stars me-2">
+                    <!-- Product rating -->
+                    <div class="mb-3 d-flex align-items-center">
+                        <div class="rating-stars me-2"></div>
                         <span *ngFor="let star of [1,2,3,4,5]">
                             <i class="bi"
                                 [ngClass]="star <= (+product.productRate || 0) ? 'bi-star-fill text-warning' : (star <= roundHalf(+product.productRate || 0) ? 'bi-star-half text-warning' : 'bi-star text-muted')"></i>
@@ -48,8 +49,7 @@
                     </div>
                     <div>
                         <span class="text-muted">{{ (+product.productRate || 0) | number:'1.1-1' }} ({{
-                            product.reviewCount || 0 }}
-                            reviews)</span>
+                            product.reviewCount || 0 }} reviews)</span>
                     </div>
                 </div>
 
@@ -83,20 +83,48 @@
                     </div>
                 </div>
 
+                <!-- Product Information Section -->
                 <div class="mb-4">
-                    <h5>Product Information</h5>
-                    <table class="table table-sm">
-                        <tbody>
-                            <tr>
-                                <th style="width: 30%">Category</th>
-                                <td>{{ product.category?.categoryName || 'N/A' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Seller</th>
-                                <td>{{ product.seller?.username || 'N/A' }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <h5 class="border-bottom pb-2 mb-3">Product Information</h5>
+                    <div class="card border-0 bg-light mb-4 rounded-3">
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold text-muted">
+                                    <i class="bi bi-tag me-2"></i>Category:
+                                </div>
+                                <div class="col-md-8">
+                                    {{ product.category?.categoryName || 'N/A' }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seller Information Section -->
+                <div class="mb-4">
+                    <h5 class="border-bottom pb-2 mb-3">Seller Information</h5>
+                    <div class="card border-0 bg-light rounded-3">
+                        <div class="card-body">
+                            <div *ngIf="product.seller">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="avatar-circle bg-primary text-white me-3"
+                                        style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                                        {{ product.seller.firstName?.charAt(0)?.toUpperCase() || 'S' }}
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1 fw-bold">{{ product.seller.firstName }} {{
+                                            product.seller.lastName }}</h6>
+                                        <p class="mb-0 text-muted small" *ngIf="product.seller.email">
+                                            <i class="bi bi-envelope me-2"></i>{{ product.seller.email }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="!product.seller" class="text-center py-3 text-muted">
+                                <i class="bi bi-person-x me-2"></i>Seller information not available
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

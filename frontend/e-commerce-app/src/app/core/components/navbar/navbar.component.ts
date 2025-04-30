@@ -1,6 +1,7 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { AuthService, User } from '../../services/auth.service';
 import { ProductService } from '../../services/product.service';
+import { CartService } from '../../services/cart.service';
 import { Router } from '@angular/router';
 import { debounceTime, Subject } from 'rxjs';
 
@@ -24,21 +25,32 @@ export class NavbarComponent implements OnInit {
   showSearchResults: boolean = false;
   private searchSubject = new Subject<string>();
   searchLoading: boolean = false;
+  cartItemCount: number = 0; // Add this property
 
   constructor(
     private auth: AuthService,
     private productService: ProductService,
     private router: Router,
+    private cartService: CartService // Add CartService
   ) { }
 
   ngOnInit(): void {
     this.auth.currentUser$.subscribe(user => {
       this.currentUser = user;
+
+      // Use the observable for cart count
+      if (user) {
+        this.cartService.cartItemCount$.subscribe(count => {
+          this.cartItemCount = count;
+        });
+      } else {
+        this.cartItemCount = 0;
+      }
     });
 
-    // Arama için debounce zamanlaması
+    // Existing search code...
     this.searchSubject.pipe(
-      debounceTime(300) // 300ms bekle
+      debounceTime(300)
     ).subscribe(query => {
       this.performSearch(query);
     });

@@ -25,6 +25,11 @@ export class CustomerComponent implements OnInit {
   maxPrice: number = 10000; // M
   sortOption: string = 'default'; // Add this property to your class
 
+  // Add these properties to your class
+  currentPage: number = 1;
+  pageSize: number = 9;
+  totalPages: number = 1;
+
   constructor(
     private catSvc: CategoryService,
     private prodSvc: ProductService,
@@ -51,14 +56,23 @@ export class CustomerComponent implements OnInit {
 
     // Load products based on selected category
     this.prodSvc.getByCategory(this.selectedCat).subscribe({
-      next: (prods) => this.products = prods,
+      next: (prods) => {
+        this.products = prods;
+        this.totalPages = Math.ceil(this.products.length / this.pageSize);
+        this.currentPage = 1;
+      },
       error: (e) => this.error = e.message
     });
   }
 
-  onCategoryChange(id: string) {
-    this.selectedCat = id ? +id : null;
-    this.load();
+  onCategoryChange(categoryId: string) {
+    console.log('Category changed to:', categoryId);
+
+    // Parse the category ID (or set to null if empty)
+    this.selectedCat = categoryId ? parseInt(categoryId, 10) : null;
+
+    // Always use applySortAndFilters to ensure sort option is included
+    this.applySortAndFilters();
   }
   goToProductDetail(productId: number): void {
     this.router.navigate(['/products', productId]);
@@ -80,27 +94,48 @@ export class CustomerComponent implements OnInit {
       });
   }
 
-  // Update the applyFilters method to include sorting
-  applyFilters() {
+  // Add this method to ensure filters are properly synchronized
+  applySortAndFilters() {
+    // Log current filter state for debugging
+    console.log('Applying filters with:', {
+      category: this.selectedCat,
+      minPrice: this.minPrice,
+      maxPrice: this.maxPrice,
+      sortOption: this.sortOption
+    });
+
     this.loading = true;
     this.error = '';
 
+    // Use the current category ID even if it's null
+    const categoryId = this.selectedCat;
+
     this.prodSvc.getFilteredProducts(
-      this.selectedCat,
+      categoryId,
       this.minPrice,
       this.maxPrice,
       this.sortOption
     ).subscribe({
       next: (products) => {
         this.products = products;
+        this.totalPages = Math.ceil(this.products.length / this.pageSize);
+        this.currentPage = 1; // Reset to first page when filters change
         this.loading = false;
       },
       error: (err) => {
         console.error('Error loading filtered products:', err);
         this.error = 'Failed to load products. Please try again.';
         this.loading = false;
+      },
+      complete: () => {
+        this.loading = false;
       }
     });
+  }
+
+  // Replace your current applyFilters with this
+  applyFilters() {
+    this.applySortAndFilters();
   }
 
   loadCartCount() {
@@ -121,5 +156,29 @@ export class CustomerComponent implements OnInit {
   // Yarım yıldız hesaplama
   roundHalf(value: number): number {
     return Math.ceil(value * 2) / 2;
+  }
+  get paginatedProducts(): Product[] {
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    return this.products.slice(startIndex, endIndex);
+  }
+  // Add these pagination methods
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      window.scrollTo(0, 0); // Scroll to top when changing pages
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.goToPage(this.currentPage + 1);
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 1) {
+      this.goToPage(this.currentPage - 1);
+    }
   }
 }

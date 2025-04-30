@@ -55,6 +55,8 @@ export class ProductService {
     params = params.set('maxPrice', maxPrice.toString());
     params = params.set('sortBy', sortBy);
 
+    console.log('Sending params to API:', params.toString());
+
     return this.http.get<Product[]>('/api/products/filter', { params });
   }
 
