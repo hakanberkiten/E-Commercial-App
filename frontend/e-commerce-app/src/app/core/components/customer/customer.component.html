@@ -147,10 +147,12 @@
                 <div *ngIf="products.length > 0" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                     <!-- Loop through paginatedProducts instead of products -->
                     <div class="col" *ngFor="let product of paginatedProducts">
-                        <!-- Your existing product card code here -->
+                        <!-- Add (click) event to make the entire card clickable -->
                         <div class="card h-100 shadow-sm border-0 rounded-4">
                             <div class="product-image-wrapper bg-white border-bottom">
-                                <img style="width: 100%; height: 200px; object-fit: contain;"
+                                <img
+                                (click)="navigateToProductDetail(product.productId)"
+                                style="width: 100%; height: 200px; object-fit: contain; cursor: pointer;"
                                     [src]="product.image || 'assets/images/product-placeholder.jpg'"
                                     class="card-img-top product-image" [alt]="product.productName"
                                     onerror="this.src='assets/images/product-placeholder.jpg'">

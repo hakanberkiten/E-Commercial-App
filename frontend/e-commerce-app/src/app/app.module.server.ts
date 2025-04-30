@@ -4,9 +4,14 @@ import { provideServerRouting } from '@angular/ssr';
 import { AppComponent } from './app.component';
 import { AppModule } from './app.module';
 import { serverRoutes } from './app.routes.server';
+import { FlexLayoutServerModule } from '@angular/flex-layout/server';
 
 @NgModule({
-  imports: [AppModule, ServerModule],//app module sildik ilerde hata cikabilir buraya bak
+  imports: [
+    AppModule,
+    ServerModule,
+    FlexLayoutServerModule
+  ],
   providers: [provideServerRouting(serverRoutes)],
   bootstrap: [AppComponent],
 })

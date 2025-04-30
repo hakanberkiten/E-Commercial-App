@@ -1,19 +1,22 @@
-// Create or update your error interceptor to handle backend errors
 import { Injectable } from '@angular/core';
 import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { isPlatformBrowser } from '@angular/common';
+import { Inject, PLATFORM_ID } from '@angular/core';
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
-  
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
         let errorMessage = 'Unknown error occurred';
-        
-        if (error.error instanceof ErrorEvent) {
-          // Client-side error
+
+        if (isPlatformBrowser(this.platformId) && error.error instanceof ErrorEvent) {
+          // Client-side error (browser only)
           errorMessage = `Error: ${error.error.message}`;
         } else {
           // Server-side error
@@ -22,8 +25,7 @@ export class ErrorInterceptor implements HttpInterceptor {
           } else {
             errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
           }
-          
-          // Log more detailed error info for debugging
+
           console.error('Backend error:', {
             status: error.status,
             url: error.url,
@@ -31,7 +33,7 @@ export class ErrorInterceptor implements HttpInterceptor {
             error: error.error
           });
         }
-        
+
         return throwError(() => new Error(errorMessage));
       })
     );

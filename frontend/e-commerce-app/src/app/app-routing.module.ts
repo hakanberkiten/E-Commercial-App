@@ -4,7 +4,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './auth/login/login.component';
 import { SignupComponent } from './auth/signup/signup.component';
 import { ProductListComponent } from './features/products/product-list/product-list.component';
-import { CustomerComponent } from './customer/customer.component';
+import { CustomerComponent } from './core/components/customer/customer.component';
 import { CartPageComponent } from './cart-page/cart-page.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { ProfileComponent } from './core/components/profile/profile.component';

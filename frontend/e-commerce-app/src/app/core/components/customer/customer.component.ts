@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { CategoryService } from '../core/services/category.service';
-import { ProductService } from '../core/services/product.service';
-import { CartService } from '../core/services/cart.service';
-import { Category } from '../shared/models/category.model';
-import { Product } from '../shared/models/product.model';
-import { AuthService, User } from '../core/services/auth.service';
+import { CategoryService } from '../../services/category.service';
+import { ProductService } from '../../services/product.service';
+import { CartService } from '../../services/cart.service';
+import { Category } from '../../../shared/models/category.model';
+import { Product } from '../../../shared/models/product.model';
+import { AuthService, User } from '../../services/auth.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -92,6 +92,11 @@ export class CustomerComponent implements OnInit {
         },
         error: e => this.error = e.message
       });
+  }
+
+  // Add this method
+  navigateToProductDetail(productId: number): void {
+    this.router.navigate(['/products', productId]);
   }
 
   // Add this method to ensure filters are properly synchronized

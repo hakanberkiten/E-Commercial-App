@@ -148,6 +148,11 @@ export class SellerDashboardComponent implements OnInit {
       return;
     }
 
+    // Get the image URL from form or use default if empty
+    const imageUrl = this.productForm.value.imageUrl?.trim()
+      ? this.productForm.value.imageUrl
+      : 'https://i.imgur.com/xzEfMjC.png';
+
     // Map form values to backend model property names
     const productData = {
       productId: this.productForm.value.id,
@@ -155,7 +160,7 @@ export class SellerDashboardComponent implements OnInit {
       description: this.productForm.value.description,
       price: this.productForm.value.price,
       quantityInStock: this.productForm.value.stockQuantity,
-      image: this.productForm.value.imageUrl,
+      image: imageUrl,
       category: { categoryId: this.productForm.value.category },
       seller: {
         userId: sellerId,
