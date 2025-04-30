@@ -13,6 +13,7 @@ import java.net.URI;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin("http://localhost:4200")
@@ -78,11 +79,17 @@ public class ProductController {
     @GetMapping("/filter")
     public List<Product> filterProducts(
             @RequestParam(required = false) Long categoryId,
-            @RequestParam(required = false, defaultValue = "0.0") Double minPrice, 
-            @RequestParam(required = false, defaultValue = "999999.99") Double maxPrice,
-            @RequestParam(required = false, defaultValue = "default") String sortBy) {
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) Boolean inStock) {
         
-        return productService.getFilteredAndSortedProducts(categoryId, minPrice, maxPrice, sortBy);
+        List<Product> products = productService.filterProducts(categoryId, minPrice, maxPrice, sortBy, inStock);
+        
+        // Filter out products from inactive sellers
+        return products.stream()
+                .filter(product -> product.getSeller() == null || product.getSeller().getActive())
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/seller/{sellerId}")

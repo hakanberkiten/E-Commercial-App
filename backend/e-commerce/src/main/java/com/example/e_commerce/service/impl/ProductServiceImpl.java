@@ -12,9 +12,13 @@ import com.example.e_commerce.service.ProductService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,11 +30,14 @@ public class ProductServiceImpl implements ProductService {
     
     @Override
     public List<Product> searchProducts(String query) {
-        if (query == null || query.trim().isEmpty()) {
-            return getAllProducts();
-        }
-        return productRepository.searchProducts(query);
+        List<Product> products = productRepository.searchProducts(query);
+        
+        return products.stream()
+                .filter(product -> product.getSeller() == null || product.getSeller().getActive())
+                .collect(Collectors.toList());
     }
+
+    
     
     @Override
     public Product saveProduct(Product product) {
@@ -51,13 +58,29 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<Product> getAllProducts() {
-        return productRepository.findAll();
+        List<Product> products = productRepository.findAll();
+        
+        // Filter out products from inactive sellers
+        return products.stream()
+                .filter(product -> product.getSeller() == null || product.getSeller().getActive())
+                .collect(Collectors.toList());
     }
 
     @Override
     public Product getProductById(Long id) {
-        return productRepository.findById(id)
+        Product product = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + id));
+        
+        // Don't return products from inactive sellers (except for admins)
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                
+        if (!isAdmin && product.getSeller() != null && !product.getSeller().getActive()) {
+            throw new EntityNotFoundException("Product not found or unavailable");
+        }
+        
+        return product;
     }
     
     @Override
@@ -106,7 +129,11 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<Product> getByCategory(Long categoryId) {
-        return productRepository.findByCategoryCategoryId(categoryId);
+        List<Product> products = productRepository.findByCategoryCategoryId(categoryId);
+        
+        return products.stream()
+                .filter(product -> product.getSeller() == null || product.getSeller().getActive())
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -150,5 +177,68 @@ public class ProductServiceImpl implements ProductService {
                     return getByCategoryAndPriceRange(categoryId, minPrice, maxPrice);
             }
         }
+    }
+
+    @Override
+    public List<Product> filterProducts(Long categoryId, Double minPrice, Double maxPrice, String sortBy, Boolean inStock) {
+        // Start with all products
+        List<Product> products = productRepository.findAll();
+        
+        // Filter by category if specified
+        if (categoryId != null) {
+            products = products.stream()
+                    .filter(product -> product.getCategory() != null && 
+                           product.getCategory().getCategoryId().equals(categoryId))
+                    .collect(Collectors.toList());
+        }
+        
+        // Filter by min price if specified
+        if (minPrice != null) {
+            products = products.stream()
+                    .filter(product -> product.getPrice() >= minPrice)
+                    .collect(Collectors.toList());
+        }
+        
+        // Filter by max price if specified
+        if (maxPrice != null) {
+            products = products.stream()
+                    .filter(product -> product.getPrice() <= maxPrice)
+                    .collect(Collectors.toList());
+        }
+        
+        // Filter by stock availability if specified
+        if (inStock != null && inStock) {
+            products = products.stream()
+                    .filter(product -> product.getQuantityInStock() > 0)
+                    .collect(Collectors.toList());
+        }
+        
+        // Sort products if specified
+        if (sortBy != null) {
+            switch (sortBy.toLowerCase()) {
+                case "price_asc":
+                    products.sort(Comparator.comparing(Product::getPrice));
+                    break;
+                case "price_desc":
+                    products.sort(Comparator.comparing(Product::getPrice).reversed());
+                    break;
+                case "name_asc":
+                    products.sort(Comparator.comparing(Product::getProductName));
+                    break;
+                case "name_desc":
+                    products.sort(Comparator.comparing(Product::getProductName).reversed());
+                    break;
+                default:
+                    // Default sorting, do nothing
+                    break;
+            }
+        }
+        
+        // Filter inactive sellers as part of our new requirement
+        products = products.stream()
+                .filter(product -> product.getSeller() == null || product.getSeller().getActive())
+                .collect(Collectors.toList());
+        
+        return products;
     }
 }

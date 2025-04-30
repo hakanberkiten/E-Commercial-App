@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -80,18 +81,39 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public List<Review> getReviewsByProduct(Long productId) {
-        return reviewRepository.findByProductProductId(productId);
+        List<Review> reviews = reviewRepository.findByProductProductId(productId);
+        
+        // Filter out reviews from inactive users
+        return reviews.stream()
+                .filter(review -> review.getUser() == null || review.getUser().getActive())
+                .collect(Collectors.toList());
     }
 
     @Override
     public Double calculateAverageRating(Long productId) {
-        Double average = reviewRepository.calculateAverageRating(productId);
-        return average != null ? average : 0.0;
+        // Get reviews only from active users
+        List<Review> activeReviews = reviewRepository.findByProductProductId(productId).stream()
+                .filter(review -> review.getUser() == null || review.getUser().getActive())
+                .collect(Collectors.toList());
+        
+        if (activeReviews.isEmpty()) {
+            return 0.0;
+        }
+        
+        double sum = activeReviews.stream()
+                .mapToDouble(Review::getReviewPoint)
+                .sum();
+        
+        return sum / activeReviews.size();
     }
 
     @Override
     public Integer countReviewsByProduct(Long productId) {
-        return reviewRepository.countReviewsByProduct(productId);
+        List<Review> activeReviews = reviewRepository.findByProductProductId(productId).stream()
+                .filter(review -> review.getUser() == null || review.getUser().getActive())
+                .collect(Collectors.toList());
+        
+        return activeReviews.size();
     }
 
     @Override
