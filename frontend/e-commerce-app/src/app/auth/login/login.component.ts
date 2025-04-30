@@ -24,6 +24,12 @@ export class LoginComponent implements OnInit {
   }
 
   onSubmit(): void {
+    this.errorMsg = '';
+
+    if (this.loginForm.invalid) {
+      return;
+    }
+
     this.authService.login(this.loginForm.value).subscribe({
       next: (response) => {
         const role = response.user.role.roleName;
@@ -37,7 +43,17 @@ export class LoginComponent implements OnInit {
         }
       },
       error: (error) => {
-        this.errorMsg = error.error.message || 'Invalid credentials';
+        console.log('Login error:', error);
+
+        // Check different possible patterns for deactivated message
+        if (error.error?.message?.includes('deactivated') ||
+          error.error?.message?.includes('suspended') ||
+          error.error?.error?.includes('deactivated') ||
+          error.status === 401 && error.error?.message?.includes('Account')) {
+          this.errorMsg = '⚠️ Your account has been suspended. Please contact an administrator.';
+        } else {
+          this.errorMsg = error.error?.message || error.message || 'Invalid credentials';
+        }
       }
     });
   }

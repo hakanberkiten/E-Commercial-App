@@ -37,7 +37,11 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**", "/api/reviews/**").permitAll()
 
                 // Admin endpoints
-                .requestMatchers("/api/users/**").hasAuthority("ROLE_ADMIN") // User management
+                .requestMatchers(HttpMethod.GET, "/api/users/**").hasAuthority("ROLE_ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/users/**").hasAuthority("ROLE_ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/users/**").hasAuthority("ROLE_ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasAuthority("ROLE_ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/users/**").hasAuthority("ROLE_ADMIN") // Add this line
                 .requestMatchers("/api/roles/**").hasAuthority("ROLE_ADMIN")   // Role management
                 .requestMatchers(HttpMethod.GET, "/api/orders/all").hasAuthority("ROLE_ADMIN") 
                 .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAuthority("ROLE_ADMIN") // Admin can delete any product

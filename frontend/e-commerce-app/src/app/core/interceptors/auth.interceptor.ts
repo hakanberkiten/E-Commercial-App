@@ -4,9 +4,10 @@ import {
     HttpHandler,
     HttpEvent,
     HttpInterceptor,
-    HttpResponse
+    HttpResponse,
+    HttpErrorResponse
 } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, throwError, catchError } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
 import { AuthService } from '../services/auth.service';
 
@@ -48,6 +49,23 @@ export class AuthInterceptor implements HttpInterceptor {
                         }
                     }
                 }
+            }),
+            catchError((error: HttpErrorResponse) => {
+                if (error.status === 401) {
+                    // Handle unauthorized error
+                    if (error.error?.message === 'Account has been deactivated') {
+                        if (isPlatformBrowser(this.platformId)) {
+                            this.authService.logout();
+                            alert('Your account has been deactivated. Please contact an administrator.');
+                        }
+                    } else if (error.error?.message === 'User role has changed') {
+                        if (isPlatformBrowser(this.platformId)) {
+                            this.authService.logout();
+                            alert('Your user role has been updated. Please log in again to continue.');
+                        }
+                    }
+                }
+                return throwError(() => error);
             })
         );
     }

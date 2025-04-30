@@ -134,13 +134,19 @@ export class AdminDashboardComponent implements OnInit {
 
   toggleUserStatus(user: User): void {
     const newStatus = !user.active;
+
+    // For debugging, log the request details
+    console.log(`Toggling user ${user.userId} to ${newStatus ? 'active' : 'inactive'}`);
+
     this.http.patch(`/api/users/${user.userId}/status`, { active: newStatus }).subscribe({
-      next: () => {
+      next: (response) => {
+        console.log('Toggle status response:', response);
         this.successMessage = `User ${newStatus ? 'activated' : 'deactivated'} successfully`;
         this.loadAllUsers(); // Refresh user list
         setTimeout(() => this.successMessage = '', 3000);
       },
       error: (error) => {
+        console.error('Toggle status error:', error);
         this.errorMessage = `Failed to update user status: ${error.message}`;
         setTimeout(() => this.errorMessage = '', 3000);
       }

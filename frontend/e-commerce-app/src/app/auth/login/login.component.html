@@ -39,7 +39,11 @@
                             </div>
 
                             <!-- global error -->
-                            <div *ngIf="errorMsg" class="alert alert-danger">
+                            <!-- global error -->
+                            <div *ngIf="errorMsg" class="alert"
+                                [ngClass]="{'alert-danger': !errorMsg.includes('suspended'), 'alert-warning': errorMsg.includes('suspended')}">
+                                <i *ngIf="errorMsg.includes('suspended')"
+                                    class="bi bi-exclamation-triangle-fill me-2"></i>
                                 {{ errorMsg }}
                             </div>
 

@@ -70,19 +70,19 @@ public ResponseEntity<?> login(@Valid @RequestBody LoginRequest req) {
         User user = userRepository.findByEmail(req.getEmail())
             .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + req.getEmail()));
         
+        // Check if user is active BEFORE checking password
+        if (!user.getActive()) {
+            return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("message", "Your account has been deactivated. Please contact an administrator."));
+        }
+        
         boolean passwordMatches = passwordEncoder.matches(req.getPassword(), user.getPassword());
         
         if (!passwordMatches) {
             return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("message", "Invalid credentials"));
-        }
-        
-        // Check if user is active
-        if (!user.getActive()) {
-            return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("message", "Account is disabled"));
         }
         
         // Generate JWT token with current role information
