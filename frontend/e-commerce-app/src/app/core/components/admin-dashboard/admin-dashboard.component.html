@@ -57,11 +57,11 @@
                         <button (click)="setUserRole(user, roleIds.CUSTOMER)" class="btn-small">Set Customer</button>
                         <button (click)="setUserRole(user, roleIds.SELLER)" class="btn-small">Set Seller</button>
                         <button (click)="setUserRole(user, roleIds.ADMIN)" class="btn-small">Set Admin</button>
-                        <button (click)="toggleUserStatus(user)" class="btn-small">
+                        <button (click)="resetUserPassword(user.userId)" class="btn-small">Reset Password</button>
+                        <button (click)="toggleUserStatus(user)" class="btn-small"
+                            [style.background-color]="user.active ? '#dc3545' : '#28a745'" [style.color]="'white'">
                             {{ user.active ? 'Deactivate' : 'Activate' }}
                         </button>
-                        <button (click)="resetUserPassword(user.userId)" class="btn-small">Reset Password</button>
-                        <button (click)="deleteUser(user.userId)" class="btn-small btn-danger">Delete</button>
                     </td>
                 </tr>
             </tbody>
