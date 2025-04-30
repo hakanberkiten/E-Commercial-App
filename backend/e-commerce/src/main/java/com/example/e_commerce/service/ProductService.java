@@ -17,4 +17,5 @@ public interface ProductService {
     List<Product> getProductsBySellerId(Long sellerId);
     Product createProduct(Product product);
     Product updateProduct(Product product);
+    List<Product> getFilteredAndSortedProducts(Long categoryId, Double minPrice, Double maxPrice, String sortBy);
 }

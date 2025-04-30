@@ -45,6 +45,25 @@
                     </div>
                 </div>
 
+                <div class="card shadow-sm border-0 rounded-4 mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Sort Products</h5>
+                        <div class="mb-3">
+                            <label for="sortOption" class="form-label">Sort By</label>
+                            <select id="sortOption" class="form-select" [(ngModel)]="sortOption"
+                                (change)="applyFilters()">
+                                <option value="default">Default</option>
+                                <option value="priceAsc">Price: Low to High</option>
+                                <option value="priceDesc">Price: High to Low</option>
+                                <option value="ratingAsc">Rating: Low to High</option>
+                                <option value="ratingDesc">Rating: High to Low</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+
+
                 <!-- Kategori filtreleme - mevcut kod -->
                 <div class="card shadow-sm border-0 rounded-4 mb-4">
                     <div class="card-body">
@@ -144,7 +163,8 @@
                                 <div class="mb-2">
                                     <span *ngFor="let star of [1,2,3,4,5]">
                                         <i class="bi"
-                                        [ngClass]="star <= (+(product.productRate ?? 0)) ? 'bi-star-fill text-warning' : (star <= roundHalf(+(product.productRate ?? 0)) ? 'bi-star-half text-warning' : 'bi-star text-muted')"                                            style="font-size: 0.9rem;"></i>
+                                            [ngClass]="star <= (+(product.productRate ?? 0)) ? 'bi-star-fill text-warning' : (star <= roundHalf(+(product.productRate ?? 0)) ? 'bi-star-half text-warning' : 'bi-star text-muted')"
+                                            style="font-size: 0.9rem;"></i>
                                     </span>
                                     <span class="ms-1 text-muted small" *ngIf="(product.reviewCount ?? 0) > 0">({{
                                         product.reviewCount ?? 0 }})</span>

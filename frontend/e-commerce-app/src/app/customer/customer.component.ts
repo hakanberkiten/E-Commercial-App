@@ -23,6 +23,8 @@ export class CustomerComponent implements OnInit {
   loading: boolean = false;
   minPrice: number = 0;
   maxPrice: number = 10000; // M
+  sortOption: string = 'default'; // Add this property to your class
+
   constructor(
     private catSvc: CategoryService,
     private prodSvc: ProductService,
@@ -78,6 +80,7 @@ export class CustomerComponent implements OnInit {
       });
   }
 
+  // Update the applyFilters method to include sorting
   applyFilters() {
     this.loading = true;
     this.error = '';
@@ -85,7 +88,8 @@ export class CustomerComponent implements OnInit {
     this.prodSvc.getFilteredProducts(
       this.selectedCat,
       this.minPrice,
-      this.maxPrice
+      this.maxPrice,
+      this.sortOption
     ).subscribe({
       next: (products) => {
         this.products = products;

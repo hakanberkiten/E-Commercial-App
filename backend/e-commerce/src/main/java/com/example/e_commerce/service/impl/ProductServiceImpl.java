@@ -31,25 +31,23 @@ public class ProductServiceImpl implements ProductService {
         }
         return productRepository.searchProducts(query);
     }
+    
     @Override
-// ProductServiceImpl.java
-public Product saveProduct(Product product) {
-    // 1️⃣ JSON’dan gelen “seller” objesi sadece userId içeriyor, role bilgisi null
-    // Bu yüzden önce gerçek User’ı veritabanından çekiyoruz:
-    User seller = userRepository.findById(product.getSeller().getUserId())
-        .orElseThrow(() -> new RuntimeException("Seller not found"));
+    public Product saveProduct(Product product) {
+        // Get the actual seller from database since JSON only contains userId
+        User seller = userRepository.findById(product.getSeller().getUserId())
+            .orElseThrow(() -> new RuntimeException("Seller not found"));
 
-    // 2️⃣ Şimdi seller’ın rolünü güvenle kontrol edebiliriz:
-    if (seller.getRole().getRoleId() != 2) {
-        throw new IllegalArgumentException("Only SELLER can add products");
+        // Verify the user has seller role
+        if (seller.getRole().getRoleId() != 2) {
+            throw new IllegalArgumentException("Only users with SELLER role can add products");
+        }
+
+        // Set the full seller object to ensure proper relationship
+        product.setSeller(seller);
+
+        return productRepository.save(product);
     }
-
-    // 3️⃣ Product içine mutlaka DB’den çektiğimiz seller objesini set etmeliyiz
-    product.setSeller(seller);
-
-    return productRepository.save(product);
-}
-
 
     @Override
     public List<Product> getAllProducts() {
@@ -59,69 +57,98 @@ public Product saveProduct(Product product) {
     @Override
     public Product getProductById(Long id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + id));
     }
-
     
-@Override
-public List<Product> getProductsBySellerId(Long sellerId) {
-    return productRepository.findBySellerUserId(sellerId);
-}
-
-@Override
-public Product createProduct(Product product) {
-    // Additional validation logic can be added here
-    return productRepository.save(product);
-}
-
-@Override
-public Product updateProduct(Product product) {
-    // Check if product exists
-    productRepository.findById(product.getProductId())
-        .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + product.getProductId()));
-    
-    // Additional validation logic can be added here
-    return productRepository.save(product);
-}
     @Override
-@Transactional
-public void deleteProduct(Long id) {
-    Product product = productRepository.findById(id)
-        .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + id));
-    
-    // Delete related reviews first
-    reviewRepository.deleteByProductProductId(id);
-    
-    // Use the explicit query method instead of the derived method
-    cartItemRepository.deleteCartItemsByProductId(id);
-    
-    // For additional safety, manually find and delete any remaining cart items
-    List<CartItem> remainingCartItems = cartItemRepository.findByProductProductId(id);
-    if (!remainingCartItems.isEmpty()) {
-        System.out.println("Found " + remainingCartItems.size() + " remaining cart items. Deleting manually...");
-        cartItemRepository.deleteAll(remainingCartItems);
+    public List<Product> getProductsBySellerId(Long sellerId) {
+        return productRepository.findBySellerUserId(sellerId);
+    }
+
+    @Override
+    public Product createProduct(Product product) {
+        return saveProduct(product);
+    }
+
+    @Override
+    public Product updateProduct(Product product) {
+        // Check if product exists
+        productRepository.findById(product.getProductId())
+            .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + product.getProductId()));
+        
+        return saveProduct(product);
     }
     
-    // Finally delete the product
-    productRepository.delete(product);
-    
-    System.out.println("Product successfully deleted with ID: " + id);
-}
+    @Override
+    @Transactional
+    public void deleteProduct(Long id) {
+        Product product = productRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + id));
+        
+        // Delete related reviews first
+        reviewRepository.deleteByProductProductId(id);
+        
+        // Delete cart items containing this product
+        cartItemRepository.deleteCartItemsByProductId(id);
+        
+        // For additional safety, manually find and delete any remaining cart items
+        List<CartItem> remainingCartItems = cartItemRepository.findByProductProductId(id);
+        if (!remainingCartItems.isEmpty()) {
+            System.out.println("Found " + remainingCartItems.size() + " remaining cart items. Deleting manually...");
+            cartItemRepository.deleteAll(remainingCartItems);
+        }
+        
+        // Finally delete the product
+        productRepository.delete(product);
+        
+        System.out.println("Product successfully deleted with ID: " + id);
+    }
 
+    @Override
     public List<Product> getByCategory(Long categoryId) {
         return productRepository.findByCategoryCategoryId(categoryId);
-      }
+    }
 
     @Override
     public List<Product> getByPriceRange(Double minPrice, Double maxPrice) {
-        return productRepository.findByPriceRange(minPrice, maxPrice);
+        return productRepository.findByPriceBetween(minPrice, maxPrice);
     }
     
     @Override
     public List<Product> getByCategoryAndPriceRange(Long categoryId, Double minPrice, Double maxPrice) {
+        return productRepository.findByCategoryCategoryIdAndPriceBetween(categoryId, minPrice, maxPrice);
+    }
+    
+    @Override
+    public List<Product> getFilteredAndSortedProducts(Long categoryId, Double minPrice, Double maxPrice, String sortBy) {
         if (categoryId == null || categoryId <= 0) {
-            return getByPriceRange(minPrice, maxPrice);
+            // No category filter, only price range and sorting
+            switch (sortBy) {
+                case "priceAsc":
+                    return productRepository.findByPriceRangeOrderByPriceAsc(minPrice, maxPrice);
+                case "priceDesc":
+                    return productRepository.findByPriceRangeOrderByPriceDesc(minPrice, maxPrice);
+                case "ratingAsc":
+                    return productRepository.findByPriceRangeOrderByRatingAsc(minPrice, maxPrice);
+                case "ratingDesc":
+                    return productRepository.findByPriceRangeOrderByRatingDesc(minPrice, maxPrice);
+                default:
+                    return getByPriceRange(minPrice, maxPrice);
+            }
+        } else {
+            // With category filter, price range, and sorting
+            switch (sortBy) {
+                case "priceAsc":
+                    return productRepository.findByCategoryAndPriceRangeOrderByPriceAsc(categoryId, minPrice, maxPrice);
+                case "priceDesc":
+                    return productRepository.findByCategoryAndPriceRangeOrderByPriceDesc(categoryId, minPrice, maxPrice);
+                case "ratingAsc":
+                    return productRepository.findByCategoryAndPriceRangeOrderByRatingAsc(categoryId, minPrice, maxPrice);
+                case "ratingDesc":
+                    return productRepository.findByCategoryAndPriceRangeOrderByRatingDesc(categoryId, minPrice, maxPrice);
+                default:
+                    return getByCategoryAndPriceRange(categoryId, minPrice, maxPrice);
+            }
         }
-        return productRepository.findByCategoryAndPriceRange(categoryId, minPrice, maxPrice);
     }
 }

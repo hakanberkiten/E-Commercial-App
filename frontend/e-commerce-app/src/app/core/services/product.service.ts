@@ -39,7 +39,12 @@ export class ProductService {
   }
 
   // Filtreleme metodu
-  getFilteredProducts(categoryId: number | null, minPrice: number, maxPrice: number): Observable<Product[]> {
+  getFilteredProducts(
+    categoryId: number | null,
+    minPrice: number,
+    maxPrice: number,
+    sortBy: string = 'default'
+  ): Observable<Product[]> {
     let params = new HttpParams();
 
     if (categoryId !== null && categoryId > 0) {
@@ -48,6 +53,7 @@ export class ProductService {
 
     params = params.set('minPrice', minPrice.toString());
     params = params.set('maxPrice', maxPrice.toString());
+    params = params.set('sortBy', sortBy);
 
     return this.http.get<Product[]>('/api/products/filter', { params });
   }

@@ -79,13 +79,10 @@ public class ProductController {
     public List<Product> filterProducts(
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false, defaultValue = "0.0") Double minPrice, 
-            @RequestParam(required = false, defaultValue = "999999.99") Double maxPrice) {
+            @RequestParam(required = false, defaultValue = "999999.99") Double maxPrice,
+            @RequestParam(required = false, defaultValue = "default") String sortBy) {
         
-        if (categoryId != null && categoryId > 0) {
-            return productService.getByCategoryAndPriceRange(categoryId, minPrice, maxPrice);
-        } else {
-            return productService.getByPriceRange(minPrice, maxPrice);
-        }
+        return productService.getFilteredAndSortedProducts(categoryId, minPrice, maxPrice, sortBy);
     }
 
     @GetMapping("/seller/{sellerId}")
