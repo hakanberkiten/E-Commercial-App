@@ -221,10 +221,10 @@ export class SellerDashboardComponent implements OnInit {
     });
   }
 
-  // Add this method to your SellerDashboardComponent
   deleteProduct(product: any) {
-    if (confirm(`Are you sure you want to delete ${product.name}? This will also remove all related reviews and cannot be undone.`)) {
-      const productId = product.id || product.productId;
+    if (confirm(`Are you sure you want to delete ${product.productName || product.name}? This will also remove all related reviews and cannot be undone.`)) {
+      // Use only productId since that's what the backend expects (not id)
+      const productId = product.productId;
 
       console.log('Deleting product with ID:', productId);
 

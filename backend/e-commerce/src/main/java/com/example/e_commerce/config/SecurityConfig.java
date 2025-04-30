@@ -44,7 +44,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PATCH, "/api/users/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers("/api/roles/**").hasAuthority("ROLE_ADMIN")   // Role management
                 .requestMatchers(HttpMethod.GET, "/api/orders/all").hasAuthority("ROLE_ADMIN") 
-                .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAuthority("ROLE_ADMIN") // Admin can delete any product
+                .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SELLER") // Admin and Seller can delete any product
                 .requestMatchers(HttpMethod.PATCH, "/api/orders/**/status").hasAnyAuthority("ROLE_ADMIN", "ROLE_SELLER") // Admin and Seller can update status
                 
                 // Password change should be allowed for all authenticated users
