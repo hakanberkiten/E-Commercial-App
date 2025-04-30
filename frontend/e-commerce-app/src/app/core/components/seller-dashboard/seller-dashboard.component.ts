@@ -23,6 +23,8 @@ export class SellerDashboardComponent implements OnInit {
   selectedCategoryId: number | null = null;
   isLoading = false;
   error: string | null = null;
+  productSuccessMessage: string = '';
+  productErrorMessage: string = '';
 
   constructor(
     private categoryService: CategoryService,
@@ -166,9 +168,13 @@ export class SellerDashboardComponent implements OnInit {
         next: () => {
           this.loadSellerProducts();
           this.addNewProduct();
+          this.productSuccessMessage = 'Product updated successfully!';
+          setTimeout(() => this.productSuccessMessage = '', 3000);
         },
         error: (error) => {
           console.error('Error updating product', error);
+          this.productErrorMessage = 'Failed to update product. Please try again.';
+          setTimeout(() => this.productErrorMessage = '', 3000);
         }
       });
     } else {
@@ -176,9 +182,13 @@ export class SellerDashboardComponent implements OnInit {
         next: () => {
           this.loadSellerProducts();
           this.addNewProduct();
+          this.productSuccessMessage = 'Product added successfully!';
+          setTimeout(() => this.productSuccessMessage = '', 3000);
         },
         error: (error) => {
           console.error('Error creating product', error);
+          this.productErrorMessage = 'Failed to add product. Please try again.';
+          setTimeout(() => this.productErrorMessage = '', 3000);
         }
       });
     }
@@ -209,7 +219,6 @@ export class SellerDashboardComponent implements OnInit {
   // Add this method to your SellerDashboardComponent
   deleteProduct(product: any) {
     if (confirm(`Are you sure you want to delete ${product.name}? This will also remove all related reviews and cannot be undone.`)) {
-      // Make sure you're using the correct ID property from your transformed data
       const productId = product.id || product.productId;
 
       console.log('Deleting product with ID:', productId);
@@ -217,11 +226,13 @@ export class SellerDashboardComponent implements OnInit {
       this.productService.deleteProduct(productId).subscribe({
         next: () => {
           this.loadSellerProducts();
-          alert('Product deleted successfully');
+          this.productSuccessMessage = 'Product deleted successfully!';
+          setTimeout(() => this.productSuccessMessage = '', 3000);
         },
         error: (error) => {
           console.error('Error deleting product:', error);
-          alert(`Error deleting product: ${error.status === 403 ? 'Permission denied' : error.message || 'Unknown error'}`);
+          this.productErrorMessage = `Error deleting product: ${error.status === 403 ? 'Permission denied' : error.message || 'Unknown error'}`;
+          setTimeout(() => this.productErrorMessage = '', 3000);
         }
       });
     }

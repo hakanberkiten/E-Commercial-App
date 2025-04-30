@@ -197,3 +197,30 @@
         </div>
     </div>
 </div>
+
+<!-- Toast Notifications -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+  <!-- Success Toast -->
+  <div *ngIf="productSuccessMessage" class="toast show bg-success text-white" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header bg-success text-white">
+      <i class="bi bi-check-circle me-2"></i>
+      <strong class="me-auto">Success</strong>
+      <button type="button" class="btn-close btn-close-white" (click)="productSuccessMessage = ''"></button>
+    </div>
+    <div class="toast-body">
+      {{ productSuccessMessage }}
+    </div>
+  </div>
+  
+  <!-- Error Toast -->
+  <div *ngIf="productErrorMessage" class="toast show bg-danger text-white" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header bg-danger text-white">
+      <i class="bi bi-exclamation-circle me-2"></i>
+      <strong class="me-auto">Error</strong>
+      <button type="button" class="btn-close btn-close-white" (click)="productErrorMessage = ''"></button>
+    </div>
+    <div class="toast-body">
+      {{ productErrorMessage }}
+    </div>
+  </div>
+</div>
