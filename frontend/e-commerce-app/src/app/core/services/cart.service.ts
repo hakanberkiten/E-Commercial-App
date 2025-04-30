@@ -1,24 +1,26 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, switchMap, tap } from 'rxjs';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { BehaviorSubject, Observable, of, switchMap, tap } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { isPlatformBrowser } from '@angular/common';
 import { CartItem } from '../../shared/models/cartitem.model';
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
-  // Add a BehaviorSubject to track cart items count
   private cartItemCountSubject = new BehaviorSubject<number>(0);
-  // Expose it as an observable for components to subscribe to
   public cartItemCount$ = this.cartItemCountSubject.asObservable();
+  private isBrowser: boolean;
 
-  constructor(private http: HttpClient) {
-    // Initial load of cart count
+  constructor(
+    private http: HttpClient,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
     this.refreshCartCount();
   }
 
-  // Method to refresh the cart count
   private refreshCartCount(): void {
     this.list().subscribe(items => {
-      // Count unique products
       const distinctProductIds = new Set();
       items.forEach(item => {
         distinctProductIds.add(item.product.productId);
@@ -28,7 +30,16 @@ export class CartService {
   }
 
   list(): Observable<CartItem[]> {
-    return this.http.get<CartItem[]>('/api/cart');
+    if (!this.isBrowser) {
+      return of([]);
+    }
+
+    return this.http.get<CartItem[]>('/api/cart').pipe(
+      catchError(error => {
+        console.error('Error fetching cart:', error);
+        return of([]);
+      })
+    );
   }
 
   add(productId: number, quantity: number): Observable<CartItem> {
@@ -41,7 +52,7 @@ export class CartService {
         } else {
           return this.http.post<CartItem>('/api/cart/items', { productId, quantity })
             .pipe(
-              tap(() => this.refreshCartCount()) // Update count after adding
+              tap(() => this.refreshCartCount())
             );
         }
       })
@@ -51,14 +62,14 @@ export class CartService {
   remove(itemId: number): Observable<any> {
     return this.http.delete(`/api/cart/items/${itemId}`)
       .pipe(
-        tap(() => this.refreshCartCount()) // Update count after removing
+        tap(() => this.refreshCartCount())
       );
   }
 
   update(itemId: number, quantity: number): Observable<CartItem> {
     return this.http.put<CartItem>(`/api/cart/items/${itemId}`, null, { params: { quantity } })
       .pipe(
-        tap(() => this.refreshCartCount()) // Update count after updating
+        tap(() => this.refreshCartCount())
       );
   }
 
