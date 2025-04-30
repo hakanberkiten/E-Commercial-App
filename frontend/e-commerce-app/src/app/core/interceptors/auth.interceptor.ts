@@ -17,19 +17,19 @@ export class AuthInterceptor implements HttpInterceptor {
         @Inject(PLATFORM_ID) private platformId: Object
     ) { }
 
-    intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-        // Sadece tarayıcı ortamında token ekle
-        if (isPlatformBrowser(this.platformId)) {
-            const token = this.authService.getToken();
+    intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+        // Get the auth token from the service
+        const authToken = this.authService.getToken();
 
-            if (token) {
-                const authReq = req.clone({
-                    headers: req.headers.set('Authorization', `Bearer ${token}`)
-                });
-                return next.handle(authReq);
-            }
+        // Clone the request and add the auth header if token exists
+        if (authToken) {
+            request = request.clone({
+                setHeaders: {
+                    Authorization: `Bearer ${authToken}`
+                }
+            });
         }
 
-        return next.handle(req);
+        return next.handle(request);
     }
 }

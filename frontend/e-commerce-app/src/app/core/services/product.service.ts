@@ -51,4 +51,24 @@ export class ProductService {
 
     return this.http.get<Product[]>('/api/products/filter', { params });
   }
+
+
+  getProductsBySellerId(sellerId: number): Observable<any[]> {
+    return this.http.get<any[]>(`/api/products/seller/${sellerId}`);
+  }
+
+  createProduct(product: any): Observable<any> {
+    // Change this to use /save endpoint
+    return this.http.post<any>('/api/products/save', product);
+  }
+
+  updateProduct(product: any): Observable<any> {
+    // Change this to use productId instead of id
+    return this.http.put<any>(`/api/products/${product.productId}`, product);
+  }
+
+  deleteProduct(productId: number): Observable<any> {
+    // This should match the backend endpoint
+    return this.http.delete<any>(`/api/products/${productId}`);
+  }
 }

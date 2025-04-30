@@ -14,10 +14,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
+
+   
 
     @Autowired
     private UserRepository userRepository;
@@ -27,7 +30,10 @@ public class UserServiceImpl implements UserService {
     private UserAddressRepository userAddressRepository;
 
 
-
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
     @Override
 public List<AddressDTO> getUserAddresses(Long userId) {
     User user = userRepository.findById(userId)

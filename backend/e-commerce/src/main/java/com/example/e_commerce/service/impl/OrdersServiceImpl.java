@@ -15,6 +15,7 @@ import com.example.e_commerce.repository.ProductRepository;
 import com.example.e_commerce.repository.UserRepository;
 import com.example.e_commerce.service.OrdersService;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -126,4 +127,46 @@ public class OrdersServiceImpl implements OrdersService {
     public void deleteOrder(Long id) {
         orderRepo.deleteById(id);
     }
+
+    // Implement the new methods in your OrdersServiceImpl
+
+    @Override
+    public List<Orders> getOrdersBySellerId(Long sellerId) {
+        // Find all orders through order items that contain products from this seller
+        // This is a more robust approach that doesn't require a custom repository method
+        
+        // 1. Get all orders
+        List<Orders> allOrders = orderRepo.findAll();
+        
+        // 2. Filter orders that contain products from the specified seller
+        return allOrders.stream()
+            .filter(order -> order.getItems() != null && 
+                    order.getItems().stream()
+                        .anyMatch(item -> item.getProduct() != null && 
+                                  item.getProduct().getSeller().getUserId() != null &&
+                                  item.getProduct().getSeller().getUserId().equals(sellerId)))
+            .toList();
+    }
+@Override
+public Orders updateOrderStatus(Long orderId, String status) {
+    Orders order = orderRepo.findById(orderId)
+        .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + orderId));
+    
+    // Validate status using a simple check for allowed values
+    String upperCaseStatus = status.toUpperCase();
+    if (!isValidOrderStatus(upperCaseStatus)) {
+        throw new IllegalArgumentException("Invalid order status: " + status);
+    }
+    
+    // Set the status directly as a string
+    order.setOrderStatus(upperCaseStatus);
+    return orderRepo.save(order);
+}
+
+// Helper method to validate order status
+private boolean isValidOrderStatus(String status) {
+    // Define the valid status values your application supports
+    List<String> validStatuses = List.of("PENDING", "APPROVED", "SHIPPED", "DELIVERED", "CANCELLED");
+    return validStatuses.contains(status);
+}
 }

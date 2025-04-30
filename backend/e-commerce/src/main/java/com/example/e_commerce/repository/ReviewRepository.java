@@ -10,7 +10,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findByProductProductId(Long productId);
-    
+    void deleteByProductProductId(Long productId);
+
     // Ürün için ortalama puanı hesaplama
     @Query("SELECT AVG(r.reviewPoint) FROM Review r WHERE r.product.productId = :productId")
     Double calculateAverageRating(@Param("productId") Long productId);

@@ -1,0 +1,184 @@
+<div class="container mt-4">
+    <h2>Seller Dashboard</h2>
+
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">My Products</h5>
+                    <button class="btn btn-primary" (click)="addNewProduct()">Add New Product</button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Name</th>
+                                    <th>Price</th>
+                                    <th>Stock</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let product of sellerProducts">
+                                    <td>
+                                        <img [src]="product.imageUrl || 'assets/img/no-image.jpg'" class="img-thumbnail"
+                                            style="width: 50px; height: 50px;">
+                                    </td>
+                                    <td>{{ product.name }}</td>
+                                    <td>${{ product.price }}</td>
+                                    <td>{{ product.stockQuantity }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-outline-primary"
+                                                (click)="editProduct(product)">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger ms-1"
+                                                (click)="deleteProduct(product)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr *ngIf="sellerProducts.length === 0">
+                                    <td colspan="5" class="text-center">No products found</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Customer Orders</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let order of customerOrders">
+                                    <td>{{ order.id }}</td>
+                                    <td>{{ order.customer.name }}</td>
+                                    <td>{{ order.product.name }}</td>
+                                    <td>{{ order.quantity }}</td>
+                                    <td>${{ order.totalPrice }}</td>
+                                    <td>
+                                        <span class="badge" [ngClass]="{
+                          'bg-success': order.status === 'APPROVED',
+                          'bg-warning': order.status === 'PENDING',
+                          'bg-danger': order.status === 'CANCELLED'
+                        }">
+                                            {{ order.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button *ngIf="order.status === 'PENDING'" class="btn btn-sm btn-success me-1"
+                                            (click)="approveOrder(order.id)">Approve</button>
+                                        <button *ngIf="order.status === 'PENDING'" class="btn btn-sm btn-danger"
+                                            (click)="cancelOrder(order.id)">Cancel</button>
+                                    </td>
+                                </tr>
+                                <tr *ngIf="customerOrders.length === 0">
+                                    <td colspan="7" class="text-center">No orders found</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">{{ isEditing ? 'Edit Product' : 'Add New Product' }}</h5>
+                </div>
+                <div class="card-body">
+                    <form [formGroup]="productForm" (ngSubmit)="saveProduct()">
+                        <input type="hidden" formControlName="id">
+
+                        <div class="mb-3">
+                            <label class="form-label">Product Name</label>
+                            <input type="text" class="form-control" formControlName="name">
+                            <div *ngIf="productForm.controls['name'].invalid && productForm.controls['name'].touched"
+                                class="text-danger">
+                                Product name is required
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" formControlName="description" rows="3"></textarea>
+                            <div *ngIf="productForm.controls['description'].invalid && productForm.controls['description'].touched"
+                                class="text-danger">
+                                Description is required
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Price</label>
+                            <input type="number" class="form-control" formControlName="price" min="0.01" step="0.01">
+                            <div *ngIf="productForm.controls['price'].invalid && productForm.controls['price'].touched"
+                                class="text-danger">
+                                Valid price is required
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Stock Quantity</label>
+                            <input type="number" class="form-control" formControlName="stockQuantity" min="0">
+                            <div *ngIf="productForm.controls['stockQuantity'].invalid && productForm.controls['stockQuantity'].touched"
+                                class="text-danger">
+                                Valid stock quantity is required
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Image URL</label>
+                            <input type="text" class="form-control" formControlName="imageUrl">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Category</label>
+                            <select class="form-select" formControlName="category">
+                                <option value="">Select Category</option>
+                                <!-- Ideally, these would be loaded from backend -->
+                                <option value="1">Electronics</option>
+                                <option value="2">Clothing</option>
+                                <option value="3">Home & Kitchen</option>
+                                <option value="4">Books</option>
+                            </select>
+                            <div *ngIf="productForm.controls['category'].invalid && productForm.controls['category'].touched"
+                                class="text-danger">
+                                Category is required
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" [disabled]="productForm.invalid">
+                                {{ isEditing ? 'Update Product' : 'Add Product' }}
+                            </button>
+                            <button type="button" class="btn btn-secondary" (click)="addNewProduct()">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -14,4 +14,7 @@ public interface ProductService {
     // Yeni eklenen metodlar
     List<Product> getByPriceRange(Double minPrice, Double maxPrice);
     List<Product> getByCategoryAndPriceRange(Long categoryId, Double minPrice, Double maxPrice);
+    List<Product> getProductsBySellerId(Long sellerId);
+    Product createProduct(Product product);
+    Product updateProduct(Product product);
 }

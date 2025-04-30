@@ -9,6 +9,7 @@ import { CartPageComponent } from './cart-page/cart-page.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { ProfileComponent } from './core/components/profile/profile.component';
 import { ProductDetailComponent } from './features/products/product-detail/product-detail.component';
+import { SellerDashboardComponent } from './core/components/seller-dashboard/seller-dashboard.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'products', pathMatch: 'full' },
@@ -30,6 +31,12 @@ const routes: Routes = [
     path: 'profile',
     component: ProfileComponent,
     canActivate: [AuthGuard]
+  },
+  {
+    path: 'seller-dashboard',
+    component: SellerDashboardComponent,
+    canActivate: [AuthGuard],
+    data: { roles: ['SELLER'] }
   },
   {
     path: 'cart',

@@ -22,9 +22,10 @@ import { isPlatformBrowser } from '@angular/common';
 import { NavbarComponent } from './core/components/navbar/navbar.component';
 import { ProfileComponent } from './core/components/profile/profile.component';
 import { ProductDetailComponent } from './features/products/product-detail/product-detail.component';
+import { SellerDashboardComponent } from './core/components/seller-dashboard/seller-dashboard.component';
 
 @NgModule({
-  declarations: [AppComponent, ProductListComponent, LoginComponent, SignupComponent, CustomerComponent, CartPageComponent, NavbarComponent, ProfileComponent, ProductDetailComponent],
+  declarations: [AppComponent, ProductListComponent, LoginComponent, SignupComponent, CustomerComponent, CartPageComponent, NavbarComponent, ProfileComponent, ProductDetailComponent, SellerDashboardComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,

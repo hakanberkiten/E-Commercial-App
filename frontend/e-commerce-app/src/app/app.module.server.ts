@@ -6,8 +6,8 @@ import { AppModule } from './app.module';
 import { serverRoutes } from './app.routes.server';
 
 @NgModule({
-  imports: [AppModule, ServerModule],
+  imports: [AppModule, ServerModule],//app module sildik ilerde hata cikabilir buraya bak
   providers: [provideServerRouting(serverRoutes)],
   bootstrap: [AppComponent],
 })
-export class AppServerModule {}
+export class AppServerModule { }

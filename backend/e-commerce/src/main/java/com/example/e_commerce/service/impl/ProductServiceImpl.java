@@ -1,10 +1,16 @@
 package com.example.e_commerce.service.impl;
 
+import com.example.e_commerce.entity.CartItem;
 import com.example.e_commerce.entity.Product;
 import com.example.e_commerce.entity.User;
+import com.example.e_commerce.repository.CartItemRepository;
 import com.example.e_commerce.repository.ProductRepository;
+import com.example.e_commerce.repository.ReviewRepository;
 import com.example.e_commerce.repository.UserRepository;
 import com.example.e_commerce.service.ProductService;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +20,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
+    private final ReviewRepository reviewRepository;
+    private final CartItemRepository cartItemRepository;
     private final UserRepository userRepository;
     
     @Override
@@ -54,10 +62,51 @@ public Product saveProduct(Product product) {
                 .orElseThrow(() -> new RuntimeException("Product not found"));
     }
 
+    
+@Override
+public List<Product> getProductsBySellerId(Long sellerId) {
+    return productRepository.findBySellerUserId(sellerId);
+}
+
+@Override
+public Product createProduct(Product product) {
+    // Additional validation logic can be added here
+    return productRepository.save(product);
+}
+
+@Override
+public Product updateProduct(Product product) {
+    // Check if product exists
+    productRepository.findById(product.getProductId())
+        .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + product.getProductId()));
+    
+    // Additional validation logic can be added here
+    return productRepository.save(product);
+}
     @Override
-    public void deleteProduct(Long id) {
-        productRepository.deleteById(id);
+@Transactional
+public void deleteProduct(Long id) {
+    Product product = productRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + id));
+    
+    // Delete related reviews first
+    reviewRepository.deleteByProductProductId(id);
+    
+    // Use the explicit query method instead of the derived method
+    cartItemRepository.deleteCartItemsByProductId(id);
+    
+    // For additional safety, manually find and delete any remaining cart items
+    List<CartItem> remainingCartItems = cartItemRepository.findByProductProductId(id);
+    if (!remainingCartItems.isEmpty()) {
+        System.out.println("Found " + remainingCartItems.size() + " remaining cart items. Deleting manually...");
+        cartItemRepository.deleteAll(remainingCartItems);
     }
+    
+    // Finally delete the product
+    productRepository.delete(product);
+    
+    System.out.println("Product successfully deleted with ID: " + id);
+}
 
     public List<Product> getByCategory(Long categoryId) {
         return productRepository.findByCategoryCategoryId(categoryId);

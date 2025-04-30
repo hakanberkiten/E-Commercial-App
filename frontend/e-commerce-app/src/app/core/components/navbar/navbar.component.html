@@ -13,8 +13,9 @@
 
         <!-- Navbar Links -->
         <div class="collapse navbar-collapse" id="navbarContent">
-            <!-- Search Bar - Ortaya Ekledik -->
-            <div class="mx-auto d-none d-lg-block position-relative" style="width: 40%;">
+            <!-- Search Bar - Only shown for customers or non-logged in users -->
+            <div *ngIf="isCustomer() || !currentUser" class="mx-auto d-none d-lg-block position-relative"
+                style="width: 40%;">
                 <div class="input-group">
                     <input type="text" class="form-control" placeholder="Search products..." aria-label="Search"
                         [(ngModel)]="searchQuery" name="search" (input)="onSearchChange($event)"
@@ -82,7 +83,7 @@
                     <!-- Seller Links -->
                     <ng-container *ngIf="isSeller()">
                         <li class="nav-item">
-                            <a class="nav-link" routerLink="/seller" routerLinkActive="active">
+                            <a class="nav-link" routerLink="/seller-dashboard" routerLinkActive="active">
                                 <i class="bi bi-shop-window me-1"></i> Seller Dashboard
                             </a>
                         </li>
