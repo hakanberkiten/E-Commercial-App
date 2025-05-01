@@ -2,9 +2,11 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { AuthService, User } from '../../services/auth.service';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { debounceTime, Subject } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { ThemeService } from '../../services/theme.service';
+import { NotificationService, Notification } from '../../services/notification.service';
 
 interface SearchResult {
   id: number;
@@ -29,23 +31,51 @@ export class NavbarComponent implements OnInit {
   cartItemCount: number = 0;
   isDarkMode: boolean = false;
 
+  notifications: Notification[] = [];
+  unseenNotificationsCount: number = 0;
+  showNotifications: boolean = false;
+  loadingNotifications: boolean = false;
+  hasUnseenNotifications: boolean = false;
+
   constructor(
     private auth: AuthService,
     private productService: ProductService,
     private router: Router,
     private cartService: CartService,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private notificationService: NotificationService
   ) { }
 
   ngOnInit(): void {
+    // Subscribe to router events to update navbar state on navigation
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      // The isAuthPage() method will now use the updated router.url
+    });
+
     this.auth.currentUser$.subscribe(user => {
       this.currentUser = user;
 
-      // Use the observable for cart count
       if (user) {
         this.cartService.cartItemCount$.subscribe(count => {
           this.cartItemCount = count;
         });
+
+        // Subscribe to notifications stream instead of manually loading
+        this.notificationService.notifications$.subscribe(notifications => {
+          this.notifications = notifications;
+          this.loadingNotifications = false;
+        });
+
+        // Subscribe to unseen count stream
+        this.notificationService.unseenCount$.subscribe(count => {
+          this.unseenNotificationsCount = count;
+          this.hasUnseenNotifications = count > 0;
+        });
+
+        // Initial fetch
+        this.loadNotifications();
       } else {
         this.cartItemCount = 0;
       }
@@ -154,5 +184,88 @@ export class NavbarComponent implements OnInit {
   // Add this method for theme toggling
   toggleTheme(): void {
     this.themeService.toggleTheme();
+  }
+
+  // New methods for notifications
+  loadNotifications(): void {
+    this.loadingNotifications = true;
+    this.notificationService.refreshNotificationsNow();
+  }
+
+  toggleNotifications(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.showNotifications = !this.showNotifications;
+
+    // Close when clicking outside
+    if (this.showNotifications) {
+      setTimeout(() => {
+        document.addEventListener('click', this.closeNotifications);
+      }, 0);
+    } else {
+      document.removeEventListener('click', this.closeNotifications);
+    }
+  }
+
+  closeNotifications = (event?: Event): void => {
+    this.showNotifications = false;
+    document.removeEventListener('click', this.closeNotifications);
+  }
+
+  markAllAsSeen(): void {
+    this.notificationService.markAllAsSeen().subscribe();
+  }
+
+  goToNotification(notification: any): void {
+    if (!notification.seen) {
+      this.notificationService.markAsSeen(notification.id).subscribe();
+    }
+
+    // Navigate to the notification detail or related page
+    if (notification.link) {
+      this.router.navigateByUrl(notification.link);
+    } else {
+      this.router.navigate(['/notifications', notification.id]);
+    }
+
+    this.showNotifications = false;
+  }
+
+  getNotificationIcon(type: string): string {
+    switch (type) {
+      case 'ORDER': return 'bi-bag-check';
+      case 'ACCOUNT': return 'bi-person';
+      case 'PRODUCT': return 'bi-box';
+      case 'PAYMENT': return 'bi-credit-card';
+      case 'SYSTEM': return 'bi-gear';
+      default: return 'bi-bell';
+    }
+  }
+
+  formatNotificationTime(dateString: string): string {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) {
+      return 'Just now';
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+    } else if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+    } else if (diffInSeconds < 604800) {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
+  }
+
+  // Add this method after your other methods
+  isAuthPage(): boolean {
+    const url = this.router.url;
+    return url.includes('/login') || url.includes('/signup');
   }
 }

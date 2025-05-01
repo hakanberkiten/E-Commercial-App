@@ -14,6 +14,7 @@ import com.example.e_commerce.repository.PaymentRepository;
 import com.example.e_commerce.repository.ProductRepository;
 import com.example.e_commerce.repository.UserRepository;
 import com.example.e_commerce.service.OrdersService;
+import com.example.e_commerce.service.NotificationService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -33,6 +34,7 @@ public class OrdersServiceImpl implements OrdersService {
     private final UserRepository userRepo;
     private final ProductRepository productRepo;
     private final OrderItemRepository itemRepo;
+    private final NotificationService notificationService;
 
     @Override
     public Orders saveOrder(Orders order) {
@@ -44,8 +46,7 @@ public class OrdersServiceImpl implements OrdersService {
         return orderRepo.save(order);
     }
 
-
-@Transactional
+    @Transactional
     @Override
     public Orders placeOrder(OrderRequest req) {
         // 1️⃣ Kullanıcıyı çek
@@ -109,10 +110,17 @@ public class OrdersServiceImpl implements OrdersService {
             .reduce(BigDecimal.ZERO, BigDecimal::add);
         order.setTotalAmount(total);
 
+        // Add notification after successful order placement
+        notificationService.createNotification(
+            order.getUser().getUserId(),
+            "Your order #" + order.getOrderId() + " has been placed successfully!",
+            "ORDER",
+            "/orders/" + order.getOrderId()
+        );
+
         // 7️⃣ Son kez kaydedip döndür
         return orderRepo.save(order);
-    
-}
+    }
 
     @Override
     public List<Orders> getAllOrders() { return orderRepo.findAll(); }
@@ -147,26 +155,27 @@ public class OrdersServiceImpl implements OrdersService {
                                   item.getProduct().getSeller().getUserId().equals(sellerId)))
             .toList();
     }
-@Override
-public Orders updateOrderStatus(Long orderId, String status) {
-    Orders order = orderRepo.findById(orderId)
-        .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + orderId));
-    
-    // Validate status using a simple check for allowed values
-    String upperCaseStatus = status.toUpperCase();
-    if (!isValidOrderStatus(upperCaseStatus)) {
-        throw new IllegalArgumentException("Invalid order status: " + status);
-    }
-    
-    // Set the status directly as a string
-    order.setOrderStatus(upperCaseStatus);
-    return orderRepo.save(order);
-}
 
-// Helper method to validate order status
-private boolean isValidOrderStatus(String status) {
-    // Define the valid status values your application supports
-    List<String> validStatuses = List.of("PENDING", "APPROVED", "SHIPPED", "DELIVERED", "CANCELLED");
-    return validStatuses.contains(status);
-}
+    @Override
+    public Orders updateOrderStatus(Long orderId, String status) {
+        Orders order = orderRepo.findById(orderId)
+            .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + orderId));
+        
+        // Validate status using a simple check for allowed values
+        String upperCaseStatus = status.toUpperCase();
+        if (!isValidOrderStatus(upperCaseStatus)) {
+            throw new IllegalArgumentException("Invalid order status: " + status);
+        }
+        
+        // Set the status directly as a string
+        order.setOrderStatus(upperCaseStatus);
+        return orderRepo.save(order);
+    }
+
+    // Helper method to validate order status
+    private boolean isValidOrderStatus(String status) {
+        // Define the valid status values your application supports
+        List<String> validStatuses = List.of("PENDING", "APPROVED", "SHIPPED", "DELIVERED", "CANCELLED");
+        return validStatuses.contains(status);
+    }
 }

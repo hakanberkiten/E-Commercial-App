@@ -26,9 +26,10 @@ import { SellerDashboardComponent } from './core/components/seller-dashboard/sel
 import { AdminDashboardComponent } from './core/components/admin-dashboard/admin-dashboard.component';
 import { ErrorInterceptor } from './core/interceptors/error.interceptor';
 import { FooterComponent } from './core/components/footer/footer.component';
+import { NotificationsComponent } from './core/components/notification/notification.component';
 
 @NgModule({
-  declarations: [AppComponent, ProductListComponent, LoginComponent, SignupComponent, CustomerComponent, CartPageComponent, NavbarComponent, ProfileComponent, ProductDetailComponent, SellerDashboardComponent, AdminDashboardComponent, FooterComponent],
+  declarations: [AppComponent, ProductListComponent, LoginComponent, SignupComponent, CustomerComponent, CartPageComponent, NavbarComponent, ProfileComponent, ProductDetailComponent, SellerDashboardComponent, AdminDashboardComponent, FooterComponent, NotificationsComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,

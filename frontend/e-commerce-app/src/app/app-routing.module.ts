@@ -11,6 +11,7 @@ import { ProfileComponent } from './core/components/profile/profile.component';
 import { ProductDetailComponent } from './features/products/product-detail/product-detail.component';
 import { SellerDashboardComponent } from './core/components/seller-dashboard/seller-dashboard.component';
 import { AdminDashboardComponent } from './core/components/admin-dashboard/admin-dashboard.component';
+import { NotificationsComponent } from './core/components/notification/notification.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'products', pathMatch: 'full' },
@@ -50,6 +51,11 @@ const routes: Routes = [
     component: AdminDashboardComponent,
     canActivate: [AuthGuard],
     data: { roles: ['ADMIN'] }  // This format works with our updated guard
+  },
+  {
+    path: 'notifications',
+    component: NotificationsComponent,
+    canActivate: [AuthGuard]
   },
 ];
 

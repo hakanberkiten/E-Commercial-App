@@ -231,3 +231,153 @@ body.dark-mode .btn-theme-toggle:hover {
         transform: scale(40, 40);
     }
 }
+
+/* Notifications styles */
+.notification-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 320px;
+    max-height: 400px;
+    background-color: #fff;
+    border-radius: 0.25rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    overflow: hidden;
+    margin-top: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.notification-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.notification-header h6 {
+    color: #212529;
+    font-weight: 500;
+}
+
+.notification-item {
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #212529 !important;
+}
+
+.notification-item:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.notification-item .notification-text {
+    color: #212529;
+    font-size: 0.9rem;
+}
+
+.notification-item .notification-time {
+    color: #6c757d !important;
+}
+
+.notification-item.unseen {
+    background-color: rgba(13, 110, 253, 0.05);
+    position: relative;
+}
+
+.notification-item.unseen::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background-color: #0d6efd;
+}
+
+.notification-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.1);
+    color: #495057;
+}
+
+.notification-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.notification-footer {
+    background-color: #f8f9fa;
+}
+
+.notification-footer a {
+    color: #0d6efd;
+    font-weight: 500;
+}
+
+.notification-dropdown .text-muted {
+    color: #6c757d !important;
+}
+
+.notification-dropdown .btn-sm.text-primary {
+    color: #0d6efd !important;
+}
+
+:host-context(.dark-theme) .notification-dropdown {
+    background-color: #343a40;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+:host-context(.dark-theme) .notification-header {
+    background-color: #212529;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+:host-context(.dark-theme) .notification-header h6 {
+    color: #f8f9fa;
+}
+
+:host-context(.dark-theme) .notification-item {
+    color: #f8f9fa !important;
+}
+
+:host-context(.dark-theme) .notification-item .notification-text {
+    color: #f8f9fa;
+}
+
+:host-context(.dark-theme) .notification-item .notification-time {
+    color: #adb5bd !important;
+}
+
+:host-context(.dark-theme) .notification-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+:host-context(.dark-theme) .notification-footer {
+    background-color: #212529;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Dropdown item with notification badge */
+.dropdown-item.position-relative {
+    cursor: pointer;
+}
+
+.nav-link.position-relative .badge {
+    font-size: 0.65rem;
+    transform: translate(-50%, -30%);
+}
+
+.nav-link.position-relative:hover {
+    color: #0d6efd;
+}
+
+.nav-link .bi-bell-fill {
+    transition: transform 0.2s;
+}
+
+.nav-link:hover .bi-bell-fill {
+    transform: scale(1.1);
+}

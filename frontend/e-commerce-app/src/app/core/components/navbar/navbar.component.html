@@ -13,8 +13,9 @@
 
         <!-- Navbar Links -->
         <div class="collapse navbar-collapse" id="navbarContent">
-            <!-- Search Bar - Now shown for all users except admins -->
-            <div *ngIf="!isAdmin()" class="mx-auto d-none d-lg-block position-relative" style="width: 40%;">
+            <!-- Search Bar - Now hidden on login/signup pages -->
+            <div *ngIf="!isAuthPage() && !isAdmin()" class="mx-auto d-none d-lg-block position-relative"
+                style="width: 40%;">
                 <div class="input-group">
                     <input type="text" class="form-control" placeholder="Search products..." aria-label="Search"
                         [(ngModel)]="searchQuery" name="search" (input)="onSearchChange($event)"
@@ -126,7 +127,7 @@
                                         <i class="bi bi-person me-2"></i>Profile
                                     </a>
                                 </li>
-                                <li>
+                                <li *ngIf="isCustomerOrSeller()">
                                     <a class="dropdown-item" routerLink="/orders">
                                         <i class="bi bi-bag-check me-2"></i>My Orders
                                     </a>
@@ -163,6 +164,62 @@
                         </a>
                     </li>
                 </ng-container>
+
+                <!-- Notifications Link - Now hidden on login/signup pages -->
+                <li *ngIf="!isAuthPage()" class="nav-item ms-lg-2 position-relative">
+                    <a class="nav-link position-relative" (click)="toggleNotifications($event)"
+                        style="cursor: pointer;">
+                        <i class="bi bi-bell-fill fs-5"></i>
+                        <span *ngIf="unseenNotificationsCount > 0"
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            {{ unseenNotificationsCount > 9 ? '9+' : unseenNotificationsCount }}
+                            <span class="visually-hidden">unread notifications</span>
+                        </span>
+                    </a>
+
+                    <!-- Update the notification dropdown parts -->
+                    <div *ngIf="showNotifications" class="notification-dropdown shadow-sm">
+                        <div class="notification-header d-flex justify-content-between align-items-center p-2">
+                            <h6 class="m-0">Notifications</h6>
+                            <button *ngIf="hasUnseenNotifications" class="btn btn-sm text-primary border-0 p-0"
+                                (click)="markAllAsSeen()">
+                                Mark all as seen
+                            </button>
+                        </div>
+
+                        <div *ngIf="loadingNotifications" class="d-flex justify-content-center p-3">
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Loading notifications...</span>
+                            </div>
+                        </div>
+
+                        <div *ngIf="!loadingNotifications && notifications.length === 0"
+                            class="p-3 text-center text-muted">
+                            No notifications yet
+                        </div>
+
+                        <div *ngIf="!loadingNotifications && notifications.length > 0" class="notification-list">
+                            <div *ngFor="let notification of notifications.slice(0, 5)"
+                                class="notification-item p-2 border-bottom" [class.unseen]="!notification.seen"
+                                (click)="goToNotification(notification)">
+                                <div class="d-flex">
+                                    <div class="notification-icon me-2">
+                                        <i class="bi" [ngClass]="getNotificationIcon(notification.type)"></i>
+                                    </div>
+                                    <div class="notification-content">
+                                        <div class="notification-text">{{ notification.message }}</div>
+                                        <div class="notification-time small">{{
+                                            formatNotificationTime(notification.createdAt) }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-footer text-center p-2 border-top">
+                            <a routerLink="/notifications" class="text-decoration-none">View all notifications</a>
+                        </div>
+                    </div>
+                </li>
 
                 <!-- Theme Toggle Button - Moved to always be at the very right -->
                 <li class="nav-item d-flex align-items-center ms-lg-3">
