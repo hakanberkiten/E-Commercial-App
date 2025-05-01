@@ -35,37 +35,48 @@ public class SecurityConfig {
                 
                 // Public GET requests for products, categories, reviews
                 .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**", "/api/reviews/**").permitAll()
-
-                // Add this line to allow public access to admin contacts
+                
+                // Allow public access to admin contacts
                 .requestMatchers("/api/users/admin-contacts").permitAll()
-
-                // Admin endpoints
+                
+                // Make address endpoints more permissive - use wildcards for all address operations
+                .requestMatchers("/api/addresses/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/users/{id}/addresses").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/users/{id}/addresses/default").authenticated()
+                .requestMatchers("/api/user-addresses/**").authenticated()
+                
+                // Allow users to update their own profile and change password
+                .requestMatchers(HttpMethod.PUT, "/api/users/{id}").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/users/change-password").authenticated()
+                
+                // Notification endpoints
+                .requestMatchers(HttpMethod.GET, "/api/notifications/**").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/notifications/**").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/notifications/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/notifications/**").authenticated()
+                
+                // Admin endpoints - these come after the more specific rules above
                 .requestMatchers(HttpMethod.GET, "/api/users/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/users/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/users/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/api/users/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers("/api/roles/**").hasAuthority("ROLE_ADMIN")   // Role management
-                .requestMatchers(HttpMethod.GET, "/api/orders/all").hasAuthority("ROLE_ADMIN") 
-                .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SELLER") // Admin and Seller can delete any product
-                .requestMatchers(HttpMethod.PATCH, "/api/orders/**/status").hasAnyAuthority("ROLE_ADMIN", "ROLE_SELLER") // Admin and Seller can update status
+                .requestMatchers(HttpMethod.GET, "/api/orders/all").hasAuthority("ROLE_ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SELLER")
+                .requestMatchers(HttpMethod.PATCH, "/api/orders/**/status").hasAnyAuthority("ROLE_ADMIN", "ROLE_SELLER")
                 
-                // Password change should be allowed for all authenticated users
-                .requestMatchers(HttpMethod.PUT, "/api/users/change-password").authenticated()
-
                 // Seller endpoints
-                .requestMatchers(HttpMethod.POST, "/api/products/save").hasAuthority("ROLE_SELLER") // Seller creates product
-                .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAnyAuthority("ROLE_SELLER", "ROLE_ADMIN") // Sellers and admins can update products
-                .requestMatchers(HttpMethod.GET, "/api/products/seller/**").hasAuthority("ROLE_SELLER") // Seller views their products
-                .requestMatchers(HttpMethod.GET, "/api/orders/seller/**").hasAuthority("ROLE_SELLER") // Seller views their orders
+                .requestMatchers(HttpMethod.POST, "/api/products/save").hasAuthority("ROLE_SELLER")
+                .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAnyAuthority("ROLE_SELLER", "ROLE_ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/products/seller/**").hasAuthority("ROLE_SELLER")
+                .requestMatchers(HttpMethod.GET, "/api/orders/seller/**").hasAuthority("ROLE_SELLER")
 
                 // Customer endpoints (allowing both ROLE_CUSTOMER and ROLE_SELLER)
                 .requestMatchers("/api/cart/**").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER")
-                .requestMatchers(HttpMethod.POST, "/api/orders/place").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER") // Placing an order
-                .requestMatchers(HttpMethod.GET, "/api/orders/{id}").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER") // Customer views their own order
-                .requestMatchers("/api/reviews/save").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER") // Customer saves a review
-                .requestMatchers("/api/addresses/**").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER") // Customer manages addresses
-                .requestMatchers("/api/user-addresses/**").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER") // Customer manages addresses
+                .requestMatchers(HttpMethod.POST, "/api/orders/place").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER")
+                .requestMatchers(HttpMethod.GET, "/api/orders/{id}").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER")
+                .requestMatchers("/api/reviews/save").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER")
 
                 // Fallback: Any other authenticated request
                 .anyRequest().authenticated()

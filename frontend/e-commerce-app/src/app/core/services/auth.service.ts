@@ -87,9 +87,16 @@ export class AuthService {
   }
 
   // Adres güncelle
-  updateAddress(address: Address): Observable<Address> {
-    return this.http.put<Address>(`/api/addresses/${address.address_id}`, address);
+  updateAddress(addressData: any): Observable<any> {
+    // If no valid ID is provided, use POST instead of PUT
+    if (!addressData.id) {
+      console.log('No valid ID found, creating new address instead of updating');
+      return this.addAddress(addressData);
+    }
+    console.log(`Updating address with ID: ${addressData.id}`);
+    return this.http.put(`/api/addresses/${addressData.id}`, addressData);
   }
+
   changePassword(data: { userId: string, currentPassword: string, newPassword: string }): Observable<any> {
     return this.http.put('/api/users/change-password', data);
   }

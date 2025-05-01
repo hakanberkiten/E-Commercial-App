@@ -9,6 +9,7 @@ import com.example.e_commerce.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,16 +48,30 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody Map<String, Object> updates,
+                                       Authentication authentication) {
         try {
+            // Get current user
+            String email = authentication.getName();
+            User currentUser = userService.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+            
+            // Check if user is updating their own profile or is an admin
+            boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            boolean isOwnProfile = currentUser.getUserId().equals(id);
+            
+            if (!isAdmin && !isOwnProfile) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "You can only update your own profile"));
+            }
+            
             User updatedUser = userService.updateUser(id, updates);
             return ResponseEntity.ok(updatedUser);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
-
-    // Mevcut UserController sınıfına ekleyin
 
     @GetMapping("/{userId}/addresses")
     public ResponseEntity<?> getUserAddresses(@PathVariable Long userId) {

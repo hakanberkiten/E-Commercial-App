@@ -123,28 +123,31 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  // toggleAddressMode metodunu düzelt
-
   toggleAddressMode(address?: any): void {
     this.editAddressMode = !this.editAddressMode;
     this.addressSuccessMessage = '';
     this.addressErrorMessage = '';
 
     if (this.editAddressMode && address) {
-      // Mevcut adresi düzenleme
+      // Mevcut adresi düzenleme - ensure ID is properly set
       this.selectedAddress = address;
+      console.log('Editing address:', address); // Add debug log
+
       this.addressForm.patchValue({
-        addressId: address.id,
+        addressId: address.id, // Make sure this is not undefined
         street: address.street,
         city: address.city,
         state: address.state,
         zipCode: address.zipCode,
         country: address.country,
-        buildingName: address.buildingName, // Building Name ekledik
+        buildingName: address.buildingName,
         isDefault: address.isDefault
       });
+
+      // Double-check that ID was set correctly
+      console.log('Form value after patch:', this.addressForm.value);
     } else if (this.editAddressMode) {
-      // Yeni adres ekleme
+      // Reset form for new address
       this.selectedAddress = null;
       this.addressForm.reset({
         addressId: null,
@@ -153,12 +156,9 @@ export class ProfileComponent implements OnInit {
         state: '',
         zipCode: '',
         country: '',
-        buildingName: '', // Building Name ekledik
+        buildingName: '',
         isDefault: false
       });
-    } else {
-      // İptal edildiğinde
-      this.selectedAddress = null;
     }
   }
 
@@ -199,15 +199,18 @@ export class ProfileComponent implements OnInit {
     const addressData = {
       ...this.addressForm.value,
       userId: this.currentUser?.userId.toString(),
-
     };
 
-    // addressId -> id olarak değiştir (backend ile uyumlu olması için)
-    if (addressData.addressId) {
+    // Check if addressId exists and is not null/undefined before converting
+    if (addressData.addressId !== undefined && addressData.addressId !== null) {
       addressData.id = addressData.addressId;
       delete addressData.addressId;
     }
 
+    // Log the addressData to debug
+    console.log('Address data being submitted:', addressData);
+
+    // Check if it's an update (has valid ID) or new address
     const request = addressData.id
       ? this.auth.updateAddress(addressData)
       : this.auth.addAddress(addressData);
@@ -228,6 +231,7 @@ export class ProfileComponent implements OnInit {
       }
     });
   }
+
   deleteAddress(addressId: string): void {
     if (!confirm('Are you sure you want to delete this address?')) return;
 
