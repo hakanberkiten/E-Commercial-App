@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
 import { OrderService } from '../../services/order.service';
 import { User, AuthService } from '../../services/auth.service';
+import { CategoryService } from '../../services/category.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -44,12 +45,17 @@ export class AdminDashboardComponent implements OnInit {
     CUSTOMER: 3
   };
 
+  // Product editing
+  productForm!: FormGroup;
+  categories: any[] = [];
+  isEditing: boolean = false;
+
   constructor(
     private http: HttpClient,
     private formBuilder: FormBuilder,
     private productService: ProductService,
     private orderService: OrderService,
-    private authService: AuthService
+    private authService: AuthService,
   ) { }
 
   ngOnInit(): void {
@@ -57,6 +63,18 @@ export class AdminDashboardComponent implements OnInit {
     this.loadAllUsers();
     this.loadAllProducts();
     this.loadAllOrders();
+    this.loadCategories();
+
+    // Initialize product form
+    this.productForm = this.formBuilder.group({
+      productId: [null],
+      productName: ['', Validators.required],
+      description: ['', Validators.required],
+      price: [0, [Validators.required, Validators.min(0)]],
+      image: [''],
+      quantityInStock: [0, [Validators.required, Validators.min(0)]],
+      categoryId: [null, Validators.required]
+    });
   }
 
   // Tab management
@@ -214,6 +232,70 @@ export class AdminDashboardComponent implements OnInit {
         }
       });
     }
+  }
+
+  loadCategories(): void {
+    this.http.get<any[]>('/api/categories/all').subscribe({
+      next: (data) => {
+        this.categories = data;
+        console.log('Categories loaded:', data); // Add this to debug
+      },
+      error: (error) => {
+        console.error('Failed to load categories:', error); // Add more detailed logging
+        this.errorMessage = 'Failed to load categories: ' + error.message;
+        setTimeout(() => this.errorMessage = '', 3000);
+      }
+    });
+  }
+
+  editProduct(product: any): void {
+    this.isEditing = true;
+    this.selectedProduct = product;
+
+    this.productForm.patchValue({
+      productId: product.productId,
+      productName: product.productName,
+      description: product.description,
+      price: product.price,
+      image: product.image || '',
+      quantityInStock: product.quantityInStock,
+      categoryId: product.category?.categoryId
+    });
+  }
+
+  cancelEdit(): void {
+    this.isEditing = false;
+    this.selectedProduct = null;
+    this.productForm.reset();
+  }
+
+  saveProductChanges(): void {
+    if (this.productForm.invalid) {
+      this.errorMessage = 'Please fill all required fields correctly';
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+
+    const productData = {
+      ...this.productForm.value,
+      category: {
+        categoryId: this.productForm.value.categoryId
+      },
+      seller: this.selectedProduct.seller // Keep the original seller
+    };
+
+    this.productService.updateProduct(productData).subscribe({
+      next: () => {
+        this.successMessage = 'Product updated successfully';
+        this.loadAllProducts(); // Refresh product list
+        this.cancelEdit(); // Reset form
+        setTimeout(() => this.successMessage = '', 3000);
+      },
+      error: (error) => {
+        this.errorMessage = `Failed to update product: ${error.message || 'Unknown error'}`;
+        setTimeout(() => this.errorMessage = '', 3000);
+      }
+    });
   }
 
   // Order management methods

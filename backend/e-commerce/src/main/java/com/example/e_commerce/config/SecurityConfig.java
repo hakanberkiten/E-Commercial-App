@@ -55,7 +55,7 @@ public class SecurityConfig {
 
                 // Seller endpoints
                 .requestMatchers(HttpMethod.POST, "/api/products/save").hasAuthority("ROLE_SELLER") // Seller creates product
-                .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAuthority("ROLE_SELLER") // Seller updates their product
+                .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAnyAuthority("ROLE_SELLER", "ROLE_ADMIN") // Sellers and admins can update products
                 .requestMatchers(HttpMethod.GET, "/api/products/seller/**").hasAuthority("ROLE_SELLER") // Seller views their products
                 .requestMatchers(HttpMethod.GET, "/api/orders/seller/**").hasAuthority("ROLE_SELLER") // Seller views their orders
 

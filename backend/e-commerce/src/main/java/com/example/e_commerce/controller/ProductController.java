@@ -52,11 +52,26 @@ public class ProductController {
             Product product = productService.getProductById(id);
             
             // Log IDs to help with debugging
+            System.out.println("==================================================");
+            System.out.println("DELETE PRODUCT DEBUG:");
             System.out.println("Current user ID: " + currentUser.getUserId());
+            System.out.println("Current user role name: " + currentUser.getRole().getRoleName());
             System.out.println("Product seller ID: " + (product.getSeller() != null ? product.getSeller().getUserId() : "null"));
             
-            // Check if current user is the seller of the product
-            if (product.getSeller() == null || !product.getSeller().getUserId().equals(currentUser.getUserId())) {
+            // Enhanced admin check
+            String roleName = currentUser.getRole().getRoleName();
+            boolean isAdmin = roleName != null && roleName.trim().toUpperCase().equals("ADMIN");
+            boolean isSeller = product.getSeller() != null && 
+                              product.getSeller().getUserId().equals(currentUser.getUserId());
+            
+            System.out.println("Is admin? " + isAdmin);
+            System.out.println("Is seller? " + isSeller);
+            System.out.println("Will allow delete? " + (isAdmin || isSeller));
+            System.out.println("==================================================");
+            
+            // Check if current user is admin OR the seller of the product
+            if (!isAdmin && !isSeller) {
+                System.out.println("ACCESS DENIED: User is neither admin nor the seller of this product");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("message", "You can only delete your own products"));
             }
@@ -106,9 +121,71 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product product) {
-        product.setProductId(id);
-        Product updatedProduct = productService.updateProduct(product);
-        return ResponseEntity.ok(updatedProduct);
+    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product product, Principal principal) {
+        try {
+            User currentUser = userService.findByEmail(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+                
+            Product existingProduct = productService.getProductById(id);
+            
+            // Very detailed logging
+            System.out.println("==================================================");
+            System.out.println("UPDATE PRODUCT DEBUG - Request Details:");
+            System.out.println("Current user ID: " + currentUser.getUserId());
+            System.out.println("Current user email: " + currentUser.getEmail());
+            System.out.println("Current user role name: " + currentUser.getRole().getRoleName());
+            System.out.println("Current user role ID: " + currentUser.getRole().getRoleId());
+            System.out.println("Product ID: " + id);
+            System.out.println("Product seller ID: " + (existingProduct.getSeller() != null ? 
+                                                   existingProduct.getSeller().getUserId() : "null"));
+            
+            // Use exact string comparison for role name
+            String roleName = currentUser.getRole().getRoleName();
+            System.out.println("Exact role name: '" + roleName + "'");
+            
+            // More direct approach to admin check
+            boolean isAdmin = false;
+            if (roleName != null) {
+                // Check exact matches for common admin role names
+                isAdmin = "ROLE_ADMIN".equals(roleName) || 
+                          "ADMIN".equals(roleName);
+                
+                // Log the specific comparisons
+                System.out.println("Equals ROLE_ADMIN? " + "ROLE_ADMIN".equals(roleName));
+                System.out.println("Equals ADMIN? " + "ADMIN".equals(roleName));
+            }
+            
+            // Also check by ID for backup (using equals to handle boxed types)
+            if (!isAdmin && currentUser.getRole().getRoleId() != null) {
+                isAdmin = Integer.valueOf(1).equals(currentUser.getRole().getRoleId());
+                System.out.println("Role ID equals 1? " + isAdmin);
+            }
+            
+            boolean isSeller = existingProduct.getSeller() != null && 
+                              existingProduct.getSeller().getUserId().equals(currentUser.getUserId());
+            
+            System.out.println("Is admin? " + isAdmin);
+            System.out.println("Is seller? " + isSeller);
+            System.out.println("Will allow update? " + (isAdmin || isSeller));
+            System.out.println("==================================================");
+            
+            if (!isAdmin && !isSeller) {
+                System.out.println("ACCESS DENIED: User is neither admin nor the seller of this product");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                       .body(null);
+            }
+            
+            // Preserve the original seller when updating
+            product.setProductId(id);
+            product.setSeller(existingProduct.getSeller());
+            
+            Product updatedProduct = productService.updateProduct(product);
+            System.out.println("Product updated successfully");
+            return ResponseEntity.ok(updatedProduct);
+        } catch (Exception e) {
+            System.err.println("ERROR in updateProduct: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 }
