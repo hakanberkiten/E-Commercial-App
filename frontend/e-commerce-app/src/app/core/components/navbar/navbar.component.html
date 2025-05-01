@@ -212,6 +212,19 @@
                                             formatNotificationTime(notification.createdAt) }}</div>
                                     </div>
                                 </div>
+                                <div *ngIf="notification.type === 'SELLER_REQUEST'"
+                                    class="mt-2 d-flex justify-content-center gap-3">
+                                    <button class="btn btn-outline-success btn-sm"
+                                        (click)="approveSellerRequest(notification, $event)" data-bs-toggle="tooltip"
+                                        title="Approve seller request">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm"
+                                        (click)="denySellerRequest(notification, $event)" data-bs-toggle="tooltip"
+                                        title="Deny seller request">
+                                        <i class="bi bi-x-circle-fill"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 

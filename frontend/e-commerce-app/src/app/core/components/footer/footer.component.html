@@ -14,7 +14,8 @@
       <div class="col-md-4 mb-3">
         <h5>Quick Links</h5>
         <ul class="list-unstyled">
-          <li><a href="#" class="text-decoration-none text-white-50" data-bs-toggle="modal" data-bs-target="#aboutUsModal">About Us</a></li>
+          <li><a href="#" class="text-decoration-none text-white-50" data-bs-toggle="modal"
+              data-bs-target="#aboutUsModal">About Us</a></li>
           <li><a routerLink="/products" class="text-decoration-none text-white-50">Products</a></li>
           <li><a href="#" class="text-decoration-none text-white-50">Privacy Policy</a></li>
           <li><a href="#" class="text-decoration-none text-white-50">Terms of Service</a></li>
@@ -24,8 +25,10 @@
       <div class="col-md-4 mb-3">
         <h5>Become a Seller</h5>
         <p class="small text-white-50">Want to sell your products on our platform?</p>
-        <button class="btn btn-outline-light btn-sm" (click)="requestSellerAccess()">
-          <i class="bi bi-shop me-1"></i> Request Seller Access
+        <button id="sellerRequestBtn" class="btn btn-outline-light btn-sm" (click)="requestSellerAccess()"
+          [disabled]="hasPendingRequest" [ngClass]="{'opacity-75': hasPendingRequest}">
+          <i class="bi" [ngClass]="hasPendingRequest ? 'bi-hourglass-split' : 'bi-shop'"></i>
+          {{ hasPendingRequest ? 'Request Pending' : 'Request Seller Access' }}
         </button>
       </div>
     </div>
@@ -47,7 +50,8 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <p>E-Commerce App is your one-stop destination for all your shopping needs. We provide a platform for buyers and sellers to connect and do business easily.</p>
+        <p>E-Commerce App is your one-stop destination for all your shopping needs. We provide a platform for buyers and
+          sellers to connect and do business easily.</p>
 
         <div>
           <h6 class="mt-4 mb-3">Admin Contact Information</h6>
@@ -58,7 +62,8 @@
             <span class="ms-2">Loading admin information...</span>
           </div>
           <ul *ngIf="!loading && adminUsers.length > 0" class="list-group">
-            <li *ngFor="let admin of adminUsers" class="list-group-item d-flex justify-content-between align-items-center">
+            <li *ngFor="let admin of adminUsers"
+              class="list-group-item d-flex justify-content-between align-items-center">
               {{admin.firstName}} {{admin.lastName}}
               <span class="badge bg-primary text-light">{{admin.email}}</span>
             </li>

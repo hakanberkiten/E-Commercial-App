@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, interval, Subject } from 'rxjs';
 import { switchMap, tap, shareReplay, startWith } from 'rxjs/operators';
+import { isPlatformBrowser } from '@angular/common';
 
 export interface Notification {
   id: number;
@@ -23,26 +24,56 @@ export class NotificationService {
   private unseenCountSubject = new BehaviorSubject<number>(0);
   private refreshNotifications = new Subject<void>();
 
+  // Platform check for browser vs server
+  private isBrowser: boolean;
+
+  // New subject for pending seller request status - initialize with false by default
+  private pendingRequestSubject = new BehaviorSubject<boolean>(false);
+
   // Observable streams
   notifications$ = this.notificationsSubject.asObservable();
   unseenCount$ = this.unseenCountSubject.asObservable();
+  pendingRequest$ = this.pendingRequestSubject.asObservable();
 
-  // Poll interval in ms (e.g. 30 seconds)
+  // Poll interval in ms (30 seconds)
   private pollInterval = 30000;
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    @Inject(PLATFORM_ID) platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+
+    // Initialize pendingRequest after browser check
+    if (this.isBrowser) {
+      this.pendingRequestSubject.next(this.checkLocalPendingRequest());
+    }
+
     this.initNotificationPolling();
   }
 
+  private checkLocalPendingRequest(): boolean {
+    if (!this.isBrowser) {
+      return false;
+    }
+    return localStorage.getItem('pendingSellerRequest') === 'true';
+  }
+
   private initNotificationPolling(): void {
+    // Only set up polling in browser environment
+    if (!this.isBrowser) {
+      return;
+    }
+
     // Combine polling with manual refresh trigger
+    this.refreshNotifications.pipe(
+      startWith(null), // Start immediately
+      switchMap(() => this.fetchRecentNotifications())
+    ).subscribe();
+
+    // Also set up regular polling
     interval(this.pollInterval)
-      .pipe(
-        startWith(0), // Start immediately
-        // Also refresh when refreshNotifications is triggered
-        switchMap(() => this.fetchRecentNotifications())
-      )
-      .subscribe();
+      .subscribe(() => this.refreshNotificationsNow());
   }
 
   // Force refresh notifications
@@ -132,7 +163,28 @@ export class NotificationService {
           // Update unseen count
           const unseenCount = updatedNotifications.filter(n => !n.seen).length;
           this.unseenCountSubject.next(unseenCount);
+
+          // Refresh notifications to ensure everything is up to date
+          this.refreshNotificationsNow();
         })
       );
+  }
+
+  checkPendingSellerRequest(): boolean {
+    return this.pendingRequestSubject.value;
+  }
+
+  markSellerRequestPending(): void {
+    if (this.isBrowser) {
+      localStorage.setItem('pendingSellerRequest', 'true');
+    }
+    this.pendingRequestSubject.next(true);
+  }
+
+  clearSellerRequestPending(): void {
+    if (this.isBrowser) {
+      localStorage.removeItem('pendingSellerRequest');
+    }
+    this.pendingRequestSubject.next(false);
   }
 }

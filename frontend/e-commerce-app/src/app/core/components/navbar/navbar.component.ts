@@ -7,6 +7,7 @@ import { debounceTime, Subject } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { ThemeService } from '../../services/theme.service';
 import { NotificationService, Notification } from '../../services/notification.service';
+import { HttpClient } from '@angular/common/http';
 
 interface SearchResult {
   id: number;
@@ -43,7 +44,8 @@ export class NavbarComponent implements OnInit {
     private router: Router,
     private cartService: CartService,
     private themeService: ThemeService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private http: HttpClient
   ) { }
 
   ngOnInit(): void {
@@ -237,6 +239,7 @@ export class NavbarComponent implements OnInit {
       case 'ACCOUNT': return 'bi-person';
       case 'PRODUCT': return 'bi-box';
       case 'PAYMENT': return 'bi-credit-card';
+      case 'SELLER_REQUEST': return 'bi-shop';
       case 'SYSTEM': return 'bi-gear';
       default: return 'bi-bell';
     }
@@ -263,9 +266,188 @@ export class NavbarComponent implements OnInit {
     }
   }
 
+  // Add the approval/denial methods similar to the notification component
+  approveSellerRequest(notification: any, event: Event) {
+    event.stopPropagation(); // Prevent notification click event
+
+    if (!notification.link) {
+      console.error('No user ID found in notification link');
+      return;
+    }
+
+    // Extract user ID from the link
+    const userId = notification.link.split('/').pop();
+
+    if (!userId) {
+      console.error('Invalid user ID in notification link');
+      return;
+    }
+
+    // Visual feedback - show loading state
+    const target = event.currentTarget as HTMLButtonElement;
+    const originalHTML = target.innerHTML;
+    target.disabled = true;
+    target.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+    // Send approval to server
+    this.http.put(`/api/users/${userId}/role`, { roleId: 2 }).subscribe({
+      next: () => {
+        // Visual feedback of success
+        target.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
+        target.classList.add('btn-success');
+        target.classList.remove('btn-outline-success');
+
+        setTimeout(() => {
+          this.notificationService.deleteNotification(notification.id).subscribe({
+            next: () => {
+              // Remove from current list
+              this.notifications = this.notifications.filter(n => n.id !== notification.id);
+
+              // Clear any pending requests for this user
+              this.notificationService.clearSellerRequestPending();
+
+              // Force refresh notifications
+              this.notificationService.refreshNotificationsNow();
+
+              // Show a more elegant toast notification instead of alert
+              this.showToast('Success', 'Seller request approved successfully', 'success');
+            }
+          });
+        }, 800);
+      },
+      error: (error) => {
+        console.error('Error approving seller request:', error);
+        target.disabled = false;
+        target.innerHTML = originalHTML;
+        this.showToast('Error', 'Failed to approve seller request', 'danger');
+      }
+    });
+  }
+
+  denySellerRequest(notification: any, event: Event) {
+    event.stopPropagation(); // Prevent notification click event
+
+    // Visual feedback - show loading state
+    const target = event.currentTarget as HTMLButtonElement;
+    const originalHTML = target.innerHTML;
+    target.disabled = true;
+    target.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+    // Just delete the notification
+    this.notificationService.deleteNotification(notification.id).subscribe({
+      next: () => {
+        // Visual feedback before removal
+        target.innerHTML = '<i class="bi bi-x-circle-fill"></i>';
+        target.classList.add('btn-danger');
+        target.classList.remove('btn-outline-danger');
+
+        setTimeout(() => {
+          // Remove from current list
+          this.notifications = this.notifications.filter(n => n.id !== notification.id);
+
+          // Clear any pending requests for this user
+          this.notificationService.clearSellerRequestPending();
+
+          // Force refresh notifications
+          this.notificationService.refreshNotificationsNow();
+
+          // Show toast notification
+          this.showToast('Info', 'Seller request denied', 'info');
+        }, 800);
+      },
+      error: (error) => {
+        console.error('Error denying seller request:', error);
+        target.disabled = false;
+        target.innerHTML = originalHTML;
+        this.showToast('Error', 'Failed to deny seller request', 'danger');
+      }
+    });
+  }
+
+  // Add a toast notification method for better UI feedback
+  showToast(title: string, message: string, type: 'success' | 'danger' | 'info'): void {
+    // Create toast container if it doesn't exist
+    let toastContainer = document.querySelector('.navbar-toast-container');
+    if (!toastContainer) {
+      toastContainer = document.createElement('div');
+      toastContainer.className = 'navbar-toast-container position-fixed bottom-0 end-0 p-3';
+      (toastContainer as HTMLElement).style.zIndex = '1050';
+      document.body.appendChild(toastContainer);
+    }
+
+    // Create toast element
+    const toastEl = document.createElement('div');
+    toastEl.className = `toast show bg-${type} bg-opacity-10 text-${type} border-${type}`;
+    toastEl.setAttribute('role', 'alert');
+    toastEl.setAttribute('aria-live', 'assertive');
+    toastEl.setAttribute('aria-atomic', 'true');
+
+    // Toast header
+    const toastHeader = document.createElement('div');
+    toastHeader.className = `toast-header bg-${type} bg-opacity-25 text-${type}`;
+
+    // Icon based on type
+    const icon = document.createElement('i');
+    icon.className = type === 'success' ? 'bi bi-check-circle-fill me-2' :
+      type === 'danger' ? 'bi bi-exclamation-circle-fill me-2' :
+        'bi bi-info-circle-fill me-2';
+
+    toastHeader.appendChild(icon);
+
+    // Title
+    const titleEl = document.createElement('strong');
+    titleEl.className = 'me-auto';
+    titleEl.textContent = title;
+    toastHeader.appendChild(titleEl);
+
+    // Close button
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.className = 'btn-close';
+    closeButton.setAttribute('data-bs-dismiss', 'toast');
+    closeButton.setAttribute('aria-label', 'Close');
+    closeButton.onclick = () => toastEl.remove();
+    toastHeader.appendChild(closeButton);
+
+    // Toast body
+    const toastBody = document.createElement('div');
+    toastBody.className = 'toast-body';
+    toastBody.textContent = message;
+
+    // Append header and body to toast
+    toastEl.appendChild(toastHeader);
+    toastEl.appendChild(toastBody);
+
+    // Append toast to container
+    toastContainer.appendChild(toastEl);
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+      if (toastEl.parentNode) {
+        toastEl.remove();
+      }
+    }, 5000);
+  }
+
   // Add this method after your other methods
   isAuthPage(): boolean {
     const url = this.router.url;
     return url.includes('/login') || url.includes('/signup');
+  }
+
+  // Add a method to handle manual refresh
+  refreshNotifications(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+
+    this.loadingNotifications = true;
+    this.notificationService.refreshNotificationsNow();
+
+    // Add a short timeout to provide visual feedback of the refresh action
+    setTimeout(() => {
+      this.loadingNotifications = false;
+    }, 800);
   }
 }

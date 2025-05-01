@@ -54,6 +54,17 @@
                                 <span *ngIf="!notification.seen" class="badge bg-primary ms-2">New</span>
                             </div>
                         </div>
+                        <div *ngIf="notification.type === 'SELLER_REQUEST'"
+                            class="mt-2 d-flex justify-content-center gap-3">
+                            <button class="btn btn-outline-success" (click)="approveSellerRequest(notification, $event)"
+                                data-bs-toggle="tooltip" title="Approve seller request">
+                                <i class="bi bi-check-circle-fill fs-4"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" (click)="denySellerRequest(notification, $event)"
+                                data-bs-toggle="tooltip" title="Deny seller request">
+                                <i class="bi bi-x-circle-fill fs-4"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
