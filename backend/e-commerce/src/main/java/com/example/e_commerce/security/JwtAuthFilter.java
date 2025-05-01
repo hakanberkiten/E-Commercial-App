@@ -37,6 +37,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
+        final String authHeader = request.getHeader("Authorization");
+        System.out.println("Auth header: " + (authHeader != null ? "Present" : "Not present") + 
+                           " for path: " + request.getRequestURI());
+
         // Skip token validation for OPTIONS requests (CORS preflight)
         if (request.getMethod().equals("OPTIONS")) {
             filterChain.doFilter(request, response);
@@ -87,6 +91,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     return;
                 }
             }
+            
+            if (SecurityContextHolder.getContext().getAuthentication() != null) {
+                System.out.println("User authenticated as: " + 
+                                  SecurityContextHolder.getContext().getAuthentication().getName() +
+                                  " with authorities: " + 
+                                  SecurityContextHolder.getContext().getAuthentication().getAuthorities());
+            } else {
+                System.out.println("No authentication in security context");
+            }
+            
             filterChain.doFilter(request, response);
         } catch (DisabledException e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

@@ -6,7 +6,9 @@ import com.example.e_commerce.dto.PaymentRequest;
 import com.example.e_commerce.entity.Payment;
 import com.example.e_commerce.service.PaymentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -56,6 +58,26 @@ public class PaymentController {
     public ResponseEntity<List<Map<String, Object>>> getCards(@PathVariable Long userId) {
         List<Map<String, Object>> cards = paymentService.getUserCards(userId);
         return ResponseEntity.ok(cards);
+    }
+    
+    @PostMapping("/stripe/customers/{userId}/payment-methods")
+    public ResponseEntity<String> addPaymentMethod(
+            @PathVariable Long userId, 
+            @RequestBody Map<String, String> payload,
+            Authentication authentication) {
+        
+        // Log the incoming request
+        System.out.println("Adding payment method for user: " + userId);
+        System.out.println("Payment method ID: " + payload.get("paymentMethodId"));
+        
+        try {
+            String result = paymentService.attachPaymentMethod(userId, payload.get("paymentMethodId"));
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            System.err.println("Error adding payment method: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error adding payment method: " + e.getMessage());
+        }
     }
     
     @PostMapping("/process")

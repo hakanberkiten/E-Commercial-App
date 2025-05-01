@@ -78,10 +78,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/orders/{id}").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER")
                 .requestMatchers("/api/reviews/save").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER")
 
-                // Payment endpoints
-                .requestMatchers("/api/payments/stripe/customers/**").authenticated()
-                .requestMatchers("/api/payments/process").authenticated()
-                .requestMatchers("/api/payments/user/**").authenticated()
+                // Payment endpoints with explicit role permissions
+                .requestMatchers("/api/payments/stripe/customers/**").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER", "ROLE_ADMIN")
+                .requestMatchers("/api/payments/process").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER", "ROLE_ADMIN")
+                .requestMatchers("/api/payments/user/**").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER", "ROLE_ADMIN")
 
                 // Fallback: Any other authenticated request
                 .anyRequest().authenticated()

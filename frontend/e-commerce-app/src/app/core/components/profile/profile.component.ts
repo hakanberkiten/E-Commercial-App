@@ -5,6 +5,7 @@ import { User } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { PaymentService } from '../../services/payment.service';
 import { HttpClient } from '@angular/common/http';
+import { loadStripe, Stripe, StripeElements, StripeCardElement } from '@stripe/stripe-js';
 
 @Component({
   selector: 'app-profile',
@@ -45,6 +46,11 @@ export class ProfileComponent implements OnInit {
 
   // Payment history
   paymentHistory: any[] = [];
+
+  // Stripe properties
+  private stripe: Stripe | null = null;
+  private elements: StripeElements | null = null;
+  private card: StripeCardElement | null = null;
 
   constructor(
     private auth: AuthService,
@@ -108,7 +114,7 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.auth.currentUser$.subscribe(user => {
       this.currentUser = user;
       if (user) {
@@ -116,10 +122,58 @@ export class ProfileComponent implements OnInit {
         this.loadUserAddresses();
         this.loadUserCards();
         this.loadPaymentHistory();
+
+        // Initialize Stripe
+        this.initializeStripe();
       } else {
         this.router.navigate(['/login']);
       }
     });
+  }
+
+  async initializeStripe() {
+    // Replace with your Stripe publishable key
+    this.stripe = await loadStripe('pk_test_51RJwDuCLsCTArTvazVDjPgLtI1RLPbXYiKBdPVvheryzEOnor13kZpAYWWlAXwBAg8oPRevSWMlaaQmllo6nO2Ue00GEnd6YMg');
+
+    if (this.stripe) {
+      this.elements = this.stripe.elements();
+
+      // Use a longer timeout to ensure DOM is fully loaded
+      setTimeout(() => {
+        const cardElement = document.getElementById('card-element');
+        console.log('Card element found:', !!cardElement);
+
+        if (cardElement && this.elements) {
+          try {
+            // Create card element with custom options
+            this.card = this.elements.create('card', {
+              hidePostalCode: true, // Disables ZIP/postal code field
+              style: {
+                base: {
+                  fontSize: '16px',
+                  color: '#32325d',
+                }
+              }
+            });
+
+            this.card.mount('#card-element');
+
+            // Handle validation errors
+            this.card.on('change', (event) => {
+              const displayError = document.getElementById('card-errors');
+              if (displayError) {
+                displayError.textContent = event.error ? event.error.message : '';
+              }
+            });
+            console.log('Card element mounted successfully');
+          } catch (error) {
+            console.error('Error creating/mounting card element:', error);
+          }
+        } else {
+          console.error('Card element not found in DOM');
+        }
+      }, 500); // Longer timeout
+    }
   }
 
   loadUserData(): void {
@@ -385,42 +439,69 @@ export class ProfileComponent implements OnInit {
   }
 
   // Add a new card
-  addNewCard(): void {
-    if (this.cardForm.invalid) return;
+  async addNewCard(): Promise<void> {
+    console.log('Add card button clicked'); // Debug log
+    console.log('Stripe available:', !!this.stripe);
+    console.log('Card element available:', !!this.card);
+    console.log('Current user available:', !!this.currentUser);
 
-    if (!this.currentUser) return;
+    if (!this.stripe || !this.card || !this.currentUser) {
+      console.error('Required objects not available:',
+        { stripe: !!this.stripe, card: !!this.card, user: !!this.currentUser });
+      this.cardError = 'Payment system not fully initialized. Please refresh and try again.';
+      return;
+    }
 
     this.cardSubmitting = true;
     this.cardError = '';
     this.cardSuccess = '';
 
-    const cardData = {
-      cardNumber: this.cardForm.value.cardNumber,
-      expirationMonth: this.cardForm.value.expirationMonth,
-      expirationYear: this.cardForm.value.expirationYear,
-      cvc: this.cardForm.value.cvc
-    };
+    try {
+      console.log('Creating payment method...');
+      // Create payment method with card element
+      const result = await this.stripe.createPaymentMethod({
+        type: 'card',
+        card: this.card
+      });
 
-    this.paymentService.addCard(this.currentUser.userId, cardData).subscribe({
-      next: (result) => {
+      console.log('Payment method result:', result);
+
+      if (result.error) {
+        this.cardError = result.error.message || 'An error occurred';
         this.cardSubmitting = false;
-        this.cardSuccess = 'Card added successfully!';
-        this.cardForm.reset();
-
-        // Reload cards
-        this.loadUserCards();
-
-        // Clear success message after 3 seconds
-        setTimeout(() => {
-          this.cardSuccess = '';
-        }, 3000);
-      },
-      error: (error) => {
-        this.cardSubmitting = false;
-        this.cardError = error.error?.message || 'Failed to add card. Please try again.';
-        console.error('Error adding card:', error);
+        return;
       }
-    });
+
+      if (result.paymentMethod) {
+        console.log('Sending payment method to backend...');
+        // Send only the payment method ID to your backend
+        this.paymentService.addCardToken(
+          this.currentUser.userId,
+          result.paymentMethod.id
+        ).subscribe({
+          next: (response) => {
+            console.log('Card added successfully:', response);
+            this.cardSubmitting = false;
+            this.cardSuccess = 'Card added successfully!';
+            // Reset the card element for future use
+            if (this.card) {
+              this.card.clear();
+            }
+            this.loadUserCards();
+            setTimeout(() => { this.cardSuccess = ''; }, 3000);
+          },
+          error: (error) => {
+            console.error('Error from backend:', error);
+            this.cardSubmitting = false;
+            this.cardError = error.error?.message || 'Failed to add card';
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Unexpected error during card addition:', error);
+      this.cardSubmitting = false;
+      this.cardError = 'An unexpected error occurred';
+    }
   }
 
   // Set card as default

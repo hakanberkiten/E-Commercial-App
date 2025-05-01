@@ -106,4 +106,19 @@ public class StripeServiceImpl {
             
         return PaymentIntent.create(params);
     }
+    
+    // Attach a payment method to a customer
+    public String attachPaymentMethodToCustomer(String stripeCustomerId, String paymentMethodId) throws StripeException {
+        Stripe.apiKey = secretKey;
+        
+        // Attach payment method to customer
+        PaymentMethod paymentMethod = PaymentMethod.retrieve(paymentMethodId);
+        PaymentMethodAttachParams attachParams = PaymentMethodAttachParams.builder()
+            .setCustomer(stripeCustomerId)
+            .build();
+        
+        paymentMethod.attach(attachParams);
+        
+        return paymentMethod.getId();
+    }
 }

@@ -135,4 +135,20 @@ public class PaymentServiceImpl implements PaymentService {
             throw new RuntimeException("Payment failed: " + e.getMessage());
         }
     }
+
+    @Override
+    public String attachPaymentMethod(Long userId, String paymentMethodId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getStripeCustomerId() == null || user.getStripeCustomerId().isEmpty()) {
+            throw new RuntimeException("User does not have a Stripe customer account");
+        }
+
+        try {
+            return stripeService.attachPaymentMethodToCustomer(user.getStripeCustomerId(), paymentMethodId);
+        } catch (StripeException e) {
+            throw new RuntimeException("Failed to add payment method: " + e.getMessage());
+        }
+    }
 }

@@ -8,10 +8,14 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.security.Key;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -66,5 +70,20 @@ public class JwtUtils {
         } catch (JwtException e) {
             return false;
         }
+    }
+
+    public List<GrantedAuthority> getAuthoritiesFromToken(String token) {
+        Claims claims = getClaims(token);
+        
+        // Check how roles are stored in your token
+        // Modify this based on your token structure
+        String roleName = claims.get("roleName", String.class);
+        if (roleName != null) {
+            // Make sure roles have the ROLE_ prefix required by Spring Security
+            String roleWithPrefix = roleName.startsWith("ROLE_") ? roleName : "ROLE_" + roleName;
+            return Collections.singletonList(new SimpleGrantedAuthority(roleWithPrefix));
+        }
+        
+        return Collections.emptyList();
     }
 }

@@ -18,4 +18,5 @@ public interface PaymentService {
     List<Map<String, Object>> getUserCards(Long userId);
     Payment processPayment(PaymentRequest paymentRequest);
     List<Payment> getPaymentsByUserId(Long userId);
+    String attachPaymentMethod(Long userId, String paymentMethodId);
 }

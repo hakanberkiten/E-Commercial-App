@@ -306,122 +306,50 @@
                     </div>
 
                     <!-- Payment Methods Card -->
-                    <div class="card shadow-sm border-0 rounded-4 mb-4">
-                        <div class="card-header bg-white py-3 border-bottom">
-                            <h5 class="mb-0">
-                                <i class="bi bi-credit-card me-2 text-primary"></i>Payment Methods
-                            </h5>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Payment Methods</h5>
                         </div>
                         <div class="card-body">
                             <!-- Display saved cards -->
-                            <div *ngIf="savedCards.length > 0">
+                            <div *ngIf="savedCards && savedCards.length > 0">
                                 <h6 class="mb-3">Your Cards</h6>
-                                <div class="list-group mb-4">
-                                    <div *ngFor="let card of savedCards"
-                                        class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <div class="d-flex align-items-center">
-                                                <div class="card-brand me-2">
-                                                    <i class="bi" [ngClass]="{
-                                                        'bi-credit-card': card.brand !== 'visa' && card.brand !== 'mastercard' && card.brand !== 'amex',
-                                                        'bi-credit-card-2-front': card.brand === 'visa',
-                                                        'bi-credit-card-2-back': card.brand === 'mastercard',
-                                                        'bi-credit-card-fill': card.brand === 'amex'
-                                                    }"></i>
-                                                </div>
-                                                <div>
-                                                    <div class="fw-medium">{{ card.brand | titlecase }} •••• {{
-                                                        card.last4 }}</div>
-                                                    <div class="small text-muted">Expires {{ card.exp_month }}/{{
-                                                        card.exp_year }}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <button class="btn btn-sm btn-outline-danger"
-                                                (click)="setDefaultCard(card.id)">
-                                                Set Default
-                                            </button>
-                                        </div>
+                                <div class="saved-card mb-3" *ngFor="let card of savedCards">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi" [ngClass]="{
+                                            'bi-credit-card-2-front': card.brand === 'visa',
+                                            'bi-credit-card-2-back': card.brand === 'mastercard',
+                                            'bi-credit-card-fill': card.brand === 'amex',
+                                            'bi-credit-card': !card.brand
+                                        }"></i>
+                                        <span class="ms-2">{{ card.brand | titlecase }} •••• {{ card.last4 }}</span>
+                                        <span class="ms-2 text-muted">Expires {{ card.exp_month }}/{{ card.exp_year
+                                            }}</span>
                                     </div>
                                 </div>
-                            </div>
-
-                            <!-- No cards message -->
-                            <div *ngIf="savedCards.length === 0 && !loading" class="text-center py-4">
-                                <i class="bi bi-credit-card display-4 text-muted"></i>
-                                <p class="mt-3">You don't have any saved payment methods</p>
-                            </div>
-
-                            <!-- Loading indicator -->
-                            <div *ngIf="loading" class="text-center py-4">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                                <p class="mt-3">Loading your payment methods...</p>
                             </div>
 
                             <!-- Add new card form -->
-                            <h6 class="mb-3 mt-4">Add New Card</h6>
-                            <form [formGroup]="cardForm" (ngSubmit)="addNewCard()">
-                                <div class="row">
-                                    <div class="col-md-12 mb-3">
-                                        <label for="cardNumber" class="form-label">Card Number</label>
-                                        <input type="text" id="cardNumber" class="form-control"
-                                            formControlName="cardNumber" placeholder="1234 5678 9012 3456">
-                                        <div class="invalid-feedback"
-                                            *ngIf="cardForm.get('cardNumber')?.invalid && cardForm.get('cardNumber')?.touched">
-                                            Please enter a valid card number
-                                        </div>
-                                    </div>
+                            <h6 class="mb-3">Add New Card</h6>
+                            <form (ngSubmit)="addNewCard()" autocomplete="off">
+                                <div class="mb-3">
+                                    <label for="card-element" class="form-label">Credit or debit card</label>
+                                    <div id="card-element" class="form-control" style="height: 40px; padding-top: 10px;"
+                                        data-autofill="false"></div>
+                                    <div id="card-errors" role="alert" class="text-danger small mt-1"></div>
                                 </div>
 
-                                <div class="row">
-                                    <div class="col-md-4 mb-3">
-                                        <label for="expirationMonth" class="form-label">Month</label>
-                                        <select id="expirationMonth" class="form-select"
-                                            formControlName="expirationMonth">
-                                            <option value="" selected disabled>MM</option>
-                                            <option *ngFor="let month of months" [value]="month">{{ month }}</option>
-                                        </select>
-                                    </div>
+                                <button type="submit" class="btn btn-primary" [disabled]="cardSubmitting">
+                                    <span *ngIf="!cardSubmitting">Add Card</span>
+                                    <span *ngIf="cardSubmitting">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                        Processing...
+                                    </span>
+                                </button>
 
-                                    <div class="col-md-4 mb-3">
-                                        <label for="expirationYear" class="form-label">Year</label>
-                                        <select id="expirationYear" class="form-select"
-                                            formControlName="expirationYear">
-                                            <option value="" selected disabled>YY</option>
-                                            <option *ngFor="let year of years" [value]="year">{{ year }}</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="col-md-4 mb-3">
-                                        <label for="cvc" class="form-label">CVC</label>
-                                        <input type="text" id="cvc" class="form-control" formControlName="cvc"
-                                            placeholder="123" maxlength="4">
-                                    </div>
-                                </div>
-
-                                <div class="mt-3 d-grid">
-                                    <button type="submit" class="btn btn-primary"
-                                        [disabled]="cardForm.invalid || cardSubmitting">
-                                        <span *ngIf="!cardSubmitting">Add Card</span>
-                                        <span *ngIf="cardSubmitting">
-                                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                            Processing...
-                                        </span>
-                                    </button>
-                                </div>
-
-                                <!-- Error message -->
-                                <div class="alert alert-danger mt-3" *ngIf="cardError">
-                                    {{ cardError }}
-                                </div>
-
-                                <!-- Success message -->
-                                <div class="alert alert-success mt-3" *ngIf="cardSuccess">
-                                    {{ cardSuccess }}
-                                </div>
+                                <!-- Success/Error messages -->
+                                <div class="alert alert-success mt-3" *ngIf="cardSuccess">{{ cardSuccess }}</div>
+                                <div class="alert alert-danger mt-3" *ngIf="cardError">{{ cardError }}</div>
                             </form>
                         </div>
                     </div>
