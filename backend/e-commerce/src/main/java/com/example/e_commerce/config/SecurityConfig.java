@@ -74,7 +74,7 @@ public class SecurityConfig {
 
                 // Customer endpoints (allowing both ROLE_CUSTOMER and ROLE_SELLER)
                 .requestMatchers("/api/cart/**").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER")
-                .requestMatchers(HttpMethod.POST, "/api/orders/place").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER")
+                .requestMatchers(HttpMethod.POST, "/api/orders/place").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER", "ROLE_ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/orders/{id}").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER")
                 .requestMatchers("/api/reviews/save").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER")
 
@@ -82,6 +82,15 @@ public class SecurityConfig {
                 .requestMatchers("/api/payments/stripe/customers/**").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER", "ROLE_ADMIN")
                 .requestMatchers("/api/payments/process").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER", "ROLE_ADMIN")
                 .requestMatchers("/api/payments/user/**").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER", "ROLE_ADMIN")
+
+                // Public endpoints
+                .requestMatchers("/api/auth/**").permitAll()
+                
+                // Add this line to debug specific request permissions
+                .requestMatchers(request -> {
+                    System.out.println("Checking request: " + request.getRequestURI());
+                    return false;
+                }).denyAll()
 
                 // Fallback: Any other authenticated request
                 .anyRequest().authenticated()

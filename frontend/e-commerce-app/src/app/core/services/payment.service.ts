@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -56,5 +56,35 @@ export class PaymentService {
   // Process a payment
   processPayment(paymentData: any): Observable<any> {
     return this.http.post<any>('/api/payments/process', paymentData);
+  }
+
+
+  completeOrder(orderData: {
+    userId: number;
+    paymentMethodId: string;
+    items: Array<{ productId: number; quantity: number }>;
+  }): Observable<any> {
+    // Get the auth token directly
+    const token = localStorage.getItem('jwt_token');
+
+    // Create headers with both content type and auth token
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    // This will trigger the backend process that:
+    // 1. Creates the order in the database
+    // 2. Processes the payment
+    // 3. Sends notifications to the seller
+    return this.http.post<any>(
+      '/api/orders/place',
+      orderData,
+      { headers }
+    ).pipe(
+      tap(response => {
+        console.log('Order completed successfully:', response);
+      })
+    );
   }
 }

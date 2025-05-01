@@ -37,7 +37,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
+        // Debug incoming request
+        System.out.println("==== JWT AUTH DEBUG ====");
+        System.out.println("Request URI: " + request.getRequestURI());
+        System.out.println("Request method: " + request.getMethod());
+        
         final String authHeader = request.getHeader("Authorization");
+        System.out.println("Authorization header: " + (authHeader != null ? authHeader.substring(0, Math.min(20, authHeader.length())) + "..." : "null"));
         System.out.println("Auth header: " + (authHeader != null ? "Present" : "Not present") + 
                            " for path: " + request.getRequestURI());
 

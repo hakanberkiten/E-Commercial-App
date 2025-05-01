@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
@@ -17,33 +18,41 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class OrdersController {
     private final OrdersService orderService;
-    
-@PostMapping("/place")
-public Orders placeOrder(@RequestBody OrderRequest req) {
-    return orderService.placeOrder(req);
-}
+
+    @PostMapping("/place")
+    public Orders placeOrder(@RequestBody OrderRequest req, Principal principal) {
+        // Add debugging
+        System.out.println("Order placement requested by: " + (principal != null ? principal.getName() : "unknown user"));
+        System.out.println("Request data: " + req.toString());
+        
+        return orderService.placeOrder(req);
+    }
 
     @PostMapping("/save")
     public Orders save(@RequestBody Orders o) {
         return orderService.saveOrder(o);
     }
-@GetMapping("/seller/{sellerId}")
-public ResponseEntity<List<Orders>> getOrdersBySellerId(@PathVariable Long sellerId) {
-    List<Orders> orders = orderService.getOrdersBySellerId(sellerId);
-    return ResponseEntity.ok(orders);
-}
 
-@PatchMapping("/{id}/status")
-public ResponseEntity<Orders> updateOrderStatus(
-        @PathVariable Long id, 
-        @RequestBody Map<String, String> statusUpdate) {
-    
-    String status = statusUpdate.get("status");
-    Orders updatedOrder = orderService.updateOrderStatus(id, status);
-    return ResponseEntity.ok(updatedOrder);
-}
+    @GetMapping("/seller/{sellerId}")
+    public ResponseEntity<List<Orders>> getOrdersBySellerId(@PathVariable Long sellerId) {
+        List<Orders> orders = orderService.getOrdersBySellerId(sellerId);
+        return ResponseEntity.ok(orders);
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Orders> updateOrderStatus(
+            @PathVariable Long id, 
+            @RequestBody Map<String, String> statusUpdate) {
+        
+        String status = statusUpdate.get("status");
+        Orders updatedOrder = orderService.updateOrderStatus(id, status);
+        return ResponseEntity.ok(updatedOrder);
+    }
+
     @GetMapping("/all")
-    public List<Orders> all() { return orderService.getAllOrders(); }
+    public List<Orders> all() { 
+        return orderService.getAllOrders(); 
+    }
 
     @GetMapping("/{id}")
     public Orders byId(@PathVariable Long id) {

@@ -5,6 +5,7 @@ import { PaymentService } from '../core/services/payment.service';
 import { AuthService } from '../core/services/auth.service';
 import { CartItem } from '../shared/models/cartitem.model';
 import { Router } from '@angular/router';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'app-cart-page',
@@ -24,7 +25,8 @@ export class CartPageComponent implements OnInit {
     private cartSvc: CartService,
     private paymentSvc: PaymentService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private http: HttpClient
   ) { }
 
   ngOnInit() {
@@ -77,6 +79,15 @@ export class CartPageComponent implements OnInit {
     });
   }
 
+  checkUserPermission(): boolean {
+    const userRole = this.authService.getUserRole();
+    if (userRole !== 'ROLE_CUSTOMER' && userRole !== 'ROLE_SELLER') {
+      this.errorMessage = 'Your account doesn\'t have permission to make purchases';
+      return false;
+    }
+    return true;
+  }
+
   checkout() {
     if (!this.selectedPaymentMethod) {
       this.errorMessage = 'Please select a payment method';
@@ -86,6 +97,26 @@ export class CartPageComponent implements OnInit {
     const currentUser = this.authService.getCurrentUser();
     if (!currentUser) {
       this.errorMessage = 'You must be logged in to complete this purchase';
+      return;
+    }
+
+    if (!this.checkUserPermission()) {
+      return;
+    }
+
+    // Add this section to debug
+    const token = localStorage.getItem('jwt_token');
+    console.log('Current token:', token ? 'Present' : 'Missing');
+    console.log('User role:', this.authService.getUserRole());
+    console.log('User details:', currentUser);
+
+    if (!token) {
+      // If token is missing, redirect to login
+      this.errorMessage = 'Your session has expired. Please login again.';
+      setTimeout(() => {
+        this.authService.logout();
+        this.router.navigate(['/login'], { queryParams: { returnUrl: '/cart' } });
+      }, 2000);
       return;
     }
 
@@ -104,8 +135,18 @@ export class CartPageComponent implements OnInit {
       items: orderItems
     };
 
-    // Send order request
-    this.cartSvc.placeOrder(orderRequest).subscribe({
+    // Add explicit headers to the request
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    // Use direct HTTP call instead of the service method for testing
+    this.http.post<any>(
+      '/api/orders/place',
+      orderRequest,
+      { headers }
+    ).subscribe({
       next: (response) => {
         this.isProcessing = false;
         this.successMessage = 'Order placed successfully!';
@@ -122,6 +163,16 @@ export class CartPageComponent implements OnInit {
         this.isProcessing = false;
         this.errorMessage = error.error?.message || 'Failed to place order. Please try again.';
         console.error('Checkout error:', error);
+
+        // Add more detailed logging for debugging
+        console.error('Status:', error.status);
+        console.error('Headers:', error.headers);
+        console.error('Error details:', error.error);
+
+        // If token issue, suggest re-login
+        if (error.status === 401) {
+          this.errorMessage = 'Your session may have expired. Please try logging in again.';
+        }
       }
     });
   }

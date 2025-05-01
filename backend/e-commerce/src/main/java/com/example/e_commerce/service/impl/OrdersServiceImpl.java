@@ -56,8 +56,8 @@ public class OrdersServiceImpl implements OrdersService {
         User user = userRepo.findById(req.getUserId())
             .orElseThrow(() -> new RuntimeException("User not found"));
         
-        // eger kullanıcı customer değilse hata fırlat
-        if(user.getUserId() != 3) {
+        // Check if user has appropriate role to place an order (ROLE_CUSTOMER or ROLE_SELLER)
+        if(user.getRole() == null || (user.getRole().getRoleId() != 3 && user.getRole().getRoleId() != 2)) {
             throw new RuntimeException("User not authorized to place order");
         }
         
