@@ -25,13 +25,13 @@ export class NavbarComponent implements OnInit {
   showSearchResults: boolean = false;
   private searchSubject = new Subject<string>();
   searchLoading: boolean = false;
-  cartItemCount: number = 0; // Add this property
+  cartItemCount: number = 0;
 
   constructor(
     private auth: AuthService,
     private productService: ProductService,
     private router: Router,
-    private cartService: CartService // Add CartService
+    private cartService: CartService
   ) { }
 
   ngOnInit(): void {
@@ -48,7 +48,7 @@ export class NavbarComponent implements OnInit {
       }
     });
 
-    // Existing search code...
+    // Existing search code
     this.searchSubject.pipe(
       debounceTime(300)
     ).subscribe(query => {
@@ -127,6 +127,12 @@ export class NavbarComponent implements OnInit {
 
   isAdmin(): boolean {
     return this.auth.getUserRole() === 'ROLE_ADMIN';
+  }
+
+  // New method to check if user is either a customer or seller
+  isCustomerOrSeller(): boolean {
+    const role = this.auth.getUserRole();
+    return role === 'ROLE_CUSTOMER' || role === 'ROLE_SELLER';
   }
 
   toggleDropdown(event: Event) {

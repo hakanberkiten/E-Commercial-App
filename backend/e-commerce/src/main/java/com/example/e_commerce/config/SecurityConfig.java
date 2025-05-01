@@ -59,13 +59,13 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/products/seller/**").hasAuthority("ROLE_SELLER") // Seller views their products
                 .requestMatchers(HttpMethod.GET, "/api/orders/seller/**").hasAuthority("ROLE_SELLER") // Seller views their orders
 
-                // Customer endpoints
-                .requestMatchers("/api/cart/**").hasAuthority("ROLE_CUSTOMER")
-                .requestMatchers(HttpMethod.POST, "/api/orders/place").hasAuthority("ROLE_CUSTOMER") // Placing an order
-                .requestMatchers(HttpMethod.GET, "/api/orders/{id}").hasAuthority("ROLE_CUSTOMER") // Customer views their own order
-                .requestMatchers("/api/reviews/save").hasAuthority("ROLE_CUSTOMER") // Customer saves a review
-                .requestMatchers("/api/addresses/**").hasAuthority("ROLE_CUSTOMER") // Customer manages addresses
-                .requestMatchers("/api/user-addresses/**").hasAuthority("ROLE_CUSTOMER") // Customer manages addresses
+                // Customer endpoints (allowing both ROLE_CUSTOMER and ROLE_SELLER)
+                .requestMatchers("/api/cart/**").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER")
+                .requestMatchers(HttpMethod.POST, "/api/orders/place").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER") // Placing an order
+                .requestMatchers(HttpMethod.GET, "/api/orders/{id}").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER") // Customer views their own order
+                .requestMatchers("/api/reviews/save").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER") // Customer saves a review
+                .requestMatchers("/api/addresses/**").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER") // Customer manages addresses
+                .requestMatchers("/api/user-addresses/**").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_SELLER") // Customer manages addresses
 
                 // Fallback: Any other authenticated request
                 .anyRequest().authenticated()

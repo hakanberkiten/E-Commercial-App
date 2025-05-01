@@ -13,9 +13,8 @@
 
         <!-- Navbar Links -->
         <div class="collapse navbar-collapse" id="navbarContent">
-            <!-- Search Bar - Only shown for customers or non-logged in users -->
-            <div *ngIf="isCustomer() || !currentUser" class="mx-auto d-none d-lg-block position-relative"
-                style="width: 40%;">
+            <!-- Search Bar - Now shown for all users except admins -->
+            <div *ngIf="!isAdmin()" class="mx-auto d-none d-lg-block position-relative" style="width: 40%;">
                 <div class="input-group">
                     <input type="text" class="form-control" placeholder="Search products..." aria-label="Search"
                         [(ngModel)]="searchQuery" name="search" (input)="onSearchChange($event)"
@@ -66,8 +65,8 @@
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                 <!-- Authenticated User Links -->
                 <ng-container *ngIf="currentUser">
-                    <!-- Customer Links -->
-                    <ng-container *ngIf="isCustomer()">
+                    <!-- Customer Links - Show for both CUSTOMER and SELLER roles -->
+                    <ng-container *ngIf="isCustomerOrSeller()">
                         <li class="nav-item">
                             <a class="nav-link" routerLink="/products" routerLinkActive="active">
                                 <i class="bi bi-grid me-1"></i> Products
@@ -103,7 +102,6 @@
                     </ng-container>
 
                     <!-- User Profile Dropdown -->
-                    <!-- User Profile Dropdown -->
                     <li class="nav-item ms-lg-3">
                         <div class="btn-group">
                             <!-- Main button with user info -->
@@ -122,7 +120,6 @@
                             </button>
 
                             <!-- Dropdown menu -->
-                            <!-- Dropdown menu -->
                             <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
                                 <li>
                                     <a class="dropdown-item" routerLink="/profile">
@@ -132,6 +129,12 @@
                                 <li>
                                     <a class="dropdown-item" routerLink="/orders">
                                         <i class="bi bi-bag-check me-2"></i>My Orders
+                                    </a>
+                                </li>
+                                <!-- Show seller dashboard in dropdown for sellers -->
+                                <li *ngIf="isSeller()">
+                                    <a class="dropdown-item" routerLink="/seller-dashboard">
+                                        <i class="bi bi-shop me-2"></i>Seller Dashboard
                                     </a>
                                 </li>
                                 <li>
