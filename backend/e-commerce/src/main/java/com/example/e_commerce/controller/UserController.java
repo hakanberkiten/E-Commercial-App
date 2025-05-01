@@ -4,6 +4,7 @@ import com.example.e_commerce.dto.AddressDTO;
 import com.example.e_commerce.entity.Role;
 import com.example.e_commerce.entity.User;
 import com.example.e_commerce.repository.RoleRepository;
+import com.example.e_commerce.repository.UserRepository;
 import com.example.e_commerce.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,9 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
@@ -27,6 +27,9 @@ public class UserController {
 
     @Autowired  // Add this annotation to properly inject the dependency
     private RoleRepository roleRepository;
+
+    @Autowired
+    private UserRepository userRepository;
     
     @PostMapping("/save")
     public User saveUser(@RequestBody User user) {
@@ -199,5 +202,23 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
+    }
+
+    @GetMapping("/admin-contacts")
+    public ResponseEntity<List<Map<String, String>>> getAdminContacts() {
+        // Use a targeted database query instead of findAll()
+        List<User> adminUsers = userRepository.findByRoleName("ADMIN");
+        
+        List<Map<String, String>> adminContacts = adminUsers.stream()
+            .map(admin -> {
+                Map<String, String> contact = new HashMap<>();
+                contact.put("firstName", admin.getFirstName());
+                contact.put("lastName", admin.getLastName());
+                contact.put("email", admin.getEmail());
+                return contact;
+            })
+            .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(adminContacts);
     }
 }

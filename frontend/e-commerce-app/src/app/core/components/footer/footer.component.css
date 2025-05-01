@@ -1,0 +1,16 @@
+footer {
+  margin-top: auto;
+}
+
+footer a:hover {
+  color: white !important;
+  transition: color 0.3s ease;
+}
+
+footer .bi {
+  font-size: 1.2rem;
+}
+
+footer .btn-outline-light:hover {
+  background-color: rgba(255,255,255,0.2);
+}

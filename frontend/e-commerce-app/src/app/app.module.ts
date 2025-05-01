@@ -25,9 +25,10 @@ import { ProductDetailComponent } from './features/products/product-detail/produ
 import { SellerDashboardComponent } from './core/components/seller-dashboard/seller-dashboard.component';
 import { AdminDashboardComponent } from './core/components/admin-dashboard/admin-dashboard.component';
 import { ErrorInterceptor } from './core/interceptors/error.interceptor';
+import { FooterComponent } from './core/components/footer/footer.component';
 
 @NgModule({
-  declarations: [AppComponent, ProductListComponent, LoginComponent, SignupComponent, CustomerComponent, CartPageComponent, NavbarComponent, ProfileComponent, ProductDetailComponent, SellerDashboardComponent, AdminDashboardComponent],
+  declarations: [AppComponent, ProductListComponent, LoginComponent, SignupComponent, CustomerComponent, CartPageComponent, NavbarComponent, ProfileComponent, ProductDetailComponent, SellerDashboardComponent, AdminDashboardComponent, FooterComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,

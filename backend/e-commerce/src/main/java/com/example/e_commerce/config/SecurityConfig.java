@@ -36,6 +36,9 @@ public class SecurityConfig {
                 // Public GET requests for products, categories, reviews
                 .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**", "/api/reviews/**").permitAll()
 
+                // Add this line to allow public access to admin contacts
+                .requestMatchers("/api/users/admin-contacts").permitAll()
+
                 // Admin endpoints
                 .requestMatchers(HttpMethod.GET, "/api/users/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/users/**").hasAuthority("ROLE_ADMIN")
