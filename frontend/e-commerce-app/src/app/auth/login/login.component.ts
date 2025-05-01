@@ -13,6 +13,7 @@ import { Router } from '@angular/router';
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   errorMsg = '';
+  isLoading :boolean = false;
 
   constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) { }
 

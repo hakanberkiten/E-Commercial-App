@@ -142,3 +142,92 @@
         margin: 10px 0;
     }
 }
+
+/* Theme toggle button styling */
+.btn-theme-toggle {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border-radius: 2rem;
+    border: none;
+    transition: all 0.3s ease;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Light mode styles */
+.btn-theme-toggle {
+    background: linear-gradient(145deg, #f5f7fa, #e4e9f2);
+    color: #3f51b5;
+    border: 1px solid #e0e0e0;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.btn-theme-toggle:hover {
+    background: linear-gradient(145deg, #e4e9f2, #f5f7fa);
+    transform: translateY(-2px);
+    box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-theme-toggle i {
+    font-size: 1.2rem;
+}
+
+/* Dark mode styles */
+body.dark-mode .btn-theme-toggle {
+    background: linear-gradient(145deg, #262a39, #1a1e2e);
+    color: #7c8ce7;
+    border: 1px solid #40455c;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+body.dark-mode .btn-theme-toggle:hover {
+    background: linear-gradient(145deg, #1a1e2e, #262a39);
+    box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Animation when clicking the button */
+.btn-theme-toggle:active {
+    transform: scale(0.97);
+}
+
+/* Button ripple effect */
+.btn-theme-toggle {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-theme-toggle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%);
+    transform-origin: 50% 50%;
+}
+
+.btn-theme-toggle:focus:not(:active)::after {
+    animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0, 0);
+        opacity: 1;
+    }
+
+    20% {
+        transform: scale(25, 25);
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(40, 40);
+    }
+}

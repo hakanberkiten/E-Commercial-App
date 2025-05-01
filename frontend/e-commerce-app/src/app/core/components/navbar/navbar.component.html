@@ -163,6 +163,14 @@
                         </a>
                     </li>
                 </ng-container>
+
+                <!-- Theme Toggle Button - Moved to always be at the very right -->
+                <li class="nav-item d-flex align-items-center ms-lg-3">
+                    <button class="btn btn-theme-toggle" (click)="toggleTheme()" aria-label="Toggle theme">
+                        <i class="bi" [ngClass]="isDarkMode ? 'bi-sun-fill' : 'bi-moon-fill'"></i>
+                        <span class="ms-2 d-none d-lg-inline">{{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}</span>
+                    </button>
+                </li>
             </ul>
         </div>
     </div>

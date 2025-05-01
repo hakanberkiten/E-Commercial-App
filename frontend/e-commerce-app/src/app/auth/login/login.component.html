@@ -1,78 +1,99 @@
-<div class="min-vh-100 d-flex align-items-center bg-light">
-    <div class="container">
+<div class="login-page min-vh-100 d-flex align-items-center"
+    style="background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);">
+    <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-5">
 
-                <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
-                    <div class="card-header text-white text-center py-4"
-                        style="background: linear-gradient(135deg,#6a11cb 0,#2575fc)">
-                        <h2 class="mb-1">Welcome Back</h2>
-                        <small class="text-white-50">Sign in to your account</small>
+
+                <!-- Login Card -->
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden slide-up">
+                    <div class="card-header text-white text-center p-4"
+                        style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)">
+                        <h2 class="fw-bold mb-1">Welcome Back</h2>
+                        <p class="text-white-50 mb-0">Sign in to continue to your account</p>
                     </div>
 
-                    <div class="card-body p-4">
+                    <div class="card-body p-4 p-lg-5">
                         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-
-                            <!-- email -->
-                            <div class="form-floating mb-3">
-                                <input type="email" id="email" formControlName="email" class="form-control"
+                            <!-- Email -->
+                            <div class="form-floating mb-4">
+                                <input type="email" id="email" formControlName="email"
+                                    class="form-control form-control-lg"
+                                    [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
                                     placeholder="name@example.com">
-                                <label for="email">Email address</label>
+                                <label for="email">
+                                    <i class="bi bi-envelope me-2 text-muted"></i>Email address
+                                </label>
                                 <div *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
-                                    class="text-danger small mt-1">
-                                    <span *ngIf="loginForm.get('email')?.errors?.['required']">Required</span>
-                                    <span *ngIf="loginForm.get('email')?.errors?.['email']">Invalid email</span>
+                                    class="invalid-feedback">
+                                    <span *ngIf="loginForm.get('email')?.errors?.['required']">Email is required</span>
+                                    <span *ngIf="loginForm.get('email')?.errors?.['email']">Please enter a valid email
+                                        address</span>
                                 </div>
                             </div>
 
-                            <!-- password -->
-                            <div class="form-floating mb-4">
-                                <input type="password" id="password" formControlName="password" class="form-control"
+                            <!-- Password -->
+                            <div class="form-floating mb-3">
+                                <input type="password" id="password" formControlName="password"
+                                    class="form-control form-control-lg"
+                                    [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
                                     placeholder="Password">
-                                <label for="password">Password</label>
+                                <label for="password">
+                                    <i class="bi bi-lock me-2 text-muted"></i>Password
+                                </label>
                                 <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
-                                    class="text-danger small mt-1">Required</div>
+                                    class="invalid-feedback">Password is required</div>
                             </div>
 
-                            <div class="d-flex justify-content-end mb-4">
-                                <a href="#" class="text-decoration-none small">Forgot password?</a>
+                            <!-- Remember me / Forgot password -->
+
+
+                            <!-- Error message -->
+                            <div *ngIf="errorMsg" class="alert border-0 alert-dismissible fade show mb-4" [ngClass]="{'alert-danger': !errorMsg.includes('suspended'), 
+                                           'alert-warning': errorMsg.includes('suspended')}">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi" [ngClass]="errorMsg.includes('suspended') ? 
+                                                'bi-exclamation-triangle-fill' : 
+                                                'bi-x-circle-fill'" style="font-size: 1.2rem;"></i>
+                                    <div class="ms-2">{{ errorMsg }}</div>
+                                </div>
+                                <button type="button" class="btn-close" (click)="errorMsg = ''"></button>
                             </div>
 
-                            <!-- global error -->
-                            <!-- global error -->
-                            <div *ngIf="errorMsg" class="alert"
-                                [ngClass]="{'alert-danger': !errorMsg.includes('suspended'), 'alert-warning': errorMsg.includes('suspended')}">
-                                <i *ngIf="errorMsg.includes('suspended')"
-                                    class="bi bi-exclamation-triangle-fill me-2"></i>
-                                {{ errorMsg }}
-                            </div>
-
-                            <!-- submit -->
+                            <!-- Login Button -->
                             <div class="d-grid mb-4">
-
-                                <button type="submit" class="btn btn-primary btn-lg"> Login</button>
+                                <button type="submit" class="btn btn-primary btn-lg py-3"
+                                    [disabled]="loginForm.invalid || isLoading">
+                                    <span *ngIf="!isLoading">Login</span>
+                                    <span *ngIf="isLoading" class="d-flex align-items-center justify-content-center">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                        Signing in...
+                                    </span>
+                                </button>
                             </div>
 
+                            <!-- Create account -->
                             <p class="text-center mb-0">
                                 Don't have an account?
-                                <a routerLink="/signup" class="fw-semibold text-decoration-none">Sign up</a>
+                                <a routerLink="/signup" class="fw-semibold text-decoration-none text-primary ms-1">
+                                    Sign up
+                                </a>
                             </p>
-
                         </form>
                     </div>
                 </div>
 
-                <!-- Social login buttons (optional) -->
-                <div class="mt-4 text-center">
-                    <p class="text-muted small mb-2">Or sign in with</p>
-                    <div class="d-flex justify-content-center gap-2">
-                        <button class="btn btn-outline-secondary btn-sm rounded-circle">
+                <!-- Social login section -->
+                <div class="social-login text-center mt-4 fade-in-up">
+                    <p class="text-muted small mb-3">Or sign in with</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <button class="btn btn-outline-light btn-social">
                             <i class="bi bi-google"></i>
                         </button>
-                        <button class="btn btn-outline-secondary btn-sm rounded-circle">
+                        <button class="btn btn-outline-light btn-social">
                             <i class="bi bi-facebook"></i>
                         </button>
-                        <button class="btn btn-outline-secondary btn-sm rounded-circle">
+                        <button class="btn btn-outline-light btn-social">
                             <i class="bi bi-apple"></i>
                         </button>
                     </div>
@@ -81,3 +102,91 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* Modern styling for the login page */
+    .login-page {
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+    }
+
+    .slide-up {
+        animation: slideUp 0.5s ease-out;
+    }
+
+    .fade-in-up {
+        animation: fadeInUp 0.7s ease-out;
+    }
+
+    .btn-social {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+        background-color: white;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-social:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-social i {
+        font-size: 1.2rem;
+    }
+
+    .btn-social:nth-child(1) i {
+        color: #DB4437;
+    }
+
+    .btn-social:nth-child(2) i {
+        color: #4267B2;
+    }
+
+    .btn-social:nth-child(3) i {
+        color: #000000;
+    }
+
+    /* Animations */
+    @keyframes slideUp {
+        from {
+            transform: translateY(30px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes gradientBG {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+</style>

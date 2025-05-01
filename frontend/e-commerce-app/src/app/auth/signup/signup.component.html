@@ -1,98 +1,222 @@
 <!-- src/app/auth/signup/signup.component.html -->
-<div class="min-vh-100 d-flex align-items-center bg-light">
-    <div class="container">
+<div class="signup-page min-vh-100 d-flex align-items-center"
+    style="background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);">
+    <div class="container py-5">
         <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
+            <div class="col-md-10 col-lg-7">
 
-                <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
-                    <div class="card-header text-white text-center py-4"
-                        style="background: linear-gradient(135deg,#6a11cb 0,#2575fc)">
-                        <h2 class="mb-1">Create Your Account</h2>
-                        <small class="text-white-50">Join our shopping community today</small>
+
+                <!-- Signup Card -->
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden slide-up">
+                    <div class="card-header text-white text-center p-4"
+                        style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)">
+                        <h2 class="fw-bold mb-1">Create Your Account</h2>
+                        <p class="text-white-50 mb-0">Join our shopping community today</p>
                     </div>
 
-                    <div class="card-body p-4">
+                    <div class="card-body p-4 p-lg-5">
                         <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
-
-                            <!-- first + last name -->
+                            <!-- Name fields -->
                             <div class="row g-3 mb-3">
-                                <div class="col-6">
+                                <div class="col-md-6">
                                     <div class="form-floating">
                                         <input type="text" id="firstName" formControlName="firstName"
-                                            class="form-control" placeholder="First Name">
-                                        <label for="firstName">First Name</label>
+                                            class="form-control"
+                                            [class.is-invalid]="signupForm.get('firstName')?.invalid && signupForm.get('firstName')?.touched"
+                                            placeholder="First Name">
+                                        <label for="firstName">
+                                            <i class="bi bi-person me-2 text-muted"></i>First Name
+                                        </label>
+                                        <div *ngIf="signupForm.get('firstName')?.invalid && signupForm.get('firstName')?.touched"
+                                            class="invalid-feedback">First name is required</div>
                                     </div>
-                                    <div *ngIf="signupForm.get('firstName')?.invalid && signupForm.get('firstName')?.touched"
-                                        class="text-danger small mt-1">Required</div>
                                 </div>
-                                <div class="col-6">
+                                <div class="col-md-6">
                                     <div class="form-floating">
                                         <input type="text" id="lastName" formControlName="lastName" class="form-control"
+                                            [class.is-invalid]="signupForm.get('lastName')?.invalid && signupForm.get('lastName')?.touched"
                                             placeholder="Last Name">
-                                        <label for="lastName">Last Name</label>
+                                        <label for="lastName">
+                                            <i class="bi bi-person me-2 text-muted"></i>Last Name
+                                        </label>
+                                        <div *ngIf="signupForm.get('lastName')?.invalid && signupForm.get('lastName')?.touched"
+                                            class="invalid-feedback">Last name is required</div>
                                     </div>
-                                    <div *ngIf="signupForm.get('lastName')?.invalid && signupForm.get('lastName')?.touched"
-                                        class="text-danger small mt-1">Required</div>
                                 </div>
                             </div>
 
-                            <!-- email -->
+                            <!-- Email -->
                             <div class="form-floating mb-3">
                                 <input type="email" id="email" formControlName="email" class="form-control"
+                                    [class.is-invalid]="signupForm.get('email')?.invalid && signupForm.get('email')?.touched"
                                     placeholder="name@example.com">
-                                <label for="email">Email address</label>
+                                <label for="email">
+                                    <i class="bi bi-envelope me-2 text-muted"></i>Email address
+                                </label>
                                 <div *ngIf="signupForm.get('email')?.invalid && signupForm.get('email')?.touched"
-                                    class="text-danger small mt-1">
-                                    <span *ngIf="signupForm.get('email')?.errors?.['required']">Required</span>
-                                    <span *ngIf="signupForm.get('email')?.errors?.['email']">Invalid email</span>
+                                    class="invalid-feedback">
+                                    <span *ngIf="signupForm.get('email')?.errors?.['required']">Email is required</span>
+                                    <span *ngIf="signupForm.get('email')?.errors?.['email']">Please enter a valid email
+                                        address</span>
                                 </div>
                             </div>
 
-                            <!-- password -->
+                            <!-- Password with strength indicator -->
                             <div class="form-floating mb-3">
                                 <input type="password" id="password" formControlName="password" class="form-control"
+                                    [class.is-invalid]="signupForm.get('password')?.invalid && signupForm.get('password')?.touched"
                                     placeholder="Password">
-                                <label for="password">Password</label>
+                                <label for="password">
+                                    <i class="bi bi-lock me-2 text-muted"></i>Password
+                                </label>
                                 <div *ngIf="signupForm.get('password')?.invalid && signupForm.get('password')?.touched"
-                                    class="text-danger small mt-1">
-                                    <span *ngIf="signupForm.get('password')?.errors?.['required']">Required</span>
-                                    <span *ngIf="signupForm.get('password')?.errors?.['minlength']">Min 6 chars</span>
+                                    class="invalid-feedback">
+                                    <span *ngIf="signupForm.get('password')?.errors?.['required']">Password is
+                                        required</span>
+                                    <span *ngIf="signupForm.get('password')?.errors?.['minlength']">Password must be at
+                                        least 6 characters</span>
+                                </div>
+
+                                <!-- Password strength indicator (shows only when typing) -->
+                                <div *ngIf="signupForm.get('password')?.value && !signupForm.get('password')?.touched"
+                                    class="password-strength mt-2">
+                                    <div class="progress" style="height: 5px;">
+                                        <div class="progress-bar" [ngClass]="{
+                                                'bg-danger': signupForm.get('password')?.value.length < 6,
+                                                'bg-warning': signupForm.get('password')?.value.length >= 6 && signupForm.get('password')?.value.length < 10,
+                                                'bg-success': signupForm.get('password')?.value.length >= 10
+                                             }"
+                                            [style.width.%]="(signupForm.get('password')?.value.length * 10) > 100 ? 100 : (signupForm.get('password')?.value.length * 10)">
+                                        </div>
+                                    </div>
+                                    <small class="text-muted d-block mt-1">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        <span *ngIf="signupForm.get('password')?.value.length < 6">Weak - Add more
+                                            characters</span>
+                                        <span
+                                            *ngIf="signupForm.get('password')?.value.length >= 6 && signupForm.get('password')?.value.length < 10">Medium
+                                            - Good password</span>
+                                        <span *ngIf="signupForm.get('password')?.value.length >= 10">Strong - Excellent
+                                            password</span>
+                                    </small>
                                 </div>
                             </div>
 
-                            <!-- mobile -->
+                            <!-- Mobile number -->
                             <div class="form-floating mb-4">
                                 <input type="tel" id="mobileNumber" formControlName="mobileNumber" class="form-control"
+                                    [class.is-invalid]="signupForm.get('mobileNumber')?.invalid && signupForm.get('mobileNumber')?.touched"
                                     placeholder="Mobile Number">
-                                <label for="mobileNumber">Mobile Number</label>
+                                <label for="mobileNumber">
+                                    <i class="bi bi-phone me-2 text-muted"></i>Mobile Number
+                                </label>
                                 <div *ngIf="signupForm.get('mobileNumber')?.invalid && signupForm.get('mobileNumber')?.touched"
-                                    class="text-danger small mt-1">Required</div>
+                                    class="invalid-feedback">Mobile number is required</div>
                             </div>
 
-                            <!-- global error -->
-                            <div *ngIf="errorMsg" class="alert alert-danger">
-                                {{ errorMsg }}
+
+
+                            <!-- Error message -->
+                            <div *ngIf="errorMsg" class="alert alert-danger alert-dismissible fade show mb-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-exclamation-triangle-fill me-2" style="font-size: 1.2rem;"></i>
+                                    <div>{{ errorMsg }}</div>
+                                </div>
+                                <button type="button" class="btn-close" (click)="errorMsg = ''"></button>
                             </div>
 
-                            <!-- submit -->
-                            <div class="d-grid mb-3">
-                                <button type="submit" class="btn btn-primary btn-lg"
+                            <!-- Submit -->
+                            <div class="d-grid mb-4">
+                                <button type="submit" class="btn btn-primary btn-lg py-3"
                                     [disabled]="signupForm.invalid || loading">
-                                    <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
-                                    Sign Up
+                                    <span *ngIf="!loading">Create Account</span>
+                                    <span *ngIf="loading" class="d-flex align-items-center justify-content-center">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                        Processing...
+                                    </span>
                                 </button>
                             </div>
 
+                            <!-- Login link -->
                             <p class="text-center mb-0">
                                 Already have an account?
-                                <a routerLink="/login" class="fw-semibold text-decoration-none">Login</a>
+                                <a routerLink="/login" class="fw-semibold text-decoration-none text-primary ms-1">
+                                    Log in
+                                </a>
                             </p>
-
                         </form>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    /* Modern styling for the signup page */
+    .signup-page {
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+    }
+
+    .slide-up {
+        animation: slideUp 0.5s ease-out forwards;
+    }
+
+    .fade-in-up {
+        animation: fadeInUp 0.7s ease-out forwards;
+    }
+
+    /* Input focus effect */
+    .form-control:focus {
+        border-color: #6a11cb;
+        box-shadow: 0 0 0 0.25rem rgba(106, 17, 203, 0.25);
+    }
+
+    /* Animations */
+    @keyframes slideUp {
+        from {
+            transform: translateY(30px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes gradientBG {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    /* Enhance form elements */
+    .form-floating>.form-control:focus~label,
+    .form-floating>.form-control:not(:placeholder-shown)~label {
+        color: #6a11cb;
+        opacity: 0.8;
+        transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+    }
+</style>

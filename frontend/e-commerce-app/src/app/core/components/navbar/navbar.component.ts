@@ -4,6 +4,7 @@ import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
 import { Router } from '@angular/router';
 import { debounceTime, Subject } from 'rxjs';
+import { ThemeService } from '../../services/theme.service';
 
 interface SearchResult {
   id: number;
@@ -26,12 +27,14 @@ export class NavbarComponent implements OnInit {
   private searchSubject = new Subject<string>();
   searchLoading: boolean = false;
   cartItemCount: number = 0;
+  isDarkMode: boolean = false;
 
   constructor(
     private auth: AuthService,
     private productService: ProductService,
     private router: Router,
-    private cartService: CartService
+    private cartService: CartService,
+    private themeService: ThemeService
   ) { }
 
   ngOnInit(): void {
@@ -53,6 +56,11 @@ export class NavbarComponent implements OnInit {
       debounceTime(300)
     ).subscribe(query => {
       this.performSearch(query);
+    });
+
+    // Subscribe to theme changes
+    this.themeService.isDarkMode$.subscribe(isDark => {
+      this.isDarkMode = isDark;
     });
   }
 
@@ -141,5 +149,10 @@ export class NavbarComponent implements OnInit {
     if (dropdown) {
       dropdown.classList.toggle('show');
     }
+  }
+
+  // Add this method for theme toggling
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
   }
 }
