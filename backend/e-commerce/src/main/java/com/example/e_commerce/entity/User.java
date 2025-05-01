@@ -41,4 +41,6 @@ public class User {
     @Builder.Default
     @Column(nullable = false)
     private Boolean active = true;
+
+    private String stripeCustomerId;
 }

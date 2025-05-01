@@ -3,6 +3,7 @@ package com.example.e_commerce.service.impl;
 
 import com.example.e_commerce.dto.OrderItemRequest;
 import com.example.e_commerce.dto.OrderRequest;
+import com.example.e_commerce.dto.PaymentRequest;
 import com.example.e_commerce.entity.OrderItem;
 import com.example.e_commerce.entity.Orders;
 import com.example.e_commerce.entity.Payment;
@@ -15,6 +16,7 @@ import com.example.e_commerce.repository.ProductRepository;
 import com.example.e_commerce.repository.UserRepository;
 import com.example.e_commerce.service.OrdersService;
 import com.example.e_commerce.service.NotificationService;
+import com.example.e_commerce.service.PaymentService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -35,6 +37,7 @@ public class OrdersServiceImpl implements OrdersService {
     private final ProductRepository productRepo;
     private final OrderItemRepository itemRepo;
     private final NotificationService notificationService;
+    private final PaymentService paymentService;
 
     @Override
     public Orders saveOrder(Orders order) {
@@ -52,16 +55,34 @@ public class OrdersServiceImpl implements OrdersService {
         // 1️⃣ Kullanıcıyı çek
         User user = userRepo.findById(req.getUserId())
             .orElseThrow(() -> new RuntimeException("User not found"));
-         // eger kullanıcı customer değilse hata fırlat
-            if(user.getUserId() != 3) {
+        
+        // eger kullanıcı customer değilse hata fırlat
+        if(user.getUserId() != 3) {
             throw new RuntimeException("User not authorized to place order");
         }
         
-        // 2️⃣ (İsteğe bağlı) Ödeme bilgisi varsa al
+        // 2️⃣ Process payment if paymentMethodId is provided
         Payment payment = null;
-        if (req.getPaymentId() != null) {
-            payment = payRepo.findById(req.getPaymentId())
-                .orElseThrow(() -> new RuntimeException("Payment not found"));
+        if (req.getPaymentMethodId() != null && user.getStripeCustomerId() != null) {
+            // Calculate total amount from items
+            BigDecimal totalAmount = req.getItems().stream()
+                .map(item -> {
+                    Product product = productRepo.findById(item.getProductId()).get();
+                    return BigDecimal.valueOf(product.getPrice() * item.getQuantity());
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            // Create payment request
+            PaymentRequest paymentRequest = new PaymentRequest();
+            paymentRequest.setUserId(user.getUserId());
+            paymentRequest.setStripeCustomerId(user.getStripeCustomerId());
+            paymentRequest.setPaymentMethodId(req.getPaymentMethodId());
+            paymentRequest.setAmount(totalAmount);
+            paymentRequest.setCurrency("USD");
+            paymentRequest.setDescription("Payment for order");
+            
+            // Process the payment
+            payment = paymentService.processPayment(paymentRequest);
         }
 
         // 3️⃣ Stok kontrolü ve stoktan düşme
@@ -135,8 +156,6 @@ public class OrdersServiceImpl implements OrdersService {
     public void deleteOrder(Long id) {
         orderRepo.deleteById(id);
     }
-
-    // Implement the new methods in your OrdersServiceImpl
 
     @Override
     public List<Orders> getOrdersBySellerId(Long sellerId) {

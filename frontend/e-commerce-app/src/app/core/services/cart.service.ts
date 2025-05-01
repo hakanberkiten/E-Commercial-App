@@ -76,4 +76,8 @@ export class CartService {
   getCartItemCount(): Observable<number> {
     return this.cartItemCount$;
   }
+
+  placeOrder(orderRequest: any): Observable<any> {
+    return this.http.post('/api/orders/place', orderRequest);
+  }
 }

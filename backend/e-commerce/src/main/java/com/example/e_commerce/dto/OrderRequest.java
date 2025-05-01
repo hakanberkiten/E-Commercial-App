@@ -9,5 +9,6 @@ import java.util.List;
 public class OrderRequest {
     private Long userId;
     private Long paymentId;           // opsiyonel
+    private String paymentMethodId;  // Stripe payment method ID
     private List<OrderItemRequest> items;
 }

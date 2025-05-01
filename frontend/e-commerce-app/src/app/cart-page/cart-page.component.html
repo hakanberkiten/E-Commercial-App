@@ -1,83 +1,160 @@
 <div class="container py-5">
-  <div class="row">
-    <div class="col-lg-8">
-      <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white border-0">
-          <h2 class="mb-0">Your Shopping Cart</h2>
-        </div>
-        <div class="card-body p-0">
-                <div class="card-body">
-                    <!-- Empty cart message -->
-                    <div *ngIf="items.length === 0" class="text-center py-5">
-                        <i class="bi bi-cart-x" style="font-size: 3rem;"></i>
-                        <p class="lead mt-3">Your cart is empty</p>
-                        <a routerLink="/products" class="btn btn-outline-primary mt-2">Continue Shopping</a>
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h2 class="mb-0">Your Shopping Cart</h2>
+                </div>
+                <div class="card-body p-0">
+                    <div class="card-body">
+                        <!-- Empty cart message -->
+                        <div *ngIf="items.length === 0" class="text-center py-5">
+                            <i class="bi bi-cart-x" style="font-size: 3rem;"></i>
+                            <p class="lead mt-3">Your cart is empty</p>
+                            <a routerLink="/products" class="btn btn-outline-primary mt-2">Continue Shopping</a>
+                        </div>
+
+                        <!-- Cart items -->
+                        <div *ngIf="items.length > 0" class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th class="text-center">Quantity</th>
+                                        <th class="text-end">Price</th>
+                                        <th class="text-end">Subtotal</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let it of items">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img *ngIf="it.product.image" [src]="it.product.image"
+                                                    alt="{{it.product.productName}}" class="me-3"
+                                                    style="width: 50px; height: 50px; object-fit: cover;">
+                                                <span>{{ it.product.productName }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="input-group input-group-sm"
+                                                style="max-width: 120px; margin: 0 auto;">
+                                                <button class="btn btn-outline-secondary" type="button"
+                                                    (click)="update(it, (it.quantityInCart - 1).toString())"
+                                                    [disabled]="it.quantityInCart <= 1">-</button>
+                                                <input #qtyRef type="number" class="form-control text-center"
+                                                    [value]="it.quantityInCart" min="1"
+                                                    (change)="update(it, qtyRef.value)">
+                                                <button class="btn btn-outline-secondary" type="button"
+                                                    (click)="update(it, (it.quantityInCart + 1).toString())">+</button>
+                                            </div>
+                                        </td>
+                                        <td class="text-end">{{ it.product.price | currency }}</td>
+                                        <td class="text-end">{{ it.product.price * it.quantityInCart | currency }}</td>
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-outline-danger" (click)="remove(it)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3" class="text-end fw-bold">Total:</td>
+                                        <td class="text-end fw-bold">{{ total | currency }}</td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- Error message -->
+                        <div *ngIf="error" class="alert alert-danger mt-3">{{ error }}</div>
                     </div>
 
-                    <!-- Cart items -->
-                    <div *ngIf="items.length > 0" class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Product</th>
-                                    <th class="text-center">Quantity</th>
-                                    <th class="text-end">Price</th>
-                                    <th class="text-end">Subtotal</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr *ngFor="let it of items">
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <img *ngIf="it.product.image" [src]="it.product.image"
-                                                alt="{{it.product.productName}}" class="me-3"
-                                                style="width: 50px; height: 50px; object-fit: cover;">
-                                            <span>{{ it.product.productName }}</span>
-                                        </div>
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="input-group input-group-sm"
-                                            style="max-width: 120px; margin: 0 auto;">
-                                            <button class="btn btn-outline-secondary" type="button"
-                                                (click)="update(it, (it.quantityInCart - 1).toString())"
-                                                [disabled]="it.quantityInCart <= 1">-</button>
-                                            <input #qtyRef type="number" class="form-control text-center"
-                                                [value]="it.quantityInCart" min="1" (change)="update(it, qtyRef.value)">
-                                            <button class="btn btn-outline-secondary" type="button"
-                                                (click)="update(it, (it.quantityInCart + 1).toString())">+</button>
-                                        </div>
-                                    </td>
-                                    <td class="text-end">{{ it.product.price | currency }}</td>
-                                    <td class="text-end">{{ it.product.price * it.quantityInCart | currency }}</td>
-                                    <td class="text-end">
-                                        <button class="btn btn-sm btn-outline-danger" (click)="remove(it)">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="3" class="text-end fw-bold">Total:</td>
-                                    <td class="text-end fw-bold">{{ total | currency }}</td>
-                                    <td></td>
-                                </tr>
-                            </tfoot>
-                        </table>
+                    <div *ngIf="items.length > 0" class="card-footer d-flex justify-content-between">
+                        <a routerLink="/products" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Continue Shopping
+                        </a>
+                        <button class="btn btn-success">
+                            <i class="bi bi-credit-card me-2"></i>Proceed to Checkout
+                        </button>
                     </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h4 class="mb-0">Order Summary</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Subtotal:</span>
+                        <span>${{ total.toFixed(2) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Shipping:</span>
+                        <span>$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Tax:</span>
+                        <span>$0.00</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-4">
+                        <strong>Total:</strong>
+                        <strong>${{ total.toFixed(2) }}</strong>
+                    </div>
+
+                    <!-- Payment Method Selection -->
+                    <div *ngIf="savedCards.length > 0">
+                        <h5 class="mb-3">Payment Method</h5>
+                        <div class="list-group mb-3">
+                            <div *ngFor="let card of savedCards" class="list-group-item">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" [value]="card.id"
+                                        [(ngModel)]="selectedPaymentMethod" [id]="'card-'+card.id">
+                                    <label class="form-check-label w-100" [for]="'card-'+card.id">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <strong>{{ card.brand | titlecase }} •••• {{ card.last4 }}</strong>
+                                                <div class="small text-muted">Expires {{ card.exp_month }}/{{
+                                                    card.exp_year }}</div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div *ngIf="savedCards.length === 0" class="alert alert-warning mb-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        You need to add a payment method before checkout.
+                        <a routerLink="/profile" class="alert-link">Add a card in your profile</a>
+                    </div>
+
+                    <!-- Checkout Button -->
+                    <button class="btn btn-primary w-100"
+                        [disabled]="items.length === 0 || savedCards.length === 0 || !selectedPaymentMethod || isProcessing"
+                        (click)="checkout()">
+                        <span *ngIf="!isProcessing">Complete Order</span>
+                        <span *ngIf="isProcessing">
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            Processing...
+                        </span>
+                    </button>
 
                     <!-- Error message -->
-                    <div *ngIf="error" class="alert alert-danger mt-3">{{ error }}</div>
-                </div>
+                    <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+                        {{ errorMessage }}
+                    </div>
 
-                <div *ngIf="items.length > 0" class="card-footer d-flex justify-content-between">
-                    <a routerLink="/products" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left me-2"></i>Continue Shopping
-                    </a>
-                    <button class="btn btn-success">
-                        <i class="bi bi-credit-card me-2"></i>Proceed to Checkout
-                    </button>
+                    <!-- Success message -->
+                    <div *ngIf="successMessage" class="alert alert-success mt-3">
+                        {{ successMessage }}
+                    </div>
                 </div>
             </div>
         </div>

@@ -31,7 +31,7 @@ export interface User {
     roleName: string;
   };
   active: boolean; // Add this property
-
+  stripeCustomerId?: string; // Add this line
 }
 
 interface LoginResponse {

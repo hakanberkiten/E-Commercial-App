@@ -43,7 +43,7 @@
 		<dependency>
 			<groupId>com.stripe</groupId>
 			<artifactId>stripe-java</artifactId>
-			<version>24.0.0</version> <!-- En güncel sürüm olabilir -->
+			<version>22.0.0</version> <!-- En güncel sürüm olabilir -->
 		</dependency>
 
 		<dependency>

@@ -3,6 +3,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { PaymentService } from '../../services/payment.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-profile',
@@ -32,10 +34,24 @@ export class ProfileComponent implements OnInit {
   passwordSuccessMessage = '';
   passwordErrorMessage = '';
 
+  // Payment-related properties
+  savedCards: any[] = [];
+  cardSubmitting: boolean = false;
+  cardError: string = '';
+  cardSuccess: string = '';
+  cardForm: FormGroup;
+  months: string[] = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+  years: string[] = [];
+
+  // Payment history
+  paymentHistory: any[] = [];
+
   constructor(
     private auth: AuthService,
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private paymentService: PaymentService,
+    private http: HttpClient
   ) {
     this.profileForm = this.fb.group({
       firstName: ['', Validators.required],
@@ -63,6 +79,20 @@ export class ProfileComponent implements OnInit {
     }, {
       validators: this.passwordMatchValidator
     });
+
+    // Create years array for the next 10 years
+    const currentYear = new Date().getFullYear();
+    for (let i = 0; i < 10; i++) {
+      this.years.push((currentYear + i).toString().substr(-2));
+    }
+
+    // Initialize the card form
+    this.cardForm = this.fb.group({
+      cardNumber: ['', [Validators.required, Validators.pattern(/^\d{16}$/)]],
+      expirationMonth: ['', Validators.required],
+      expirationYear: ['', Validators.required],
+      cvc: ['', [Validators.required, Validators.pattern(/^\d{3,4}$/)]]
+    });
   }
 
   // Şifre eşleşme kontrolü için validator
@@ -84,6 +114,8 @@ export class ProfileComponent implements OnInit {
       if (user) {
         this.loadUserData();
         this.loadUserAddresses();
+        this.loadUserCards();
+        this.loadPaymentHistory();
       } else {
         this.router.navigate(['/login']);
       }
@@ -112,6 +144,47 @@ export class ProfileComponent implements OnInit {
       error: (err) => {
         this.addressErrorMessage = 'Failed to load addresses';
         console.error('Error loading addresses:', err);
+      }
+    });
+  }
+
+  loadUserCards(): void {
+    if (!this.currentUser) return;
+
+    this.loading = true;
+
+    // First ensure the user has a Stripe customer account
+    this.paymentService.createStripeCustomer(this.currentUser.userId).subscribe({
+      next: (customerId) => {
+        // Then load their cards
+        this.paymentService.getUserCards(this.currentUser?.userId || 0).subscribe({
+          next: (cards) => {
+            this.savedCards = cards;
+            this.loading = false;
+          },
+          error: (error) => {
+            console.error('Error loading cards:', error);
+            this.loading = false;
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Error creating/getting Stripe customer:', error);
+        this.loading = false;
+      }
+    });
+  }
+
+  loadPaymentHistory(): void {
+    const currentUser = this.auth.getCurrentUser();
+    if (!currentUser) return;
+
+    this.http.get<any[]>(`/api/payments/user/${currentUser.userId}`).subscribe({
+      next: (payments) => {
+        this.paymentHistory = payments;
+      },
+      error: (error) => {
+        console.error('Error loading payment history:', error);
       }
     });
   }
@@ -309,5 +382,51 @@ export class ProfileComponent implements OnInit {
         this.passwordErrorMessage = err.error?.message || 'Failed to change password. Please try again.';
       }
     });
+  }
+
+  // Add a new card
+  addNewCard(): void {
+    if (this.cardForm.invalid) return;
+
+    if (!this.currentUser) return;
+
+    this.cardSubmitting = true;
+    this.cardError = '';
+    this.cardSuccess = '';
+
+    const cardData = {
+      cardNumber: this.cardForm.value.cardNumber,
+      expirationMonth: this.cardForm.value.expirationMonth,
+      expirationYear: this.cardForm.value.expirationYear,
+      cvc: this.cardForm.value.cvc
+    };
+
+    this.paymentService.addCard(this.currentUser.userId, cardData).subscribe({
+      next: (result) => {
+        this.cardSubmitting = false;
+        this.cardSuccess = 'Card added successfully!';
+        this.cardForm.reset();
+
+        // Reload cards
+        this.loadUserCards();
+
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+          this.cardSuccess = '';
+        }, 3000);
+      },
+      error: (error) => {
+        this.cardSubmitting = false;
+        this.cardError = error.error?.message || 'Failed to add card. Please try again.';
+        console.error('Error adding card:', error);
+      }
+    });
+  }
+
+  // Set card as default
+  setDefaultCard(cardId: string): void {
+    // For this implementation, we'll just designate this as the default in the UI
+    // You could extend the backend to support this if needed
+    alert('Default card functionality would be implemented here');
   }
 }
