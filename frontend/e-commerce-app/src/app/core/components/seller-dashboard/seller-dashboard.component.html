@@ -1,41 +1,76 @@
-<div class="container mt-4">
-    <h2>Seller Dashboard</h2>
-
-    <div class="row mt-4">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">My Products</h5>
-                    <button class="btn btn-primary" (click)="addNewProduct()">Add New Product</button>
+<div class="seller-dashboard container-fluid py-4">
+    <!-- Dashboard Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body bg-primary bg-opacity-10 p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="fw-bold mb-1">Seller Dashboard</h1>
+                            <p class="text-muted mb-0">Manage your products and orders</p>
+                        </div>
+                        <button class="btn btn-primary" (click)="addNewProduct()">
+                            <i class="bi bi-plus-circle me-2"></i>Add New Product
+                        </button>
+                    </div>
                 </div>
-                <div class="card-body">
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Products & Orders Section -->
+        <div class="col-md-8">
+            <!-- Products Card -->
+            <div class="card shadow-sm border-0 rounded-3 mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-box me-2 text-primary"></i>My Products
+                        </h5>
+                    </div>
+                </div>
+                <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
                                 <tr>
                                     <th>Image</th>
                                     <th>Name</th>
                                     <th>Price</th>
                                     <th>Stock</th>
-                                    <th>Actions</th>
+                                    <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr *ngFor="let product of sellerProducts">
                                     <td>
-                                        <img [src]="product.imageUrl || 'assets/img/no-image.jpg'" class="img-thumbnail"
-                                            style="width: 50px; height: 50px;">
+                                        <img [src]="product.imageUrl || 'assets/img/no-image.jpg'" class="rounded"
+                                            alt="Product image" style="width: 50px; height: 50px; object-fit: cover;">
                                     </td>
-                                    <td>{{ product.name }}</td>
-                                    <td>${{ product.price }}</td>
-                                    <td>{{ product.stockQuantity }}</td>
                                     <td>
-                                        <div class="btn-group">
+                                        <div class="fw-medium">{{ product.name }}</div>
+                                        <div class="small text-muted text-truncate" style="max-width: 200px;">
+                                            {{ product.description }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success bg-opacity-10 text-success fs-6">
+                                            ${{ product.price }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span [ngClass]="product.stockQuantity > 10 ? 'text-success' : 'text-danger'">
+                                            {{ product.stockQuantity }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-center gap-2">
                                             <button class="btn btn-sm btn-outline-primary"
                                                 (click)="editProduct(product)">
-                                                <i class="bi bi-pencil"></i> Edit
+                                                <i class="bi bi-pencil"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-outline-danger ms-1"
+                                            <button class="btn btn-sm btn-outline-danger"
                                                 (click)="deleteProduct(product)">
                                                 <i class="bi bi-trash"></i>
                                             </button>
@@ -43,7 +78,10 @@
                                     </td>
                                 </tr>
                                 <tr *ngIf="sellerProducts.length === 0">
-                                    <td colspan="5" class="text-center">No products found</td>
+                                    <td colspan="5" class="text-center py-4">
+                                        <i class="bi bi-box-seam display-4 text-muted"></i>
+                                        <p class="mt-3">No products found</p>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -51,14 +89,17 @@
                 </div>
             </div>
 
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Customer Orders</h5>
+            <!-- Orders Card -->
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bag me-2 text-primary"></i>Customer Orders
+                    </h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
                                 <tr>
                                     <th>Order ID</th>
                                     <th>Customer</th>
@@ -66,34 +107,47 @@
                                     <th>Quantity</th>
                                     <th>Total</th>
                                     <th>Status</th>
-                                    <th>Actions</th>
+                                    <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr *ngFor="let order of customerOrders">
-                                    <td>{{ order.id }}</td>
+                                    <td># {{ order.id }}</td>
                                     <td>{{ order.customer.name }}</td>
                                     <td>{{ order.product.name }}</td>
                                     <td>{{ order.quantity }}</td>
-                                    <td>${{ order.totalPrice }}</td>
                                     <td>
-                                        <span class="badge" [ngClass]="{
-                          'bg-success': order.status === 'APPROVED',
-                          'bg-warning': order.status === 'PENDING',
-                          'bg-danger': order.status === 'CANCELLED'
-                        }">
+                                        <span class="badge bg-success bg-opacity-10 text-success fs-6">
+                                            ${{ order.totalPrice }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill py-2 px-3" [ngClass]="{
+                                            'bg-warning text-dark': order.status === 'PENDING',
+                                            'bg-success': order.status === 'APPROVED',
+                                            'bg-danger': order.status === 'CANCELLED'
+                                        }">
                                             {{ order.status }}
                                         </span>
                                     </td>
                                     <td>
-                                        <button *ngIf="order.status === 'PENDING'" class="btn btn-sm btn-success me-1"
-                                            (click)="approveOrder(order.id)">Approve</button>
-                                        <button *ngIf="order.status === 'PENDING'" class="btn btn-sm btn-danger"
-                                            (click)="cancelOrder(order.id)">Cancel</button>
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <button *ngIf="order.status === 'PENDING'" class="btn btn-sm btn-success"
+                                                (click)="approveOrder(order.id)">
+                                                <i class="bi bi-check2 me-1"></i>Approve
+                                            </button>
+                                            <button *ngIf="order.status === 'PENDING'" class="btn btn-sm btn-danger"
+                                                (click)="cancelOrder(order.id)">
+                                                <i class="bi bi-x me-1"></i>Cancel
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 <tr *ngIf="customerOrders.length === 0">
-                                    <td colspan="7" class="text-center">No orders found</td>
+                                    <td colspan="7" class="text-center py-4">
+                                        <i class="bi bi-cart-x display-4 text-muted"></i>
+                                        <p class="mt-3">No orders found</p>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -102,62 +156,78 @@
             </div>
         </div>
 
+        <!-- Add/Edit Product Form -->
         <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">{{ isEditing ? 'Edit Product' : 'Add New Product' }}</h5>
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pencil-square me-2 text-primary"></i>
+                        {{ isEditing ? 'Edit Product' : 'Add New Product' }}
+                    </h5>
                 </div>
                 <div class="card-body">
                     <form [formGroup]="productForm" (ngSubmit)="saveProduct()">
                         <input type="hidden" formControlName="id">
 
                         <div class="mb-3">
-                            <label class="form-label">Product Name</label>
-                            <input type="text" class="form-control" formControlName="name">
+                            <label class="form-label fw-medium">Product Name</label>
+                            <input type="text" class="form-control" formControlName="name"
+                                placeholder="Enter product name">
                             <div *ngIf="productForm.controls['name'].invalid && productForm.controls['name'].touched"
-                                class="text-danger">
-                                Product name is required
+                                class="text-danger small mt-1">
+                                <i class="bi bi-exclamation-circle me-1"></i>Product name is required
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Description</label>
-                            <textarea class="form-control" formControlName="description" rows="3"></textarea>
+                            <label class="form-label fw-medium">Description</label>
+                            <textarea class="form-control" formControlName="description" rows="3"
+                                placeholder="Enter product description"></textarea>
                             <div *ngIf="productForm.controls['description'].invalid && productForm.controls['description'].touched"
-                                class="text-danger">
-                                Description is required
+                                class="text-danger small mt-1">
+                                <i class="bi bi-exclamation-circle me-1"></i>Description is required
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Price</label>
-                            <input type="number" class="form-control" formControlName="price" min="0.01" step="0.01">
+                            <label class="form-label fw-medium">Price ($)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" formControlName="price" min="0.01" step="0.01"
+                                    placeholder="0.00">
+                            </div>
                             <div *ngIf="productForm.controls['price'].invalid && productForm.controls['price'].touched"
-                                class="text-danger">
-                                Valid price is required
+                                class="text-danger small mt-1">
+                                <i class="bi bi-exclamation-circle me-1"></i>Valid price is required
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Stock Quantity</label>
-                            <input type="number" class="form-control" formControlName="stockQuantity" min="0">
+                            <label class="form-label fw-medium">Stock Quantity</label>
+                            <input type="number" class="form-control" formControlName="stockQuantity" min="0"
+                                placeholder="0">
                             <div *ngIf="productForm.controls['stockQuantity'].invalid && productForm.controls['stockQuantity'].touched"
-                                class="text-danger">
-                                Valid stock quantity is required
+                                class="text-danger small mt-1">
+                                <i class="bi bi-exclamation-circle me-1"></i>Valid stock quantity is required
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Image URL</label>
-                            <input type="text" class="form-control" formControlName="imageUrl">
+                            <label class="form-label fw-medium">Image URL</label>
+                            <input type="text" class="form-control" formControlName="imageUrl"
+                                placeholder="https://example.com/image.jpg">
+                            <div *ngIf="productForm.get('imageUrl')?.value" class="mt-2">
+                                <img [src]="productForm.get('imageUrl')?.value" class="img-thumbnail"
+                                    style="height: 100px; width: auto;">
+                            </div>
                         </div>
 
                         <!-- Category selection section -->
                         <div class="form-group mb-3">
-                            <label for="categorySelect" class="form-label">Product Category</label>
+                            <label for="categorySelect" class="form-label fw-medium">Product Category</label>
 
                             <!-- Loading indicator -->
-                            <div *ngIf="isLoading" class="d-flex align-items-center">
+                            <div *ngIf="isLoading" class="d-flex align-items-center py-2">
                                 <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
@@ -165,9 +235,10 @@
                             </div>
 
                             <!-- Error message -->
-                            <div *ngIf="error" class="alert alert-danger">
+                            <div *ngIf="error" class="alert alert-danger d-flex align-items-center py-2 px-3">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
                                 {{ error }}
-                                <button class="btn btn-sm btn-outline-danger ms-2"
+                                <button class="btn btn-sm btn-outline-danger ms-auto"
                                     (click)="loadCategories()">Retry</button>
                             </div>
 
@@ -183,12 +254,13 @@
                             <div class="form-text">Select the appropriate category for your product</div>
                         </div>
 
-                        <div class="d-grid gap-2">
+                        <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-primary" [disabled]="productForm.invalid">
-                                {{ isEditing ? 'Update Product' : 'Add Product' }}
+                                <i class="bi" [ngClass]="isEditing ? 'bi-save2' : 'bi-plus-circle'"></i>
+                                <span class="ms-1">{{ isEditing ? 'Update Product' : 'Add Product' }}</span>
                             </button>
-                            <button type="button" class="btn btn-secondary" (click)="addNewProduct()">
-                                Cancel
+                            <button type="button" class="btn btn-outline-secondary" (click)="addNewProduct()">
+                                <i class="bi bi-x-circle me-1"></i>Cancel
                             </button>
                         </div>
                     </form>
@@ -200,27 +272,28 @@
 
 <!-- Toast Notifications -->
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-  <!-- Success Toast -->
-  <div *ngIf="productSuccessMessage" class="toast show bg-success text-white" role="alert" aria-live="assertive" aria-atomic="true">
-    <div class="toast-header bg-success text-white">
-      <i class="bi bi-check-circle me-2"></i>
-      <strong class="me-auto">Success</strong>
-      <button type="button" class="btn-close btn-close-white" (click)="productSuccessMessage = ''"></button>
+    <!-- Success Toast -->
+    <div *ngIf="productSuccessMessage" class="toast show shadow-sm" role="alert" aria-live="assertive"
+        aria-atomic="true">
+        <div class="toast-header bg-success text-white">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <strong class="me-auto">Success</strong>
+            <button type="button" class="btn-close btn-close-white" (click)="productSuccessMessage = ''"></button>
+        </div>
+        <div class="toast-body bg-success bg-opacity-10 text-success">
+            {{ productSuccessMessage }}
+        </div>
     </div>
-    <div class="toast-body">
-      {{ productSuccessMessage }}
+
+    <!-- Error Toast -->
+    <div *ngIf="productErrorMessage" class="toast show shadow-sm" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-danger text-white">
+            <i class="bi bi-exclamation-circle-fill me-2"></i>
+            <strong class="me-auto">Error</strong>
+            <button type="button" class="btn-close btn-close-white" (click)="productErrorMessage = ''"></button>
+        </div>
+        <div class="toast-body bg-danger bg-opacity-10 text-danger">
+            {{ productErrorMessage }}
+        </div>
     </div>
-  </div>
-  
-  <!-- Error Toast -->
-  <div *ngIf="productErrorMessage" class="toast show bg-danger text-white" role="alert" aria-live="assertive" aria-atomic="true">
-    <div class="toast-header bg-danger text-white">
-      <i class="bi bi-exclamation-circle me-2"></i>
-      <strong class="me-auto">Error</strong>
-      <button type="button" class="btn-close btn-close-white" (click)="productErrorMessage = ''"></button>
-    </div>
-    <div class="toast-body">
-      {{ productErrorMessage }}
-    </div>
-  </div>
 </div>
