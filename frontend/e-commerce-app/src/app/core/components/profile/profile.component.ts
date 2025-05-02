@@ -256,7 +256,7 @@ export class ProfileComponent implements OnInit {
       next: (payments) => {
         // Add a date field if missing
         this.paymentHistory = payments.map(payment => {
-          // Set a default date if none exists 
+          // Set a default date if none exists
           if (!payment.paymentDate && !payment.createdAt && !payment.payment_date) {
             payment.paymentDate = new Date();
           }

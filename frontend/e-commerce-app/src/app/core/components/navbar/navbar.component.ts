@@ -52,8 +52,13 @@ export class NavbarComponent implements OnInit {
     // Subscribe to router events to update navbar state on navigation
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
-    ).subscribe(() => {
-      // The isAuthPage() method will now use the updated router.url
+    ).subscribe((event: any) => {
+      // Check if on auth page and user is logged in
+      if (this.isAuthPage() && this.auth.isLoggedIn()) {
+        // Log the user out when they navigate to login/signup page
+        this.auth.logout();
+        // No need to redirect since they're already on a login/signup page
+      }
     });
 
     this.auth.currentUser$.subscribe(user => {
