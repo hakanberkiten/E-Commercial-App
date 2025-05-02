@@ -3,7 +3,6 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { LoginComponent } from './auth/login/login.component';
 import { SignupComponent } from './auth/signup/signup.component';
-import { ProductListComponent } from './features/products/product-list/product-list.component';
 import { CustomerComponent } from './core/components/customer/customer.component';
 import { CartPageComponent } from './cart-page/cart-page.component';
 import { AuthGuard } from './core/guards/auth.guard';
@@ -12,6 +11,7 @@ import { ProductDetailComponent } from './features/products/product-detail/produ
 import { SellerDashboardComponent } from './core/components/seller-dashboard/seller-dashboard.component';
 import { AdminDashboardComponent } from './core/components/admin-dashboard/admin-dashboard.component';
 import { NotificationsComponent } from './core/components/notification/notification.component';
+import { AdminRestrictGuard } from './core/guards/admin-restrict.guard';
 
 const routes: Routes = [
   { path: '', redirectTo: 'products', pathMatch: 'full' },
@@ -20,14 +20,12 @@ const routes: Routes = [
   {
     path: 'products',
     component: CustomerComponent,
-    canActivate: [AuthGuard],
-    data: { role: 'ROLE_CUSTOMER' }
+    canActivate: [AdminRestrictGuard]
   },
   {
-    path: 'products/:id', // Ürün detayı için yeni route
-    component: ProductDetailComponent, // Daha önce oluşturduğumuz component'i kullan
-    canActivate: [AuthGuard],
-    data: { role: 'ROLE_CUSTOMER' }
+    path: 'products/:id',
+    component: ProductDetailComponent,
+    canActivate: [AdminRestrictGuard]
   },
   {
     path: 'profile',

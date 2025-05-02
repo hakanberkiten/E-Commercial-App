@@ -16,7 +16,7 @@
         <ul class="list-unstyled">
           <li><a href="#" class="text-decoration-none text-white-50" data-bs-toggle="modal"
               data-bs-target="#aboutUsModal">About Us</a></li>
-          <li><a routerLink="/products" class="text-decoration-none text-white-50">Products</a></li>
+          <li><a routerLink="/products" *ngIf="!isAdmin()" class="text-decoration-none text-white-50">Products</a></li>
           <li><a href="#" class="text-decoration-none text-white-50">Privacy Policy</a></li>
           <li><a href="#" class="text-decoration-none text-white-50">Terms of Service</a></li>
         </ul>

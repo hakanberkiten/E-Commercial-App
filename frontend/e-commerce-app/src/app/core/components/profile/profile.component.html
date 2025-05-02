@@ -1,93 +1,160 @@
-<div class="container py-5">
+<div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-10 col-lg-8">
-            <!-- Profile Card -->
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <div class="card-header bg-primary text-white p-4 border-0">
+        <div class="col-md-10 col-lg-9">
+            <!-- Header with user info -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                <div class="card-header bg-primary text-white p-3 border-0">
                     <div class="d-flex align-items-center">
-                        <div class="avatar-circle bg-white text-primary me-3"
-                            style="width: 50px; height: 50px; font-size: 1.5rem;">
+                        <div class="avatar-circle bg-white text-primary me-3 d-flex align-items-center justify-content-center"
+                            style="width: 48px; height: 48px; border-radius: 50%; font-size: 1.4rem;">
                             {{(currentUser?.firstName?.charAt(0) || 'U')}}
                         </div>
                         <div>
-                            <h3 class="card-title mb-0">My Profile</h3>
-                            <p class="mb-0 text-white-50">Manage your account information</p>
+                            <h4 class="card-title mb-0">{{currentUser?.firstName}} {{currentUser?.lastName}}</h4>
+                            <p class="mb-0 text-white-50">Account Settings</p>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="card-body p-4">
-                    <!-- Success message -->
-                    <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ successMessage }}
-                        <button type="button" class="btn-close" (click)="successMessage = ''"></button>
-                    </div>
+            <!-- Alerts section - centralized for all message types -->
+            <div *ngIf="successMessage || errorMessage || passwordSuccessMessage || passwordErrorMessage || addressSuccessMessage || addressErrorMessage || cardSuccess || cardError"
+                class="alert-section mb-4">
+                <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show">
+                    {{ successMessage }}
+                    <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+                </div>
+                <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show">
+                    {{ errorMessage }}
+                    <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+                </div>
+                <div *ngIf="passwordSuccessMessage" class="alert alert-success alert-dismissible fade show">
+                    {{ passwordSuccessMessage }}
+                    <button type="button" class="btn-close" (click)="passwordSuccessMessage = ''"></button>
+                </div>
+                <div *ngIf="passwordErrorMessage" class="alert alert-danger alert-dismissible fade show">
+                    {{ passwordErrorMessage }}
+                    <button type="button" class="btn-close" (click)="passwordErrorMessage = ''"></button>
+                </div>
+                <div *ngIf="addressSuccessMessage" class="alert alert-success alert-dismissible fade show">
+                    {{ addressSuccessMessage }}
+                    <button type="button" class="btn-close" (click)="addressSuccessMessage = ''"></button>
+                </div>
+                <div *ngIf="addressErrorMessage" class="alert alert-danger alert-dismissible fade show">
+                    {{ addressErrorMessage }}
+                    <button type="button" class="btn-close" (click)="addressErrorMessage = ''"></button>
+                </div>
+                <div *ngIf="cardSuccess" class="alert alert-success alert-dismissible fade show">
+                    {{ cardSuccess }}
+                    <button type="button" class="btn-close" (click)="cardSuccess = ''"></button>
+                </div>
+                <div *ngIf="cardError" class="alert alert-danger alert-dismissible fade show">
+                    {{ cardError }}
+                    <button type="button" class="btn-close" (click)="cardError = ''"></button>
+                </div>
+            </div>
+<!-- Main Tab Navigation Card -->
+<div class="card border-0 shadow-sm rounded-4">
+    <!-- Tab Navigation -->
+    <div class="card-header p-0 bg-white border-bottom-0">
+      <ul class="nav nav-pills nav-fill">
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            [class.active]="activeTab === 'profile'"
+            (click)="setActiveTab('profile')"
+          >
+            <i class="bi bi-person me-2"></i>Profile
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            class="nav-link"
+            [class.active]="activeTab === 'addresses'"
+            (click)="setActiveTab('addresses')"
+          >
+            <i class="bi bi-geo-alt me-2"></i>Addresses
+          </button>
+        </li>
+        <li class="nav-item" *ngIf="!isAdmin()">
+          <button
+            class="nav-link"
+            [class.active]="activeTab === 'payment'"
+            (click)="setActiveTab('payment')"
+          >
+            <i class="bi bi-credit-card me-2"></i>Payment Methods
+          </button>
+        </li>
+        <li class="nav-item" *ngIf="!isAdmin()">
+          <button
+            class="nav-link"
+            [class.active]="activeTab === 'orders'"
+            (click)="setActiveTab('orders')"
+          >
+            <i class="bi bi-box-seam me-2"></i>Orders
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+  
 
-                    <!-- Error message -->
-                    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
-                        {{ errorMessage }}
-                        <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
-                    </div>
-
-                    <!-- Password change success/error messages -->
-                    <div *ngIf="passwordSuccessMessage" class="alert alert-success alert-dismissible fade show"
-                        role="alert">
-                        {{ passwordSuccessMessage }}
-                        <button type="button" class="btn-close" (click)="passwordSuccessMessage = ''"></button>
-                    </div>
-
-                    <div *ngIf="passwordErrorMessage" class="alert alert-danger alert-dismissible fade show"
-                        role="alert">
-                        {{ passwordErrorMessage }}
-                        <button type="button" class="btn-close" (click)="passwordErrorMessage = ''"></button>
-                    </div>
-
-                    <!-- Profile Edit Form -->
-                    <form *ngIf="!changePasswordMode" [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-                        <div class="row mb-4">
-                            <div class="col-md-6 mb-3 mb-md-0">
-                                <label for="firstName" class="form-label">First Name</label>
-                                <input type="text" id="firstName" formControlName="firstName" class="form-control"
-                                    [readonly]="!editMode">
-                                <div *ngIf="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched"
-                                    class="text-danger mt-1 small">First name is required</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="lastName" class="form-label">Last Name</label>
-                                <input type="text" id="lastName" formControlName="lastName" class="form-control"
-                                    [readonly]="!editMode">
-                                <div *ngIf="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched"
-                                    class="text-danger mt-1 small">Last name is required</div>
-                            </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="email" class="form-label">Email Address</label>
-                            <input type="email" id="email" formControlName="email" class="form-control bg-light"
-                                readonly>
-                            <small class="text-muted">Email cannot be changed</small>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="mobileNumber" class="form-label">Mobile Number</label>
-                            <input type="tel" id="mobileNumber" formControlName="mobileNumber" class="form-control"
-                                [readonly]="!editMode">
-                            <div *ngIf="profileForm.get('mobileNumber')?.invalid && profileForm.get('mobileNumber')?.touched"
-                                class="text-danger mt-1 small">Mobile number is required</div>
-                        </div>
-
-                        <div class="d-flex mt-4">
-                            <ng-container *ngIf="!editMode">
-                                <button type="button" class="btn btn-primary px-4" (click)="toggleEditMode()">
-                                    <i class="bi bi-pencil me-2"></i>Edit Profile
+            <!-- Tab Content -->
+            <div class="card-body p-4">
+                <div class="tab-content">
+                    <!-- PROFILE TAB -->
+                    <div class="tab-pane fade" [class.show]="activeTab === 'profile'"
+                        [class.active]="activeTab === 'profile'">
+                        <!-- Profile Content -->
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="mb-0">Personal Information</h4>
+                            <div>
+                                <button *ngIf="!editMode && !changePasswordMode" type="button"
+                                    class="btn btn-outline-primary" (click)="toggleEditMode()">
+                                    <i class="bi bi-pencil me-2"></i>Edit
                                 </button>
-                                <button type="button" class="btn btn-outline-secondary ms-2"
-                                    (click)="toggleChangePasswordMode()">
+                                <button *ngIf="!editMode && !changePasswordMode" type="button"
+                                    class="btn btn-outline-secondary ms-2" (click)="toggleChangePasswordMode()">
                                     <i class="bi bi-key me-2"></i>Change Password
                                 </button>
-                            </ng-container>
+                            </div>
+                        </div>
 
-                            <ng-container *ngIf="editMode">
+                        <!-- Profile Form -->
+                        <form *ngIf="!changePasswordMode" [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+                            <div class="row mb-3">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <label for="firstName" class="form-label">First Name</label>
+                                    <input type="text" id="firstName" formControlName="firstName" class="form-control"
+                                        [readonly]="!editMode">
+                                    <div *ngIf="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched"
+                                        class="text-danger mt-1 small">First name is required</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="lastName" class="form-label">Last Name</label>
+                                    <input type="text" id="lastName" formControlName="lastName" class="form-control"
+                                        [readonly]="!editMode">
+                                    <div *ngIf="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched"
+                                        class="text-danger mt-1 small">Last name is required</div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" id="email" formControlName="email" class="form-control bg-light"
+                                    readonly>
+                                <small class="text-muted">Email cannot be changed</small>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="mobileNumber" class="form-label">Mobile Number</label>
+                                <input type="tel" id="mobileNumber" formControlName="mobileNumber" class="form-control"
+                                    [readonly]="!editMode">
+                                <div *ngIf="profileForm.get('mobileNumber')?.invalid && profileForm.get('mobileNumber')?.touched"
+                                    class="text-danger mt-1 small">Mobile number is required</div>
+                            </div>
+
+                            <div *ngIf="editMode" class="d-flex">
                                 <button type="submit" class="btn btn-primary px-4"
                                     [disabled]="profileForm.invalid || loading">
                                     <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
@@ -96,340 +163,334 @@
                                 <button type="button" class="btn btn-outline-secondary ms-2" (click)="toggleEditMode()">
                                     Cancel
                                 </button>
-                            </ng-container>
-                        </div>
-                    </form>
-
-                    <!-- Password Change Form -->
-                    <form *ngIf="changePasswordMode" [formGroup]="passwordForm" (ngSubmit)="onPasswordSubmit()">
-                        <h5 class="mb-4">Change Password</h5>
-
-                        <!-- Current Password -->
-                        <div class="form-floating mb-3">
-                            <input type="password" id="currentPassword" formControlName="currentPassword"
-                                class="form-control" placeholder="Current Password">
-                            <label for="currentPassword">Current Password</label>
-                            <div *ngIf="passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched"
-                                class="text-danger mt-1 small">
-                                Current password is required
                             </div>
-                        </div>
+                        </form>
 
-                        <!-- New Password -->
-                        <div class="form-floating mb-3">
-                            <input type="password" id="newPassword" formControlName="newPassword" class="form-control"
-                                placeholder="New Password">
-                            <label for="newPassword">New Password</label>
-                            <div *ngIf="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched"
-                                class="text-danger mt-1 small">
-                                <span *ngIf="passwordForm.get('newPassword')?.errors?.['required']">New password is
-                                    required</span>
-                                <span *ngIf="passwordForm.get('newPassword')?.errors?.['minlength']">
-                                    Password must be at least 6 characters
-                                </span>
+                        <!-- Password Change Form -->
+                        <form *ngIf="changePasswordMode" [formGroup]="passwordForm" (ngSubmit)="onPasswordSubmit()">
+                            <div class="mb-3">
+                                <label for="currentPassword" class="form-label">Current Password</label>
+                                <input type="password" id="currentPassword" formControlName="currentPassword"
+                                    class="form-control">
+                                <div *ngIf="passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched"
+                                    class="text-danger mt-1 small">Current password is required</div>
                             </div>
-                        </div>
 
-                        <!-- Confirm Password -->
-                        <div class="form-floating mb-4">
-                            <input type="password" id="confirmPassword" formControlName="confirmPassword"
-                                class="form-control" placeholder="Confirm Password">
-                            <label for="confirmPassword">Confirm Password</label>
-                            <div *ngIf="passwordForm.get('confirmPassword')?.invalid && passwordForm.get('confirmPassword')?.touched"
-                                class="text-danger mt-1 small">
-                                <span *ngIf="passwordForm.get('confirmPassword')?.errors?.['required']">
-                                    Please confirm your password
-                                </span>
-                                <span *ngIf="passwordForm.get('confirmPassword')?.errors?.['mismatch']">
-                                    Passwords don't match
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="d-flex">
-                            <button type="submit" class="btn btn-primary px-4"
-                                [disabled]="passwordForm.invalid || passwordLoading">
-                                <span *ngIf="passwordLoading" class="spinner-border spinner-border-sm me-2"></span>
-                                Change Password
-                            </button>
-                            <button type="button" class="btn btn-outline-secondary ms-2"
-                                (click)="toggleChangePasswordMode()">
-                                Cancel
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Address Card -->
-            <div class="card border-0 shadow-sm rounded-4 mt-4">
-                <div class="card-body p-4">
-                    <!-- Address Success message -->
-                    <div *ngIf="addressSuccessMessage" class="alert alert-success alert-dismissible fade show"
-                        role="alert">
-                        {{ addressSuccessMessage }}
-                        <button type="button" class="btn-close" (click)="addressSuccessMessage = ''"></button>
-                    </div>
-
-                    <!-- Address Error message -->
-                    <div *ngIf="addressErrorMessage" class="alert alert-danger alert-dismissible fade show"
-                        role="alert">
-                        {{ addressErrorMessage }}
-                        <button type="button" class="btn-close" (click)="addressErrorMessage = ''"></button>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="mb-0">My Addresses</h4>
-                        <button *ngIf="!editAddressMode" class="btn btn-primary" (click)="toggleAddressMode()">
-                            <i class="bi bi-plus-lg me-1"></i> Add New Address
-                        </button>
-                    </div>
-
-                    <!-- Address Form - Düzeltilmiş yerleşim -->
-                    <div *ngIf="editAddressMode" class="mb-4 p-3 border rounded bg-light">
-                        <h5 class="mb-3">{{ selectedAddress ? 'Edit Address' : 'Add New Address' }}</h5>
-                        <form [formGroup]="addressForm" (ngSubmit)="onAddressSubmit()">
-                            <!-- Building Name ve Street Address tek sütunda -->
-                            <div class="row mb-3">
-                                <div class="col-md-12 mb-3">
-                                    <label for="buildingName" class="form-label">Building Name</label>
-                                    <input type="text" id="buildingName" formControlName="buildingName"
-                                        class="form-control">
-                                    <div *ngIf="addressForm.get('buildingName')?.invalid && addressForm.get('buildingName')?.touched"
-                                        class="text-danger mt-1 small">Building name is required</div>
-                                </div>
-                                <div class="col-md-12">
-                                    <label for="street" class="form-label">Street Address</label>
-                                    <input type="text" id="street" formControlName="street" class="form-control">
-                                    <div *ngIf="addressForm.get('street')?.invalid && addressForm.get('street')?.touched"
-                                        class="text-danger mt-1 small">Street address is required</div>
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label">New Password</label>
+                                <input type="password" id="newPassword" formControlName="newPassword"
+                                    class="form-control">
+                                <div *ngIf="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched"
+                                    class="text-danger mt-1 small">
+                                    <span *ngIf="passwordForm.get('newPassword')?.errors?.['required']">New password
+                                        is required</span>
+                                    <span *ngIf="passwordForm.get('newPassword')?.errors?.['minlength']">
+                                        Password must be at least 6 characters
+                                    </span>
                                 </div>
                             </div>
 
-                            <!-- City ve State yan yana -->
-                            <div class="row mb-3">
-                                <div class="col-md-6 mb-3 mb-md-0">
-                                    <label for="city" class="form-label">City</label>
-                                    <input type="text" id="city" formControlName="city" class="form-control">
-                                    <div *ngIf="addressForm.get('city')?.invalid && addressForm.get('city')?.touched"
-                                        class="text-danger mt-1 small">City is required</div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="state" class="form-label">State/Province</label>
-                                    <input type="text" id="state" formControlName="state" class="form-control">
-                                    <div *ngIf="addressForm.get('state')?.invalid && addressForm.get('state')?.touched"
-                                        class="text-danger mt-1 small">State/Province is required</div>
-                                </div>
-                            </div>
-
-                            <!-- ZIP Code ve Country yan yana -->
-                            <div class="row mb-3">
-                                <div class="col-md-6 mb-3 mb-md-0">
-                                    <label for="zipCode" class="form-label">ZIP Code</label>
-                                    <input type="text" id="zipCode" formControlName="zipCode" class="form-control">
-                                    <div *ngIf="addressForm.get('zipCode')?.invalid && addressForm.get('zipCode')?.touched"
-                                        class="text-danger mt-1 small">Valid ZIP code is required (5 digits)</div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="country" class="form-label">Country</label>
-                                    <input type="text" id="country" formControlName="country" class="form-control">
-                                    <div *ngIf="addressForm.get('country')?.invalid && addressForm.get('country')?.touched"
-                                        class="text-danger mt-1 small">Country is required</div>
+                            <div class="mb-4">
+                                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                <input type="password" id="confirmPassword" formControlName="confirmPassword"
+                                    class="form-control">
+                                <div *ngIf="passwordForm.get('confirmPassword')?.invalid && passwordForm.get('confirmPassword')?.touched"
+                                    class="text-danger mt-1 small">
+                                    <span *ngIf="passwordForm.get('confirmPassword')?.errors?.['required']">
+                                        Please confirm your password
+                                    </span>
+                                    <span *ngIf="passwordForm.get('confirmPassword')?.errors?.['mismatch']">
+                                        Passwords don't match
+                                    </span>
                                 </div>
                             </div>
 
-                            <!-- Default address checkbox -->
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" id="isDefault"
-                                    formControlName="isDefault">
-                                <label class="form-check-label" for="isDefault">
-                                    Set as default address
-                                </label>
-                            </div>
-
-                            <!-- Form butonları -->
                             <div class="d-flex">
                                 <button type="submit" class="btn btn-primary"
-                                    [disabled]="addressForm.invalid || addressLoading">
-                                    <span *ngIf="addressLoading" class="spinner-border spinner-border-sm me-2"></span>
-                                    Save Address
+                                    [disabled]="passwordForm.invalid || passwordLoading">
+                                    <span *ngIf="passwordLoading" class="spinner-border spinner-border-sm me-2"></span>
+                                    Change Password
                                 </button>
                                 <button type="button" class="btn btn-outline-secondary ms-2"
-                                    (click)="toggleAddressMode()">
+                                    (click)="toggleChangePasswordMode()">
                                     Cancel
                                 </button>
                             </div>
                         </form>
                     </div>
 
-                    <!-- Adres kartındaki adres listesini düzelt -->
-
-                    <!-- Address List -->
-                    <div *ngIf="!editAddressMode">
-                        <div *ngIf="addresses.length === 0" class="text-center p-4 bg-light rounded">
-                            <i class="bi bi-geo-alt display-4 text-muted"></i>
-                            <p class="mt-3 text-muted">You haven't added any addresses yet.</p>
-                            <button class="btn btn-primary mt-2" (click)="toggleAddressMode()">
-                                <i class="bi bi-plus-lg me-1"></i> Add Your First Address
+                    <!-- ADDRESSES TAB -->
+                    <div class="tab-pane fade" [class.show]="activeTab === 'addresses'"
+                        [class.active]="activeTab === 'addresses'">
+                        <!-- Addresses Content -->
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="mb-0">Saved Addresses</h4>
+                            <button *ngIf="!editAddressMode" class="btn btn-primary" (click)="toggleAddressMode()">
+                                <i class="bi bi-plus-lg me-1"></i> Add New Address
                             </button>
                         </div>
 
-                        <div *ngFor="let address of addresses" class="card mb-3 border">
-                            <div class="card-body position-relative">
-                                <div *ngIf="address.isDefault"
-                                    class="position-absolute top-0 end-0 badge bg-primary mt-2 me-2">
-                                    Default
+                        <!-- Address Form -->
+                        <div *ngIf="editAddressMode" class="mb-4 p-3 border rounded bg-light">
+                            <h5 class="mb-3">{{ selectedAddress ? 'Edit Address' : 'Add New Address' }}</h5>
+                            <form [formGroup]="addressForm" (ngSubmit)="onAddressSubmit()">
+                                <!-- Building Name -->
+                                <div class="mb-3">
+                                    <label for="buildingName" class="form-label">Building Name</label>
+                                    <input type="text" id="buildingName" formControlName="buildingName"
+                                        class="form-control">
+                                    <div *ngIf="addressForm.get('buildingName')?.invalid && addressForm.get('buildingName')?.touched"
+                                        class="text-danger mt-1 small">Building name is required</div>
                                 </div>
-                                <h6 class="card-title fw-bold mb-2">{{ address.buildingName }}</h6>
-                                <p class="card-text mb-1">{{ address.street }}</p>
 
-                                <p class="card-text mb-1">
-                                    {{ address.city }}, {{ address.state }} {{ address.zipCode }}
-                                </p>
-                                <p class="card-text text-muted mb-3">{{ address.country }}</p>
+                                <!-- Street Address -->
+                                <div class="mb-3">
+                                    <label for="street" class="form-label">Street Address</label>
+                                    <input type="text" id="street" formControlName="street" class="form-control">
+                                    <div *ngIf="addressForm.get('street')?.invalid && addressForm.get('street')?.touched"
+                                        class="text-danger mt-1 small">Street address is required</div>
+                                </div>
 
+                                <!-- City & State -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6 mb-3 mb-md-0">
+                                        <label for="city" class="form-label">City</label>
+                                        <input type="text" id="city" formControlName="city" class="form-control">
+                                        <div *ngIf="addressForm.get('city')?.invalid && addressForm.get('city')?.touched"
+                                            class="text-danger mt-1 small">City is required</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="state" class="form-label">State/Province</label>
+                                        <input type="text" id="state" formControlName="state" class="form-control">
+                                        <div *ngIf="addressForm.get('state')?.invalid && addressForm.get('state')?.touched"
+                                            class="text-danger mt-1 small">State is required</div>
+                                    </div>
+                                </div>
+
+                                <!-- ZIP & Country -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6 mb-3 mb-md-0">
+                                        <label for="zipCode" class="form-label">ZIP Code</label>
+                                        <input type="text" id="zipCode" formControlName="zipCode" class="form-control">
+                                        <div *ngIf="addressForm.get('zipCode')?.invalid && addressForm.get('zipCode')?.touched"
+                                            class="text-danger mt-1 small">Valid ZIP code is required (5 digits)
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="country" class="form-label">Country</label>
+                                        <input type="text" id="country" formControlName="country" class="form-control">
+                                        <div *ngIf="addressForm.get('country')?.invalid && addressForm.get('country')?.touched"
+                                            class="text-danger mt-1 small">Country is required</div>
+                                    </div>
+                                </div>
+
+                                <!-- Default checkbox -->
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="isDefault"
+                                        formControlName="isDefault">
+                                    <label class="form-check-label" for="isDefault">
+                                        Set as default address
+                                    </label>
+                                </div>
+
+                                <!-- Form buttons -->
                                 <div class="d-flex">
-                                    <button class="btn btn-sm btn-outline-primary me-2"
-                                        (click)="toggleAddressMode(address)">
-                                        <i class="bi bi-pencil me-1"></i> Edit
+                                    <button type="submit" class="btn btn-primary"
+                                        [disabled]="addressForm.invalid || addressLoading">
+                                        <span *ngIf="addressLoading"
+                                            class="spinner-border spinner-border-sm me-2"></span>
+                                        Save Address
                                     </button>
-                                    <button *ngIf="!address.isDefault" class="btn btn-sm btn-outline-secondary me-2"
-                                        (click)="setDefaultAddress(address.id)">
-                                        Set as Default
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" (click)="deleteAddress(address.id)">
-                                        <i class="bi bi-trash me-1"></i> Delete
+                                    <button type="button" class="btn btn-outline-secondary ms-2"
+                                        (click)="toggleAddressMode()">
+                                        Cancel
                                     </button>
                                 </div>
-                            </div>
+                            </form>
                         </div>
-                    </div>
 
-                    <!-- Payment Methods Card -->
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">Payment Methods</h5>
-                        </div>
-                        <div class="card-body">
-                            <!-- Display saved cards -->
-                            <div *ngIf="savedCards && savedCards.length > 0">
-                                <h6 class="mb-3">Your Cards</h6>
-                                <div class="saved-card mb-3" *ngFor="let card of savedCards">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi" [ngClass]="{
-                                            'bi-credit-card-2-front': card.brand === 'visa',
-                                            'bi-credit-card-2-back': card.brand === 'mastercard',
-                                            'bi-credit-card-fill': card.brand === 'amex',
-                                            'bi-credit-card': !card.brand
-                                        }"></i>
-                                        <span class="ms-2">{{ card.brand | titlecase }} •••• {{ card.last4 }}</span>
-                                        <span class="ms-2 text-muted">Expires {{ card.exp_month }}/{{ card.exp_year
-                                            }}</span>
+                        <!-- Address List -->
+                        <div *ngIf="!editAddressMode">
+                            <!-- No addresses message -->
+                            <div *ngIf="addresses.length === 0" class="text-center p-4 bg-light rounded">
+                                <i class="bi bi-geo-alt display-4 text-muted"></i>
+                                <p class="mt-3 text-muted">You haven't added any addresses yet.</p>
+                                <button class="btn btn-primary mt-2" (click)="toggleAddressMode()">
+                                    <i class="bi bi-plus-lg me-1"></i> Add Your First Address
+                                </button>
+                            </div>
+
+                            <!-- Address cards -->
+                            <div class="row">
+                                <div *ngFor="let address of addresses" class="col-md-6 mb-3">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <div class="card-body position-relative">
+                                            <div *ngIf="address.isDefault"
+                                                class="position-absolute top-0 end-0 badge bg-primary mt-2 me-2">
+                                                Default
+                                            </div>
+                                            <h6 class="card-title fw-bold mb-2">{{ address.buildingName }}</h6>
+                                            <p class="card-text mb-1">{{ address.street }}</p>
+                                            <p class="card-text mb-1">
+                                                {{ address.city }}, {{ address.state }} {{ address.zipCode }}
+                                            </p>
+                                            <p class="card-text text-muted mb-3">{{ address.country }}</p>
+
+                                            <div class="d-flex mt-auto">
+                                                <button class="btn btn-sm btn-outline-primary me-2"
+                                                    (click)="toggleAddressMode(address)">
+                                                    <i class="bi bi-pencil me-1"></i> Edit
+                                                </button>
+                                                <button *ngIf="!address.isDefault"
+                                                    class="btn btn-sm btn-outline-secondary me-2"
+                                                    (click)="setDefaultAddress(address.id)">
+                                                    Set as Default
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger"
+                                                    (click)="deleteAddress(address.id)">
+                                                    <i class="bi bi-trash me-1"></i> Delete
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Add new card form -->
-                            <h6 class="mb-3">Add New Card</h6>
-                            <form (ngSubmit)="addNewCard()" autocomplete="off">
-                                <div class="mb-3">
-                                    <label for="card-element" class="form-label">Credit or debit card</label>
-                                    <div id="card-element" class="form-control" style="height: 40px; padding-top: 10px;"
-                                        data-autofill="false"></div>
-                                    <div id="card-errors" role="alert" class="text-danger small mt-1"></div>
-                                </div>
-
-                                <button type="submit" class="btn btn-primary" [disabled]="cardSubmitting">
-                                    <span *ngIf="!cardSubmitting">Add Card</span>
-                                    <span *ngIf="cardSubmitting">
-                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                        Processing...
-                                    </span>
-                                </button>
-
-                                <!-- Success/Error messages -->
-                                <div class="alert alert-success mt-3" *ngIf="cardSuccess">{{ cardSuccess }}</div>
-                                <div class="alert alert-danger mt-3" *ngIf="cardError">{{ cardError }}</div>
-                            </form>
                         </div>
                     </div>
 
-                    <!-- Payment History Card -->
-                    <div class="card shadow-sm border-0 rounded-4 mb-4">
-                        <div class="card-header bg-white py-3 border-bottom">
-                            <h5 class="mb-0">
-                                <i class="bi bi-receipt me-2 text-primary"></i>Payment History
-                            </h5>
+                    <!-- PAYMENT TAB - Only for non-admins -->
+                    <div class="tab-pane fade" [class.show]="activeTab === 'payment'"
+                        [class.active]="activeTab === 'payment'" *ngIf="!isAdmin()">
+                        <h4 class="mb-4">Payment Methods</h4>
+
+                        <!-- Saved Cards -->
+                        <div class="mb-4">
+                            <h5 class="mb-3">Your Saved Cards</h5>
+
+                            <div *ngIf="loading" class="text-center py-3">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+
+                            <!-- No cards message -->
+                            <div *ngIf="!loading && savedCards.length === 0" class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                You don't have any saved cards yet.
+                            </div>
+
+                            <!-- Card list -->
+                            <div *ngIf="!loading && savedCards.length > 0" class="row">
+                                <div *ngFor="let card of savedCards" class="col-md-6 mb-3">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center">
+                                                <div class="credit-card-icon me-3">
+                                                    <i class="bi" [ngClass]="{
+                                                            'bi-credit-card-fill': !card.brand,
+                                                            'bi-credit-card-2-front-fill': card.brand === 'visa',
+                                                            'bi-credit-card-2-back-fill': card.brand === 'mastercard',
+                                                            'bi-credit-card': card.brand === 'amex'
+                                                        }"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0">•••• •••• •••• {{ card.last4 }}</h6>
+                                                    <small class="text-muted">
+                                                        Expires {{ card.expMonth }}/{{ card.expYear }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex mt-3">
+                                                <!-- <button class="btn btn-sm btn-outline-danger me-2"
+                                                        (click)="deleteCard(card.id)">
+                                                        <i class="bi bi-trash me-1"></i> Remove
+                                                    </button> -->
+                                                <button class="btn btn-sm btn-outline-primary"
+                                                    (click)="setDefaultCard(card.id)">
+                                                    <i class="bi bi-star me-1"></i> Set Default
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0">
+
+                        <!-- Add New Card -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-body">
+                                <h5 class="mb-3">Add New Card</h5>
+
+                                <div id="card-element" class="mb-3 p-3 border rounded bg-light">
+                                    <!-- Stripe will insert card element here -->
+                                </div>
+
+                                <div id="card-errors" class="text-danger mb-3"></div>
+
+                                <button [disabled]="cardSubmitting" class="btn btn-primary" (click)="addNewCard()">
+                                    <span *ngIf="cardSubmitting" class="spinner-border spinner-border-sm me-2"
+                                        role="status"></span>
+                                    <i *ngIf="!cardSubmitting" class="bi bi-plus-lg me-2"></i>
+                                    Add Card
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ORDERS TAB - Only for non-admins -->
+                    <div class="tab-pane fade" [class.show]="activeTab === 'orders'"
+                        [class.active]="activeTab === 'orders'" *ngIf="!isAdmin()">
+                        <h4 class="mb-4">My Orders</h4>
+
+                        <!-- Payment History -->
+                        <div class="mb-4">
+                            <h5 class="mb-3">Payment History</h5>
+
+                            <!-- No payment history message -->
+                            <div *ngIf="paymentHistory.length === 0" class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                You don't have any payment history yet.
+                            </div>
+
+                            <!-- Payment history list -->
+                            <div *ngIf="paymentHistory.length > 0" class="table-responsive">
+                                <table class="table table-striped">
                                     <thead class="table-light">
                                         <tr>
                                             <th>Date</th>
                                             <th>Amount</th>
-                                            <th>Payment Method</th>
                                             <th>Status</th>
-                                            <th>Order</th>
+                                            <th>Description</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr *ngFor="let payment of paymentHistory">
                                             <td>{{ payment.createdAt | date:'medium' }}</td>
+                                            <td>${{ payment.amount.toFixed(2) }}</td>
                                             <td>
-                                                <span class="badge bg-success bg-opacity-10 text-success fs-6">
-                                                    ${{ payment.amount }}
+                                                <span class="badge" [ngClass]="{
+                                                            'bg-success': payment.status === 'succeeded',
+                                                            'bg-warning': payment.status === 'pending',
+                                                            'bg-danger': payment.status === 'failed'
+                                                        }">
+                                                    {{ payment.status }}
                                                 </span>
                                             </td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <i class="bi me-2" [ngClass]="{
-                                                        'bi-credit-card': !payment.cardBrand,
-                                                        'bi-credit-card-2-front': payment.cardBrand === 'visa',
-                                                        'bi-credit-card-2-back': payment.cardBrand === 'mastercard',
-                                                        'bi-credit-card-fill': payment.cardBrand === 'amex'
-                                                    }"></i>
-                                                    <span>{{ payment.cardBrand | titlecase }} •••• {{
-                                                        payment.cardLastFour }}</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="badge rounded-pill py-2 px-3" [ngClass]="{
-                                                    'bg-success': payment.status === 'succeeded',
-                                                    'bg-warning text-dark': payment.status === 'pending',
-                                                    'bg-danger': payment.status === 'failed'
-                                                }">
-                                                    {{ payment.status | titlecase }}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <a [routerLink]="['/orders', payment.orderId]"
-                                                    class="btn btn-sm btn-outline-primary">
-                                                    View Order
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr *ngIf="paymentHistory.length === 0">
-                                            <td colspan="5" class="text-center py-4">
-                                                <i class="bi bi-receipt display-4 text-muted"></i>
-                                                <p class="mt-3">No payment history found</p>
-                                            </td>
+                                            <td>{{ payment.description || 'No description' }}</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Order History Card -->
-                    <div class="card border-0 shadow-sm rounded-4 mt-4">
-                        <div class="card-body p-4">
-                            <h4 class="mb-3">My Orders</h4>
+                        <div class="text-center">
                             <a routerLink="/orders" class="btn btn-outline-primary">
-                                <i class="bi bi-bag-check me-2"></i>View Order History
+                                <i class="bi bi-bag-check me-2"></i>View All Orders
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+</div>

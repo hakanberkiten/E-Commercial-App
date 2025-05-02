@@ -52,6 +52,9 @@ export class ProfileComponent implements OnInit {
   private elements: StripeElements | null = null;
   private card: StripeCardElement | null = null;
 
+  // Tab navigation
+  activeTab: string = 'profile'; // Default active tab
+
   constructor(
     private auth: AuthService,
     private fb: FormBuilder,
@@ -120,11 +123,17 @@ export class ProfileComponent implements OnInit {
       if (user) {
         this.loadUserData();
         this.loadUserAddresses();
-        this.loadUserCards();
-        this.loadPaymentHistory();
 
-        // Initialize Stripe
-        this.initializeStripe();
+        // Only load payment/order related data for non-admins
+        if (!this.isAdmin()) {
+          this.loadUserCards();
+          this.loadPaymentHistory();
+          // Initialize Stripe only for non-admins
+          this.initializeStripe();
+        } else {
+          // For admin users, ensure we stay on the profile tab
+          this.activeTab = 'profile';
+        }
       } else {
         this.router.navigate(['/login']);
       }
@@ -203,7 +212,7 @@ export class ProfileComponent implements OnInit {
   }
 
   loadUserCards(): void {
-    if (!this.currentUser) return;
+    if (!this.currentUser || this.isAdmin()) return; // Skip for admin
 
     this.loading = true;
 
@@ -231,7 +240,7 @@ export class ProfileComponent implements OnInit {
 
   loadPaymentHistory(): void {
     const currentUser = this.auth.getCurrentUser();
-    if (!currentUser) return;
+    if (!currentUser || this.isAdmin()) return; // Skip for admin
 
     this.http.get<any[]>(`/api/payments/user/${currentUser.userId}`).subscribe({
       next: (payments) => {
@@ -509,5 +518,20 @@ export class ProfileComponent implements OnInit {
     // For this implementation, we'll just designate this as the default in the UI
     // You could extend the backend to support this if needed
     alert('Default card functionality would be implemented here');
+  }
+
+  // Add this method to the ProfileComponent
+  isAdmin(): boolean {
+    return this.currentUser?.role?.roleName === 'ADMIN' ||
+      this.currentUser?.role?.roleName === 'ROLE_ADMIN';
+  }
+
+  // Update this method to allow admins to access both profile and addresses tabs
+  setActiveTab(tab: string): void {
+    // Only allow admin to access the profile and addresses tabs
+    if (this.isAdmin() && tab !== 'profile' && tab !== 'addresses') {
+      return;
+    }
+    this.activeTab = tab;
   }
 }

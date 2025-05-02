@@ -175,6 +175,9 @@ export class NavbarComponent implements OnInit {
     return role === 'ROLE_CUSTOMER' || role === 'ROLE_SELLER';
   }
 
+  // Add this method to the NavbarComponent class
+
+
   toggleDropdown(event: Event) {
     event.preventDefault();
     const dropdown = document.getElementById('userDropdown');

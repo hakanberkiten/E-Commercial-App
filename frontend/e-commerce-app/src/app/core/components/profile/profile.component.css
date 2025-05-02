@@ -59,3 +59,19 @@
     font-weight: normal;
     padding: 0.35em 0.65em;
 }
+
+/* place in your global styles.css or component .scss */
+.nav-pills .nav-link {
+    background-color: white;
+    color: #0d6efd;
+    /* Bootstrap primary color */
+    border-radius: 0;
+    /* squared pills */
+    margin: 0 2px;
+    /* slight spacing */
+}
+
+.nav-pills .nav-link.active {
+    background-color: #0d6efd !important;
+    color: white !important;
+}

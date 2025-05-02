@@ -132,4 +132,9 @@ export class FooterComponent implements AfterContentInit, OnInit {
       }
     });
   }
+
+  isAdmin(): boolean {
+    return this.authService.currentUser?.role?.roleName === 'ADMIN' ||
+      this.authService.currentUser?.role?.roleName === 'ROLE_ADMIN';
+  }
 }
