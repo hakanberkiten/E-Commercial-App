@@ -78,19 +78,27 @@ export class CustomerComponent implements OnInit {
     this.router.navigate(['/products', productId]);
   }
   addToCart(p: Product) {
+    // Check stock first
+    if (p.quantityInStock <= 0) {
+      this.error = `Sorry, "${p.productName}" is currently out of stock.`;
+      setTimeout(() => this.error = '', 3000);
+      return;
+    }
+
     this.cartSvc.add(p.productId, 1)
       .subscribe({
         next: (item) => {
           this.loadCartCount();
-
-          // Check if quantity is more than 1 (existing item)
           if (item.quantityInCart > 1) {
             this.showSuccessMessage(`Added another ${p.productName} to cart (${item.quantityInCart} total)`);
           } else {
             this.showSuccessMessage(`Added ${p.productName} to cart!`);
           }
         },
-        error: e => this.error = e.message
+        error: (e) => {
+          this.error = e.message || `Could not add "${p.productName}" to cart`;
+          setTimeout(() => this.error = '', 3000);
+        }
       });
   }
 

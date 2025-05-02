@@ -150,9 +150,8 @@
                         <!-- Add (click) event to make the entire card clickable -->
                         <div class="card h-100 shadow-sm border-0 rounded-4">
                             <div class="product-image-wrapper bg-white border-bottom">
-                                <img
-                                (click)="navigateToProductDetail(product.productId)"
-                                style="width: 100%; height: 200px; object-fit: contain; cursor: pointer;"
+                                <img (click)="navigateToProductDetail(product.productId)"
+                                    style="width: 100%; height: 200px; object-fit: contain; cursor: pointer;"
                                     [src]="product.image || 'assets/images/product-placeholder.jpg'"
                                     class="card-img-top product-image" [alt]="product.productName"
                                     onerror="this.src='assets/images/product-placeholder.jpg'">
@@ -178,9 +177,23 @@
                                 <div class="d-flex justify-content-between align-items-center mt-auto">
                                     <span class="fw-bold text-primary fs-5">${{ (product.price.toFixed(2) || '0.00')
                                         }}</span>
-                                    <button class="btn btn-primary"
+
+                                    <!-- Stock status badges -->
+                                    <span class="badge bg-danger" *ngIf="product.quantityInStock <= 0">Out of
+                                        Stock</span>
+                                    <span class="badge bg-warning text-dark"
+                                        *ngIf="product.quantityInStock > 0 && product.quantityInStock <= 5">Low
+                                        Stock</span>
+
+                                    <!-- Add to cart button - enabled only if in stock -->
+                                    <button *ngIf="product.quantityInStock > 0" class="btn btn-primary"
                                         (click)="addToCart(product); $event.stopPropagation()">
                                         <i class="bi bi-cart-plus me-2"></i>Add to Cart
+                                    </button>
+
+                                    <!-- Disabled button if out of stock -->
+                                    <button *ngIf="product.quantityInStock <= 0" class="btn btn-secondary" disabled>
+                                        <i class="bi bi-cart-x me-2"></i>Out of Stock
                                     </button>
                                 </div>
                             </div>

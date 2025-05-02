@@ -152,18 +152,41 @@ export class ProductDetailComponent implements OnInit {
       return;
     }
 
+    // First check if product is in stock
+    if (this.product.quantityInStock <= 0) {
+      this.error = 'Sorry, this product is currently out of stock.';
+      // Show error for 3 seconds
+      setTimeout(() => {
+        this.error = '';
+      }, 3000);
+      return;
+    }
+
+    // Check if requested quantity exceeds available stock
+    if (this.quantity > this.product.quantityInStock) {
+      this.error = `Sorry, only ${this.product.quantityInStock} units available in stock.`;
+      // Reset quantity to max available
+      this.quantity = this.product.quantityInStock;
+      setTimeout(() => {
+        this.error = '';
+      }, 3000);
+      return;
+    }
+
     this.cartService.add(this.product.productId, this.quantity).subscribe({
       next: (response) => {
         this.successMessage = `${this.product.productName} added to your cart!`;
-
-        // 3 saniye sonra success mesajını kaldır
         setTimeout(() => {
           this.successMessage = '';
         }, 3000);
       },
       error: (error) => {
-        this.error = 'Failed to add item to cart. Please try again.';
+        // Display specific error message from the service
+        this.error = error.message || 'Failed to add item to cart. Please try again.';
         console.error('Add to cart error:', error);
+        setTimeout(() => {
+          this.error = '';
+        }, 3000);
       }
     });
   }
