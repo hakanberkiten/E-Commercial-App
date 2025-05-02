@@ -68,15 +68,15 @@
                 <ng-container *ngIf="currentUser">
                     <!-- Customer Links - Show for both CUSTOMER and SELLER roles -->
                     <ng-container *ngIf="isCustomerOrSeller()">
-                        <li class="nav-item">
+                        <li class="nav-item px-1">
                             <a class="nav-link" routerLink="/products" routerLinkActive="active" *ngIf="!isAdmin()">
-                                <i class="bi bi-grid me-1"></i> Products
+                                <i class="bi bi-grid me-2"></i> Products
                             </a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item px-1">
                             <a class="nav-link position-relative" routerLink="/cart" routerLinkActive="active"
                                 *ngIf="!isAdmin()">
-                                <i class="bi bi-cart3 me-1"></i> Cart
+                                <i class="bi bi-cart3 me-2"></i> Cart
                                 <span *ngIf="cartItemCount > 0"
                                     class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                                     {{ cartItemCount }}
@@ -87,24 +87,24 @@
 
                     <!-- Seller Links -->
                     <ng-container *ngIf="isSeller()">
-                        <li class="nav-item">
-                            <a class="nav-link" routerLink="/seller-dashboard" routerLinkActive="active">
-                                <i class="bi bi-shop-window me-1"></i> Seller Dashboard
+                        <li class="nav-item px-3 mx-2">
+                            <a class="nav-link py-2" routerLink="/seller-dashboard" routerLinkActive="active">
+                                <i class="bi bi-shop-window me-2"></i> Seller Dashboard
                             </a>
                         </li>
                     </ng-container>
 
                     <!-- Admin Links -->
                     <ng-container *ngIf="isAdmin()">
-                        <li class="nav-item">
+                        <li class="nav-item px-1">
                             <a class="nav-link" routerLink="/admin/dashboard" routerLinkActive="active">
-                                <i class="bi bi-speedometer2 me-1"></i> Admin Dashboard
+                                <i class="bi bi-speedometer2 me-2"></i> Admin Dashboard
                             </a>
                         </li>
                     </ng-container>
 
                     <!-- User Profile Dropdown -->
-                    <li class="nav-item ms-lg-3">
+                    <li class="nav-item ms-lg-4">
                         <div class="btn-group">
                             <!-- Main button with user info -->
                             <button type="button" class="btn nav-link d-flex align-items-center border-0"
@@ -124,18 +124,18 @@
                             <!-- Dropdown menu -->
                             <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
                                 <li>
-                                    <a class="dropdown-item" routerLink="/profile">
+                                    <a class="dropdown-item py-2" routerLink="/profile">
                                         <i class="bi bi-person me-2"></i>Profile
                                     </a>
                                 </li>
                                 <li *ngIf="isCustomerOrSeller()">
-                                    <a class="dropdown-item" routerLink="/orders">
+                                    <a class="dropdown-item py-2" routerLink="/orders">
                                         <i class="bi bi-bag-check me-2"></i>My Orders
                                     </a>
                                 </li>
                                 <!-- Show seller dashboard in dropdown for sellers -->
                                 <li *ngIf="isSeller()">
-                                    <a class="dropdown-item" routerLink="/seller-dashboard">
+                                    <a class="dropdown-item py-2" routerLink="/seller-dashboard">
                                         <i class="bi bi-shop me-2"></i>Seller Dashboard
                                     </a>
                                 </li>
@@ -143,7 +143,7 @@
                                     <hr class="dropdown-divider">
                                 </li>
                                 <li>
-                                    <button class="dropdown-item text-danger" (click)="logout()">
+                                    <button class="dropdown-item text-danger py-2" (click)="logout()">
                                         <i class="bi bi-box-arrow-right me-2"></i>Logout
                                     </button>
                                 </li>
@@ -154,20 +154,20 @@
 
                 <!-- Non-authenticated Links -->
                 <ng-container *ngIf="!currentUser">
-                    <li class="nav-item">
+                    <li class="nav-item px-1">
                         <a class="nav-link" routerLink="/login" routerLinkActive="active">
-                            <i class="bi bi-box-arrow-in-right me-1"></i> Login
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Login
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item px-1">
                         <a class="nav-link" routerLink="/signup" routerLinkActive="active">
-                            <i class="bi bi-person-plus me-1"></i> Sign Up
+                            <i class="bi bi-person-plus me-2"></i> Sign Up
                         </a>
                     </li>
                 </ng-container>
 
-                <!-- Notifications Link - Now hidden on login/signup pages -->
-                <li *ngIf="!isAuthPage()" class="nav-item ms-lg-2 position-relative">
+                <!-- Notifications Link -->
+                <li *ngIf="!isAuthPage()" class="nav-item ms-lg-3 position-relative">
                     <a class="nav-link position-relative" (click)="toggleNotifications($event)"
                         style="cursor: pointer;">
                         <i class="bi bi-bell-fill fs-5"></i>
@@ -178,7 +178,6 @@
                         </span>
                     </a>
 
-                    <!-- Update the notification dropdown parts -->
                     <div *ngIf="showNotifications" class="notification-dropdown shadow-sm">
                         <div class="notification-header d-flex justify-content-between align-items-center p-2">
                             <h6 class="m-0">Notifications</h6>
@@ -235,9 +234,9 @@
                     </div>
                 </li>
 
-                <!-- Theme Toggle Button - Moved to always be at the very right -->
-                <li class="nav-item d-flex align-items-center ms-lg-3">
-                    <button class="btn btn-theme-toggle" (click)="toggleTheme()" aria-label="Toggle theme">
+                <!-- Theme Toggle Button -->
+                <li class="nav-item d-flex align-items-center ms-lg-4">
+                    <button class="btn btn-theme-toggle px-3" (click)="toggleTheme()" aria-label="Toggle theme">
                         <i class="bi" [ngClass]="isDarkMode ? 'bi-sun-fill' : 'bi-moon-fill'"></i>
                         <span class="ms-2 d-none d-lg-inline">{{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}</span>
                     </button>
