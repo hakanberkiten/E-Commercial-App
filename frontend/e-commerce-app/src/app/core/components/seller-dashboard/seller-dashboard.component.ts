@@ -243,8 +243,11 @@ export class SellerDashboardComponent implements OnInit {
   approveOrder(orderId: number) {
     if (confirm('Are you sure you want to approve and ship your items in this order?')) {
       this.isProcessing = true;
+
       this.orderService.approveSellerItems(orderId).subscribe({
         next: (updatedOrder) => {
+          console.log('Order approved successfully:', updatedOrder);
+
           // Find the order in the current list
           const orderIndex = this.customerOrders.findIndex(order => order.id === orderId);
           if (orderIndex >= 0) {
@@ -265,7 +268,7 @@ export class SellerDashboardComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error approving order', error);
-          this.errorMessage = 'Failed to approve items. Please try again.';
+          this.errorMessage = error.error?.message || 'Failed to approve items. Please try again.';
           this.isProcessing = false;
           setTimeout(() => this.errorMessage = '', 3000);
         }

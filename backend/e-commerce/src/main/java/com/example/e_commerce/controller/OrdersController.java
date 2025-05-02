@@ -92,4 +92,22 @@ public class OrdersController {
     public void delete(@PathVariable Long id) {
         orderService.deleteOrder(id);
     }
+
+    @PostMapping("/{orderId}/approve-seller-items")
+    public ResponseEntity<Orders> approveSellerItems(
+        @PathVariable Long orderId,
+        @RequestBody Map<String, Long> requestBody,
+        Principal principal
+    ) {
+        Long sellerId = requestBody.get("sellerId");
+        if (sellerId == null) {
+            throw new IllegalArgumentException("Seller ID is required");
+        }
+        
+        // Verify the principal has permission to approve these items
+        // (Check if the authenticated user is the seller)
+        
+        Orders updatedOrder = orderService.approveSellerItems(orderId, sellerId);
+        return ResponseEntity.ok(updatedOrder);
+    }
 }

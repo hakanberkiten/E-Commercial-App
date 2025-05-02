@@ -1,13 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { tap, catchError } from 'rxjs/operators';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OrderService {
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) { }
 
   getOrdersBySellerId(sellerId: number): Observable<any[]> {
     return this.http.get<any[]>(`/api/orders/seller/${sellerId}`);
@@ -41,6 +45,15 @@ export class OrderService {
   }
 
   approveSellerItems(orderId: number): Observable<any> {
+    // Get the current seller ID from the auth service
+    const currentUser = this.authService.getCurrentUser();
+    const sellerId = currentUser?.userId;
+
+    if (!sellerId) {
+      console.error('Error: Cannot approve items. Seller ID not found');
+      throw new Error('Seller ID not available');
+    }
+
     // Get the authentication token
     const token = localStorage.getItem('jwt_token');
 
@@ -50,10 +63,15 @@ export class OrderService {
       'Authorization': `Bearer ${token}`
     });
 
-    return this.http.post(`/api/orders/${orderId}/approve-seller-items`, {}, { headers })
+    // Include the sellerId in the request body
+    return this.http.post(`/api/orders/${orderId}/approve-seller-items`, { sellerId }, { headers })
       .pipe(
         tap(response => {
           console.log(`Seller items approved for order ${orderId}:`, response);
+        }),
+        catchError(error => {
+          console.error(`Error approving items for order ${orderId}:`, error);
+          throw error;
         })
       );
   }
