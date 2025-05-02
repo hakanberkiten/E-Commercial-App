@@ -17,6 +17,11 @@ export class OrderService {
     return this.http.get<any[]>(`/api/orders/seller/${sellerId}`);
   }
 
+  getOrdersByUserId(userId: number): Observable<any[]> {
+    return this.http.get<any[]>(`/api/orders/user/${userId}`);
+    // No date manipulation here - just return the raw data from the backend
+  }
+
   updateOrderStatus(orderId: number, status: string): Observable<any> {
     // Get the authentication token
     const token = localStorage.getItem('jwt_token');

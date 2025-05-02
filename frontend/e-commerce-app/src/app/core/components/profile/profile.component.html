@@ -456,7 +456,7 @@
                                     <tbody>
                                         <tr *ngFor="let payment of paymentHistory">
                                             <td>{{ payment.payment_date || payment.paymentDate || payment.createdAt |
-                                                date:'medium' }}</td>
+                                                date:'mediumDate' }}</td>
                                             <td>${{ payment.amount.toFixed(2) }}</td>
                                             <td>
                                                 <span class="badge" [ngClass]="{
@@ -515,7 +515,7 @@
                                     <tbody>
                                         <tr *ngFor="let order of userOrders" class="order-row">
                                             <td># {{ order.orderId }}</td>
-                                            <td>{{ order.orderDate | date:'medium' }}</td>
+                                            <td>{{ order.orderDate | date:'mediumDate' }}</td>
                                             <td>{{ order.totalAmount | currency }}</td>
                                             <td>
                                                 <span class="badge rounded-pill py-2 px-3" [ngClass]="{
@@ -597,7 +597,7 @@
                             </div>
                             <div class="d-flex justify-content-between mt-3">
                                 <div>
-                                    <strong>Order Date:</strong> {{ order.orderDate | date:'medium' }}
+                                    <strong>Order Date:</strong> {{ order.orderDate | date:'mediumDate' }}
                                 </div>
                                 <button class="btn btn-sm btn-outline-secondary" (click)="expandedOrderId = null">
                                     <i class="bi bi-x-lg me-1"></i> Close Details

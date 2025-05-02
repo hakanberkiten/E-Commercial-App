@@ -274,27 +274,38 @@ export class ProfileComponent implements OnInit {
     if (this.currentUser) {
       this.loadingOrders = true;
 
-      this.http.get<any>(`/api/orders/user/${this.currentUser.userId}`)
+      // Use the payment service's method directly
+      this.paymentService.getOrdersByUserId(this.currentUser.userId)
         .subscribe({
-          next: (response) => {
-            console.log('Orders API response:', response);
+          next: (response: { data?: any[] } | any[]) => {
+            console.log('Raw orders response from backend:', response);
 
-            // Handle both array and object responses
+            // Process the response
+            let orders = [];
             if (Array.isArray(response)) {
-              this.userOrders = response;
+              orders = response;
             } else if (response && typeof response === 'object') {
               // Check if response is wrapped in a data property
-              if (Array.isArray(response.data)) {
-                this.userOrders = response.data;
+              if (response.data && Array.isArray(response.data)) {
+                orders = response.data;
               } else {
                 // Convert object to array if needed
-                this.userOrders = [response];
+                orders = [response];
               }
-            } else {
-              this.userOrders = [];
             }
 
-            console.log('Processed orders:', this.userOrders);
+            // Important: Don't manipulate the date objects!
+            // Just log them for debugging purposes
+            console.log('Order dates from backend:',
+              orders.map(o => ({ id: o.orderId, date: o.orderDate })));
+
+            // Sort orders by date in descending order (newest first)
+            this.userOrders = orders.sort((a, b) => {
+              const dateA = new Date(a.orderDate).getTime();
+              const dateB = new Date(b.orderDate).getTime();
+              return dateB - dateA; // Descending order (newest first)
+            });
+
             this.loadingOrders = false;
           },
           error: (error) => {

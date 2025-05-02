@@ -8,6 +8,21 @@ import { Observable, tap } from 'rxjs';
 export class PaymentService {
   constructor(private http: HttpClient) { }
 
+
+  getOrdersByUserId(userId: number): Observable<any[]> {
+    // Add specific headers to ensure proper date handling
+    const headers = new HttpHeaders({
+      'Accept': 'application/json'
+    });
+
+    return this.http.get<any[]>(`/api/orders/user/${userId}`, { headers })
+      .pipe(
+        tap(orders => {
+          console.log('Orders from API with original dates:', orders);
+        })
+      );
+  }
+
   // Create a Stripe customer for the user
   createStripeCustomer(userId: number): Observable<string> {
     return this.http.post(`/api/payments/stripe/customers/${userId}`, {}, {
