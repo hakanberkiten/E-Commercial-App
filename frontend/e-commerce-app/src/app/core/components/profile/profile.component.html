@@ -454,12 +454,12 @@
                                             <th>Date</th>
                                             <th>Amount</th>
                                             <th>Status</th>
-                                            <th>Description</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr *ngFor="let payment of paymentHistory">
-                                            <td>{{ payment.createdAt | date:'medium' }}</td>
+                                            <td>{{ payment.payment_date || payment.paymentDate || payment.createdAt |
+                                                date:'medium' }}</td>
                                             <td>${{ payment.amount.toFixed(2) }}</td>
                                             <td>
                                                 <span class="badge" [ngClass]="{
@@ -470,7 +470,6 @@
                                                     {{ payment.status }}
                                                 </span>
                                             </td>
-                                            <td>{{ payment.description || 'No description' }}</td>
                                         </tr>
                                     </tbody>
                                 </table>

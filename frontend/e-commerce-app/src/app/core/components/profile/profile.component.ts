@@ -260,7 +260,15 @@ export class ProfileComponent implements OnInit {
 
     this.http.get<any[]>(`/api/payments/user/${currentUser.userId}`).subscribe({
       next: (payments) => {
-        this.paymentHistory = payments;
+        // Add a date field if missing
+        this.paymentHistory = payments.map(payment => {
+          // Set a default date if none exists 
+          if (!payment.paymentDate && !payment.createdAt && !payment.payment_date) {
+            payment.paymentDate = new Date();
+          }
+          return payment;
+        });
+        console.log('Payment history loaded:', this.paymentHistory);
       },
       error: (error) => {
         console.error('Error loading payment history:', error);
