@@ -14,23 +14,28 @@ import { NotificationService } from '../../services/notification.service';
 export class FooterComponent implements AfterContentInit, OnInit {
   adminUsers: any[] = [];
   loading = false;
-  hasPendingRequest = false; // Add property to track pending state
+  hasPendingRequest = false;
 
   constructor(
     private authService: AuthService,
     private router: Router,
     private http: HttpClient,
-    private notificationService: NotificationService, // Add this line
+    private notificationService: NotificationService,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) { }
+  ) {}
 
   ngOnInit(): void {
-    // Check if there's a pending request when the component loads
-    this.hasPendingRequest = this.notificationService.checkPendingSellerRequest();
+    // Check if there's a pending request during initialization
+    this.checkPendingRequest();
 
-    // Use the pendingRequest$ observable for real-time updates
-    this.notificationService.pendingRequest$.subscribe(isPending => {
-      this.hasPendingRequest = isPending;
+    // Subscribe to auth state changes to update visibility
+    this.authService.currentUser$.subscribe(() => {
+      this.checkPendingRequest();
+    });
+
+    // Listen to notification service for any changes in pending status
+    this.notificationService.pendingRequest$.subscribe(pending => {
+      this.hasPendingRequest = pending;
     });
   }
 
@@ -55,13 +60,27 @@ export class FooterComponent implements AfterContentInit, OnInit {
     });
   }
 
-  requestSellerAccess() {
-    // Check if user already has a pending request
-    if (this.notificationService.checkPendingSellerRequest()) {
-      alert('You already have a pending seller request. Please wait for an admin to review it.');
-      return;
-    }
+  // Check if user is logged in
+  isLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
+  }
 
+  // Check if current user is a customer (not admin, not seller)
+  isCustomer(): boolean {
+    const userRole = this.authService.getUserRole();
+    return userRole === 'ROLE_CUSTOMER';
+  }
+
+  // Check if there's a pending request
+  checkPendingRequest(): void {
+    if (this.isLoggedIn() && this.isCustomer()) {
+      this.hasPendingRequest = this.notificationService.checkPendingSellerRequest();
+    } else {
+      this.hasPendingRequest = false;
+    }
+  }
+
+  requestSellerAccess(): void {
     // Check if user is logged in
     const currentUser = this.authService.getCurrentUser();
     if (!currentUser) {
@@ -75,18 +94,7 @@ export class FooterComponent implements AfterContentInit, OnInit {
       return;
     }
 
-    // Check user role
-    const userRole = this.authService.getUserRole();
-
-    if (userRole === 'ROLE_ADMIN' || userRole === 'ADMIN') {
-      alert('Admins cannot request seller access.');
-      return;
-    }
-
-    if (userRole === 'ROLE_SELLER' || userRole === 'SELLER') {
-      alert('You are already a seller.');
-      return;
-    }
+    // No need to check for role here since the button is only visible to customers
 
     // Visual feedback - show loading state
     const requestBtn = document.getElementById('sellerRequestBtn') as HTMLButtonElement;
@@ -113,6 +121,7 @@ export class FooterComponent implements AfterContentInit, OnInit {
         }
 
         alert('Your request has been submitted. An admin will review it shortly.');
+        this.hasPendingRequest = true;
       },
       error: (error) => {
         console.error('Error submitting seller request:', error);
@@ -125,6 +134,7 @@ export class FooterComponent implements AfterContentInit, OnInit {
         // Handle the case where the backend also indicates there's already a pending request
         if (error.error && error.error.message && error.error.message.includes('already have a pending')) {
           this.notificationService.markSellerRequestPending();
+          this.hasPendingRequest = true;
           alert('You already have a pending seller request. Please wait for an admin to review it.');
         } else {
           alert('Failed to submit request. Please try again later.');

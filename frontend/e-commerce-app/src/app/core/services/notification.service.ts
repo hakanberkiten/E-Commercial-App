@@ -171,7 +171,10 @@ export class NotificationService {
   }
 
   checkPendingSellerRequest(): boolean {
-    return this.pendingRequestSubject.value;
+    if (this.isBrowser) {
+      return localStorage.getItem('pendingSellerRequest') === 'true';
+    }
+    return false;
   }
 
   markSellerRequestPending(): void {

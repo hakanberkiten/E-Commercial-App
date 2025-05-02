@@ -25,10 +25,23 @@
       <div class="col-md-4 mb-3">
         <h5>Become a Seller</h5>
         <p class="small text-white-50">Want to sell your products on our platform?</p>
-        <button id="sellerRequestBtn" class="btn btn-outline-light btn-sm" (click)="requestSellerAccess()"
-          [disabled]="hasPendingRequest" [ngClass]="{'opacity-75': hasPendingRequest}">
-          <i class="bi" [ngClass]="hasPendingRequest ? 'bi-hourglass-split' : 'bi-shop'"></i>
-          {{ hasPendingRequest ? 'Request Pending' : 'Request Seller Access' }}
+
+        <!-- Only show button to logged-in customers who are not admins or sellers -->
+        <button *ngIf="isLoggedIn() && isCustomer() && !hasPendingRequest"
+          id="sellerRequestBtn"
+          class="btn btn-outline-light btn-sm"
+          (click)="requestSellerAccess()">
+          <i class="bi bi-shop"></i>
+          Request Seller Access
+        </button>
+
+        <!-- Show this when request is pending -->
+        <button *ngIf="isLoggedIn() && isCustomer() && hasPendingRequest"
+          id="sellerRequestBtn"
+          class="btn btn-outline-light btn-sm opacity-75"
+          disabled>
+          <i class="bi bi-hourglass-split"></i>
+          Request Pending
         </button>
       </div>
     </div>
