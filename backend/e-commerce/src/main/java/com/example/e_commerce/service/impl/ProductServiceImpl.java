@@ -215,19 +215,20 @@ public class ProductServiceImpl implements ProductService {
         
         // Sort products if specified
         if (sortBy != null) {
-            switch (sortBy.toLowerCase()) {
-                case "price_asc":
+            switch (sortBy) {
+                case "priceAsc":
                     products.sort(Comparator.comparing(Product::getPrice));
                     break;
-                case "price_desc":
+                case "priceDesc":
                     products.sort(Comparator.comparing(Product::getPrice).reversed());
                     break;
-                case "name_asc":
-                    products.sort(Comparator.comparing(Product::getProductName));
+                case "ratingAsc":
+                    products.sort(Comparator.comparing(Product::getProductRate));
                     break;
-                case "name_desc":
-                    products.sort(Comparator.comparing(Product::getProductName).reversed());
+                case "ratingDesc":
+                    products.sort(Comparator.comparing(Product::getProductRate).reversed());
                     break;
+                case "default":
                 default:
                     // Default sorting, do nothing
                     break;
