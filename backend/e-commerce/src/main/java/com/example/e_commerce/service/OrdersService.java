@@ -13,6 +13,7 @@ public interface OrdersService {
     void deleteOrder(Long id);
     Orders placeOrder(OrderRequest request);
     List<Orders> getOrdersBySellerId(Long sellerId);
+    List<Orders> getOrdersByUserId(Long userId);
     Orders updateOrderStatus(Long orderId, String status);
     Orders refundAndCancelOrder(Long orderId);
     Orders approveSellerItems(Long orderId, Long sellerId);

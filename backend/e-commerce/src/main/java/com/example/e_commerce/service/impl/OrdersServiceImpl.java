@@ -440,6 +440,15 @@ public class OrdersServiceImpl implements OrdersService {
         return orderRepo.save(order);
     }
 
+    @Override
+    public List<Orders> getOrdersByUserId(Long userId) {
+        // Find orders belonging to this user
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+                
+        return orderRepo.findByUserOrderByOrderDateDesc(user);
+    }
+
     // Helper method to validate order status
     private boolean isValidOrderStatus(String status) {
         // Define the valid status values your application supports

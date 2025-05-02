@@ -55,6 +55,11 @@ export class ProfileComponent implements OnInit {
   // Tab navigation
   activeTab: string = 'profile'; // Default active tab
 
+  // Orders-related properties
+  userOrders: any[] = [];
+  loadingOrders: boolean = false;
+  expandedOrderId: number | null = null;
+
   constructor(
     private auth: AuthService,
     private fb: FormBuilder,
@@ -128,11 +133,22 @@ export class ProfileComponent implements OnInit {
         if (!this.isAdmin()) {
           this.loadUserCards();
           this.loadPaymentHistory();
+
+          // Add this line to load orders on init
+          this.loadUserOrders();
+
           // Initialize Stripe only for non-admins
           this.initializeStripe();
         } else {
           // For admin users, ensure we stay on the profile tab
           this.activeTab = 'profile';
+        }
+
+        // Check for tab parameter in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const tabParam = urlParams.get('tab');
+        if (tabParam) {
+          this.setActiveTab(tabParam);
         }
       } else {
         this.router.navigate(['/login']);
@@ -250,6 +266,50 @@ export class ProfileComponent implements OnInit {
         console.error('Error loading payment history:', error);
       }
     });
+  }
+
+  loadUserOrders() {
+    if (this.currentUser) {
+      this.loadingOrders = true;
+
+      this.http.get<any>(`/api/orders/user/${this.currentUser.userId}`)
+        .subscribe({
+          next: (response) => {
+            console.log('Orders API response:', response);
+
+            // Handle both array and object responses
+            if (Array.isArray(response)) {
+              this.userOrders = response;
+            } else if (response && typeof response === 'object') {
+              // Check if response is wrapped in a data property
+              if (Array.isArray(response.data)) {
+                this.userOrders = response.data;
+              } else {
+                // Convert object to array if needed
+                this.userOrders = [response];
+              }
+            } else {
+              this.userOrders = [];
+            }
+
+            console.log('Processed orders:', this.userOrders);
+            this.loadingOrders = false;
+          },
+          error: (error) => {
+            console.error('Error loading orders', error);
+            this.errorMessage = 'Failed to load your orders. Please try again.';
+            this.loadingOrders = false;
+          }
+        });
+    }
+  }
+
+  toggleOrderDetails(orderId: number) {
+    if (this.expandedOrderId === orderId) {
+      this.expandedOrderId = null;
+    } else {
+      this.expandedOrderId = orderId;
+    }
   }
 
   toggleEditMode(): void {
@@ -528,10 +588,22 @@ export class ProfileComponent implements OnInit {
 
   // Update this method to allow admins to access both profile and addresses tabs
   setActiveTab(tab: string): void {
-    // Only allow admin to access the profile and addresses tabs
-    if (this.isAdmin() && tab !== 'profile' && tab !== 'addresses') {
-      return;
-    }
     this.activeTab = tab;
+
+    // Load the appropriate data based on tab
+    if (tab === 'myorders') {
+      this.loadUserOrders();
+    } else if (tab === 'payment') {
+      this.loadUserCards();
+    } else if (tab === 'orders') {
+      this.loadPaymentHistory();
+    }
+  }
+
+  // Add this as a utility method
+  hasOrders(): boolean {
+    const hasOrdersValue = Array.isArray(this.userOrders) && this.userOrders.length > 0;
+    console.log('Has orders check:', hasOrdersValue, this.userOrders);
+    return hasOrdersValue;
   }
 }

@@ -47,6 +47,12 @@ public class OrdersController {
         return ResponseEntity.ok(orders);
     }
 
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Orders>> getOrdersByUserId(@PathVariable Long userId) {
+        List<Orders> orders = orderService.getOrdersByUserId(userId);
+        return ResponseEntity.ok(orders);
+    }
+
     @PatchMapping("/{id}/status")
     public ResponseEntity<Orders> updateOrderStatus(
             @PathVariable Long id, 

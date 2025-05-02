@@ -13,8 +13,10 @@ import org.springframework.data.repository.query.Param;
 public interface OrdersRepository extends JpaRepository<Orders, Long> {
     // Add this method to your OrdersRepository interface
 
-@Query("SELECT DISTINCT o FROM Orders o JOIN o.items i WHERE i.product.seller.userId = :sellerId")
-List<Orders> findBySellerId(@Param("sellerId") Long sellerId);
-void deleteAllByUser(User user);
+    @Query("SELECT DISTINCT o FROM Orders o JOIN o.items i WHERE i.product.seller.userId = :sellerId")
+    List<Orders> findBySellerId(@Param("sellerId") Long sellerId);
 
+    void deleteAllByUser(User user);
+
+    List<Orders> findByUserOrderByOrderDateDesc(User user);
 }

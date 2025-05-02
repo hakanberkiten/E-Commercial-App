@@ -82,6 +82,13 @@
                                 <i class="bi bi-box-seam me-2"></i>Payment History
                             </button>
                         </li>
+                        <!-- Add new My Orders tab here -->
+                        <li class="nav-item" *ngIf="!isAdmin()">
+                            <button class="nav-link" [class.active]="activeTab === 'myorders'"
+                                (click)="setActiveTab('myorders')">
+                                <i class="bi bi-bag-check me-2"></i>My Orders
+                            </button>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -471,6 +478,136 @@
                         </div>
 
 
+                    </div>
+
+                    <!-- MY ORDERS TAB - Only for non-admins -->
+                    <div class="tab-pane fade" [class.show]="activeTab === 'myorders'"
+                        [class.active]="activeTab === 'myorders'" *ngIf="!isAdmin()">
+
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="mb-0">My Orders</h4>
+                        </div>
+
+                        <!-- Orders loading indicator -->
+                        <div *ngIf="loadingOrders" class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading orders...</span>
+                            </div>
+                            <p class="mt-2">Loading your orders...</p>
+                        </div>
+
+                        <!-- No orders message -->
+                        <div *ngIf="!loadingOrders && !hasOrders()" class="text-center py-5">
+                            <i class="bi bi-bag-x display-4 text-muted"></i>
+                            <p class="mt-3 text-muted">You haven't placed any orders yet.</p>
+                            <a routerLink="/products" class="btn btn-primary mt-2">Start Shopping</a>
+                        </div>
+
+                        <!-- Orders list -->
+                        <div *ngIf="!loadingOrders && hasOrders()" class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Order ID</th>
+                                            <th>Date</th>
+                                            <th>Total</th>
+                                            <th>Status</th>
+                                            <th class="text-end">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let order of userOrders" class="order-row">
+                                            <td># {{ order.orderId }}</td>
+                                            <td>{{ order.orderDate | date:'medium' }}</td>
+                                            <td>{{ order.totalAmount | currency }}</td>
+                                            <td>
+                                                <span class="badge rounded-pill py-2 px-3" [ngClass]="{
+                                                    'bg-warning text-dark': order.orderStatus === 'PENDING',
+                                                    'bg-info': order.orderStatus === 'SHIPPED' || order.orderStatus === 'PARTIALLY_SHIPPED',
+                                                    'bg-success': order.orderStatus === 'DELIVERED',
+                                                    'bg-danger': order.orderStatus === 'CANCELLED'
+                                                }">
+                                                    {{ order.orderStatus }}
+                                                </span>
+                                            </td>
+                                            <td class="text-end">
+                                                <button class="btn btn-sm btn-outline-primary"
+                                                    (click)="toggleOrderDetails(order.orderId)">
+                                                    <i class="bi bi-eye me-1"></i> Details
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Add this right after your orders list (hidden in production) -->
+                        <div *ngIf="!loadingOrders" class="d-none">
+                            <pre>{{ userOrders | json }}</pre>
+                        </div>
+
+                        <!-- Order details section -->
+                        <div *ngFor="let order of userOrders" class="order-details mt-3 mb-4 border rounded p-3"
+                            [hidden]="expandedOrderId !== order.orderId">
+                            <h5 class="mb-3">Order Details</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Seller</th>
+                                            <th class="text-center">Quantity</th>
+                                            <th class="text-end">Unit Price</th>
+                                            <th class="text-end">Subtotal</th>
+                                            <th class="text-center">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let item of order.items">
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img *ngIf="item.product.image" [src]="item.product.image"
+                                                        alt="{{ item.product.productName }}" class="me-2"
+                                                        style="width: 40px; height: 40px; object-fit: cover;">
+                                                    <span>{{ item.product.productName }}</span>
+                                                </div>
+                                            </td>
+                                            <td>{{ item.product.seller?.firstName }} {{
+                                                item.product.seller?.lastName }}</td>
+                                            <td class="text-center">{{ item.quantityInOrder }}</td>
+                                            <td class="text-end">{{ item.product.price | currency }}</td>
+                                            <td class="text-end">{{ item.orderedProductPrice | currency }}</td>
+                                            <td class="text-center">
+                                                <span class="badge" [ngClass]="{
+                                                    'bg-warning text-dark': item.itemStatus === 'PENDING',
+                                                    'bg-info': item.itemStatus === 'SHIPPED',
+                                                    'bg-success': item.itemStatus === 'DELIVERED'
+                                                }">
+                                                    {{ item.itemStatus }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="4" class="text-end fw-bold">Total:</td>
+                                            <td class="text-end fw-bold">{{ order.totalAmount | currency }}</td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-between mt-3">
+                                <div>
+                                    <strong>Order Date:</strong> {{ order.orderDate | date:'medium' }}
+                                </div>
+                                <button class="btn btn-sm btn-outline-secondary" (click)="expandedOrderId = null">
+                                    <i class="bi bi-x-lg me-1"></i> Close Details
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
