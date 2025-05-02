@@ -81,7 +81,24 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         try {
-            return stripeService.addCardToCustomer(user.getStripeCustomerId(), cardDto);
+            // Create the payment method with Stripe
+            String paymentMethodId = stripeService.createStripeCustomer(user);
+            stripeService.attachPaymentMethodToCustomer(paymentMethodId, user.getStripeCustomerId());
+            
+            // Save card information to the database
+            Payment payment = Payment.builder()
+                    .user(user)
+                    .paymentMethod("card")
+                    .stripeCustomerId(user.getStripeCustomerId())
+                    .cardLastFour(cardDto.getCardNumber().substring(cardDto.getCardNumber().length() - 4))
+                    .cardExpirationMonth(cardDto.getExpirationMonth())
+                    .cardExpirationYear(cardDto.getExpirationYear())
+                    .status("active")
+                    .build();
+            
+            payRepo.save(payment);
+            
+            return paymentMethodId;
         } catch (StripeException e) {
             throw new RuntimeException("Failed to add card: " + e.getMessage());
         }

@@ -116,18 +116,13 @@
                                         <label class="form-check-label" [for]="'card-'+card.id">
                                             <div>
                                                 <strong>{{ card.brand | titlecase }} •••• {{ card.last4 }}</strong>
-                                                <div class="small text-muted">Expires {{ card.exp_month }}/{{ card.exp_year }}</div>
+                                                <div class="small text-muted">Expires {{ card.exp_month }}/{{
+                                                    card.exp_year }}</div>
                                             </div>
                                         </label>
                                     </div>
                                     <div>
-                                        <span *ngIf="card.isDefault" class="badge bg-success me-2">Default</span>
-                                        <button *ngIf="!card.isDefault"
-                                                class="btn btn-sm btn-outline-primary"
-                                                (click)="setDefaultPaymentMethod(card.id)"
-                                                [disabled]="isSettingDefault">
-                                            Set Default
-                                        </button>
+
                                     </div>
                                 </div>
                             </div>
@@ -138,14 +133,16 @@
                     <div *ngIf="addresses.length === 0" class="alert alert-warning mb-3">
                         <i class="bi bi-exclamation-triangle me-2"></i>
                         You need to add a shipping address before checkout.
-                        <a routerLink="/profile" [queryParams]="{tab: 'addresses'}" class="alert-link">Add an address in your profile</a>
+                        <a routerLink="/profile" [queryParams]="{tab: 'addresses'}" class="alert-link">Add an address in
+                            your profile</a>
                     </div>
 
                     <!-- Payment Warning Message -->
                     <div *ngIf="savedCards.length === 0" class="alert alert-warning mb-3">
                         <i class="bi bi-exclamation-triangle me-2"></i>
                         You need to add a payment method before checkout.
-                        <a routerLink="/profile" [queryParams]="{tab: 'payment'}" class="alert-link">Add a card in your profile</a>
+                        <a routerLink="/profile" [queryParams]="{tab: 'payment'}" class="alert-link">Add a card in your
+                            profile</a>
                     </div>
 
                     <!-- Checkout Button -->

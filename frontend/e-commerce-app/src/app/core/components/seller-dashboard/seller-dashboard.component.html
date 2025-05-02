@@ -126,14 +126,22 @@
                                     <td>{{ order.orderDate | date:'short' }}</td>
                                     <td>{{ order.customer.name }}</td>
                                     <td>
-                                        <span class="badge rounded-pill py-2 px-3" [ngClass]="{
-                                            'bg-warning text-dark': order.status === 'PENDING',
-                                            'bg-success': order.status === 'APPROVED' || order.status === 'DELIVERED',
-                                            'bg-info': order.status === 'SHIPPED',
-                                            'bg-danger': order.status === 'CANCELLED'
-                                        }">
-                                            {{ order.status }}
-                                        </span>
+                                        <div class="d-flex flex-column align-items-center">
+                                            <!-- Show seller's own shipping status -->
+                                            <span class="badge rounded-pill py-2 px-3" [ngClass]="{
+                                                'bg-warning text-dark': !order.sellerApproved && order.status === 'PENDING',
+                                                'bg-success': order.sellerApproved,
+                                                'bg-info': order.status === 'SHIPPED',
+                                                'bg-danger': order.status === 'CANCELLED'
+                                            }">
+                                                {{ order.sellerApproved ? 'YOU SHIPPED' : 'PENDING' }}
+                                            </span>
+
+                                            <!-- For multi-seller orders, show overall status -->
+                                            <small *ngIf="order.isMultiSellerOrder" class="mt-1 text-muted">
+                                                Order: {{ order.status }}
+                                            </small>
+                                        </div>
                                     </td>
                                     <td class="text-end">
                                         <span class="badge bg-success bg-opacity-10 text-success fs-6">
@@ -142,27 +150,23 @@
                                     </td>
                                     <td>
                                         <div class="d-flex justify-content-center gap-2">
-                                            <button *ngIf="order.status === 'PENDING' && !order.sellerApproved"
+                                            <button *ngIf="order.status !== 'CANCELLED' && !order.sellerApproved"
                                                 class="btn btn-sm btn-success" (click)="approveOrder(order.id)"
                                                 [disabled]="isProcessing">
                                                 <span *ngIf="isProcessing" class="spinner-border spinner-border-sm me-1"
                                                     role="status" aria-hidden="true"></span>
                                                 <i *ngIf="!isProcessing" class="bi bi-check2 me-1"></i>Approve & Ship
                                             </button>
-                                            <button *ngIf="order.status === 'PENDING'" class="btn btn-sm btn-danger"
-                                                (click)="cancelOrder(order.id)" [disabled]="isProcessing">
-                                                <span *ngIf="isProcessing" class="spinner-border spinner-border-sm me-1"
-                                                    role="status" aria-hidden="true"></span>
-                                                <i *ngIf="!isProcessing" class="bi bi-x me-1"></i>Cancel & Refund
-                                            </button>
+
+                                            <!-- Show indicator when this seller has shipped but waiting on others -->
+                                            <span *ngIf="order.sellerApproved && order.status !== 'SHIPPED' && order.isMultiSellerOrder"
+                                                class="badge bg-info">
+                                                Your items shipped - Waiting for other sellers
+                                            </span>
                                             <button class="btn btn-sm btn-outline-primary"
                                                 (click)="toggleOrderDetails(order.id)">
                                                 <i class="bi bi-list-ul me-1"></i>Details
                                             </button>
-                                            <span *ngIf="order.sellerApproved && order.status !== 'SHIPPED'"
-                                                class="badge bg-info">
-                                                Your items approved - Waiting for other sellers
-                                            </span>
                                         </div>
                                     </td>
                                 </tr>

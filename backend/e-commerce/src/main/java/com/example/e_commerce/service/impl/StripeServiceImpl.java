@@ -84,6 +84,10 @@ public class StripeServiceImpl {
             card.put("id", method.getId());
             card.put("brand", method.getCard().getBrand());
             card.put("last4", method.getCard().getLast4());
+            // Update these field names to be consistent with frontend
+            card.put("expMonth", method.getCard().getExpMonth());
+            card.put("expYear", method.getCard().getExpYear());
+            // Keep the original fields for backwards compatibility
             card.put("exp_month", method.getCard().getExpMonth());
             card.put("exp_year", method.getCard().getExpYear());
             cards.add(card);

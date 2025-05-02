@@ -127,8 +127,14 @@ export class SellerDashboardComponent implements OnInit {
             (sum: number, item: any) => sum + (item.orderedProductPrice || 0),
             0
           );
+          // Check if this seller's items are already shipped
           const sellerApproved = sellerItems.every((item: any) =>
             item.itemStatus === 'SHIPPED'
+          );
+
+          // Check if this is a multi-seller order
+          const isMultiSellerOrder = order.items.some((item: any) =>
+            item.product.seller.userId !== sellerId
           );
 
           return {
@@ -136,6 +142,8 @@ export class SellerDashboardComponent implements OnInit {
             orderDate: new Date(order.orderDate),
             status: order.orderStatus,
             sellerApproved,
+            sellerShipped: sellerApproved, // Track if this seller's items are shipped
+            isMultiSellerOrder,
             customer: {
               id: order.user?.userId,
               name: `${order.user?.firstName || ''} ${order.user?.lastName || ''}`.trim() || 'Unknown',
@@ -147,7 +155,8 @@ export class SellerDashboardComponent implements OnInit {
               quantity: item.quantityInOrder,
               price: item.product.price,
               subtotal: item.orderedProductPrice,
-              status: item.itemStatus || 'PENDING'
+              status: item.itemStatus || 'PENDING',
+              isThisSellersItem: item.product.seller.userId === sellerId
             })),
             totalPrice: sellerTotal
           };
@@ -250,11 +259,20 @@ export class SellerDashboardComponent implements OnInit {
       next: (updatedOrder) => {
         const idx = this.customerOrders.findIndex(o => o.id === orderId);
         if (idx >= 0) {
+          // Mark this seller's portion as approved regardless of other sellers
           this.customerOrders[idx].sellerApproved = true;
-          this.customerOrders[idx].status =
-            updatedOrder.orderStatus === 'SHIPPED' ? 'SHIPPED' : 'PARTIALLY_SHIPPED';
+
+          // Update the local status to show shipping progress
+          if (updatedOrder.orderStatus === 'SHIPPED') {
+            this.customerOrders[idx].status = 'SHIPPED';
+            this.successMessage = 'All items in this order have been shipped!';
+          } else {
+            // This is the key change - show the seller their part is shipped
+            this.customerOrders[idx].status = 'PARTIALLY_SHIPPED';
+            this.customerOrders[idx].sellerShipped = true; // New flag to track this seller's shipment
+            this.successMessage = 'Your items have been approved and marked for shipping! The customer will be notified.';
+          }
         }
-        this.successMessage = 'Your items have been approved and marked for shipping!';
         this.isProcessing = false;
         setTimeout(() => (this.successMessage = ''), 3000);
       },

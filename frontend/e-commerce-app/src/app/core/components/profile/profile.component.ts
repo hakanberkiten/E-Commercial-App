@@ -228,30 +228,24 @@ export class ProfileComponent implements OnInit {
   }
 
   loadUserCards(): void {
-    if (!this.currentUser || this.isAdmin()) return; // Skip for admin
-
     this.loading = true;
+    const userId = this.auth.getCurrentUser()?.userId;
 
-    // First ensure the user has a Stripe customer account
-    this.paymentService.createStripeCustomer(this.currentUser.userId).subscribe({
-      next: (customerId) => {
-        // Then load their cards
-        this.paymentService.getUserCards(this.currentUser?.userId || 0).subscribe({
-          next: (cards) => {
-            this.savedCards = cards;
-            this.loading = false;
-          },
-          error: (error) => {
-            console.error('Error loading cards:', error);
-            this.loading = false;
-          }
-        });
-      },
-      error: (error) => {
-        console.error('Error creating/getting Stripe customer:', error);
-        this.loading = false;
-      }
-    });
+    if (userId) {
+      this.paymentService.getUserCards(userId).subscribe({
+        next: (cards) => {
+          this.savedCards = cards;
+          console.log('Cards loaded:', this.savedCards);
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error loading cards:', error);
+          this.loading = false;
+        }
+      });
+    } else {
+      this.loading = false;
+    }
   }
 
   loadPaymentHistory(): void {
