@@ -25,6 +25,10 @@ export class SellerDashboardComponent implements OnInit {
   error: string | null = null;
   productSuccessMessage: string = '';
   productErrorMessage: string = '';
+  expandedOrderId: number | null = null;
+  isProcessing = false;
+  successMessage: string = '';
+  errorMessage: string = '';
 
   constructor(
     private categoryService: CategoryService,
@@ -107,9 +111,46 @@ export class SellerDashboardComponent implements OnInit {
       console.error('Error: Seller ID is null');
       return;
     }
+
     this.orderService.getOrdersBySellerId(sellerId).subscribe({
       next: (orders) => {
-        this.customerOrders = orders;
+        // Filter out canceled orders
+        const activeOrders = orders.filter(order => order.orderStatus !== 'CANCELLED');
+
+        // Transform the remaining active orders into a format easier to display
+        this.customerOrders = activeOrders.map(order => {
+          // Calculate total for this seller's products in the order
+          const sellerTotal = order.items.reduce((sum: number, item: any) =>
+            sum + (item.orderedProductPrice || 0), 0);
+
+          // Check if all of this seller's items are approved
+          const sellerItems = order.items.filter((item: any) =>
+            item.product.seller.userId === sellerId);
+
+          const sellerApproved = sellerItems.every((item: any) =>
+            item.itemStatus === 'SHIPPED');
+
+          return {
+            id: order.orderId,
+            orderDate: new Date(order.orderDate),
+            status: order.orderStatus,
+            sellerApproved: sellerApproved,
+            customer: {
+              id: order.user?.userId,
+              name: `${order.user?.firstName || ''} ${order.user?.lastName || ''}`.trim() || 'Unknown',
+              email: order.user?.email || order.email || 'No email provided'
+            },
+            items: order.items.map((item: any) => ({
+              productId: item.product.productId,
+              productName: item.product.productName,
+              quantity: item.quantityInOrder,
+              price: item.product.price,
+              subtotal: item.orderedProductPrice,
+              status: item.itemStatus || 'PENDING'
+            })),
+            totalPrice: sellerTotal
+          };
+        });
       },
       error: (error) => {
         console.error('Error loading seller orders', error);
@@ -200,25 +241,57 @@ export class SellerDashboardComponent implements OnInit {
   }
 
   approveOrder(orderId: number) {
-    this.orderService.updateOrderStatus(orderId, 'APPROVED').subscribe({
-      next: () => {
-        this.loadSellerOrders();
-      },
-      error: (error) => {
-        console.error('Error approving order', error);
-      }
-    });
+    if (confirm('Are you sure you want to approve and ship your items in this order?')) {
+      this.isProcessing = true;
+      this.orderService.approveSellerItems(orderId).subscribe({
+        next: (updatedOrder) => {
+          // Find the order in the current list
+          const orderIndex = this.customerOrders.findIndex(order => order.id === orderId);
+          if (orderIndex >= 0) {
+            // Update just the status display for this seller
+            this.customerOrders[orderIndex].sellerApproved = true;
+
+            // If all items are now approved, update to shipped
+            if (updatedOrder.orderStatus === 'SHIPPED') {
+              this.customerOrders[orderIndex].status = 'SHIPPED';
+            } else {
+              this.customerOrders[orderIndex].status = 'PARTIALLY_SHIPPED';
+            }
+          }
+
+          this.successMessage = 'Your items have been approved and marked for shipping!';
+          this.isProcessing = false;
+          setTimeout(() => this.successMessage = '', 3000);
+        },
+        error: (error) => {
+          console.error('Error approving order', error);
+          this.errorMessage = 'Failed to approve items. Please try again.';
+          this.isProcessing = false;
+          setTimeout(() => this.errorMessage = '', 3000);
+        }
+      });
+    }
   }
 
   cancelOrder(orderId: number) {
-    this.orderService.updateOrderStatus(orderId, 'CANCELLED').subscribe({
-      next: () => {
-        this.loadSellerOrders();
-      },
-      error: (error) => {
-        console.error('Error cancelling order', error);
-      }
-    });
+    if (confirm('Are you sure you want to cancel this order? The customer will receive a refund.')) {
+      this.isProcessing = true;
+      this.orderService.refundAndCancelOrder(orderId).subscribe({
+        next: () => {
+          // Remove the canceled order from the local array instead of reloading
+          this.customerOrders = this.customerOrders.filter(order => order.id !== orderId);
+          this.successMessage = 'Order cancelled and payment refunded to customer!';
+          this.isProcessing = false;
+          setTimeout(() => this.successMessage = '', 3000);
+        },
+        error: (error) => {
+          console.error('Error cancelling order', error);
+          this.errorMessage = 'Failed to cancel order. Please try again.';
+          this.isProcessing = false;
+          setTimeout(() => this.errorMessage = '', 3000);
+        }
+      });
+    }
   }
 
   deleteProduct(product: any) {
@@ -240,6 +313,14 @@ export class SellerDashboardComponent implements OnInit {
           setTimeout(() => this.productErrorMessage = '', 3000);
         }
       });
+    }
+  }
+
+  toggleOrderDetails(orderId: number): void {
+    if (this.expandedOrderId === orderId) {
+      this.expandedOrderId = null;
+    } else {
+      this.expandedOrderId = orderId;
     }
   }
 }

@@ -38,6 +38,7 @@ public class OrdersServiceImpl implements OrdersService {
     private final OrderItemRepository itemRepo;
     private final NotificationService notificationService;
     private final PaymentService paymentService;
+    private final StripeServiceImpl stripeService;
 
     @Override
     public Orders saveOrder(Orders order) {
@@ -166,12 +167,31 @@ public class OrdersServiceImpl implements OrdersService {
         List<Orders> allOrders = orderRepo.findAll();
         
         // 2. Filter orders that contain products from the specified seller
+        // AND are not cancelled orders
         return allOrders.stream()
-            .filter(order -> order.getItems() != null && 
-                    order.getItems().stream()
-                        .anyMatch(item -> item.getProduct() != null && 
-                                  item.getProduct().getSeller().getUserId() != null &&
-                                  item.getProduct().getSeller().getUserId().equals(sellerId)))
+            .filter(order -> 
+                // Check that the order has items that belong to this seller
+                order.getItems() != null && 
+                order.getItems().stream()
+                    .anyMatch(item -> item.getProduct() != null && 
+                              item.getProduct().getSeller() != null &&
+                              item.getProduct().getSeller().getUserId() != null &&
+                              item.getProduct().getSeller().getUserId().equals(sellerId)) &&
+                // And the order is not cancelled
+                !"CANCELLED".equals(order.getOrderStatus())
+            )
+            .peek(order -> {
+                // Filter the order items to only include those for this seller's products
+                // This ensures sellers only see their own products in each order
+                List<OrderItem> sellerItems = order.getItems().stream()
+                    .filter(item -> item.getProduct() != null && 
+                            item.getProduct().getSeller() != null &&
+                            item.getProduct().getSeller().getUserId().equals(sellerId))
+                    .toList();
+                
+                // Create a new list with only the seller's items
+                order.setItems(new ArrayList<>(sellerItems));
+            })
             .toList();
     }
 
@@ -188,6 +208,129 @@ public class OrdersServiceImpl implements OrdersService {
         
         // Set the status directly as a string
         order.setOrderStatus(upperCaseStatus);
+        return orderRepo.save(order);
+    }
+
+    @Transactional
+    @Override
+    public Orders refundAndCancelOrder(Long orderId) {
+        Orders order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+                
+        // Only allow refund if the order status is PENDING or APPROVED
+        if (!"PENDING".equals(order.getOrderStatus()) && 
+            !"APPROVED".equals(order.getOrderStatus())) {
+            throw new RuntimeException("Order cannot be refunded in its current status: " + order.getOrderStatus());
+        }
+        
+        // Return items to inventory
+        if (order.getItems() != null && !order.getItems().isEmpty()) {
+            for (OrderItem item : order.getItems()) {
+                Product product = item.getProduct();
+                if (product != null) {
+                    // Add the ordered quantity back to stock
+                    int newQuantity = product.getQuantityInStock() + item.getQuantityInOrder();
+                    product.setQuantityInStock(newQuantity);
+                    productRepo.save(product);
+                    
+                    System.out.println("Returned " + item.getQuantityInOrder() + " units of product " + 
+                        product.getProductId() + " to stock. New quantity: " + newQuantity);
+                }
+            }
+        }
+        
+        // If there's a payment associated with the order
+        if (order.getPayment() != null) {
+            Payment payment = order.getPayment();
+            
+            try {
+                // Process refund through Stripe
+                stripeService.refundPayment(payment.getStripePaymentIntentId());
+                
+                // Update payment status
+                payment.setStatus("REFUNDED");
+                payRepo.save(payment);
+                
+                // Create notification for customer
+                if (order.getUser() != null) {
+                    notificationService.createNotification(
+                        order.getUser().getUserId(),
+                        "Your order #" + orderId + " has been cancelled and refunded",
+                        "ORDER_CANCELLED",
+                        "/profile?tab=orders"
+                    );
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to process refund: " + e.getMessage());
+            }
+        }
+        
+        // Update order status
+        order.setOrderStatus("CANCELLED");
+        return orderRepo.save(order);
+    }
+
+    @Transactional
+    @Override
+    public Orders approveSellerItems(Long orderId, Long sellerId) {
+        Orders order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        
+        // Check if order status allows approval
+        if ("CANCELLED".equals(order.getOrderStatus())) {
+            throw new RuntimeException("Cannot approve items for a cancelled order");
+        }
+        
+        boolean foundSellerItems = false;
+        boolean allItemsApproved = true;
+        
+        // Update status of this seller's items
+        for (OrderItem item : order.getItems()) {
+            // Check if this item belongs to the current seller
+            if (item.getProduct() != null && 
+                item.getProduct().getSeller() != null && 
+                item.getProduct().getSeller().getUserId().equals(sellerId)) {
+                
+                // Mark this seller's item as shipped
+                item.setItemStatus("SHIPPED");
+                itemRepo.save(item);
+                foundSellerItems = true;
+                
+                // Notify customer that seller has approved their items
+                if (order.getUser() != null) {
+                    notificationService.createNotification(
+                        order.getUser().getUserId(),
+                        "Items from " + item.getProduct().getSeller().getFirstName() + 
+                        " in your order #" + orderId + " have been shipped!",
+                        "ORDER_PARTIAL_SHIPPED",
+                        "/profile?tab=orders"
+                    );
+                }
+            } else if (!"SHIPPED".equals(item.getItemStatus())) {
+                // If any item is not shipped yet, the whole order isn't ready
+                allItemsApproved = false;
+            }
+        }
+        
+        if (!foundSellerItems) {
+            throw new RuntimeException("No items found for this seller in the order");
+        }
+        
+        // If all items are now approved, update the overall order status
+        if (allItemsApproved) {
+            order.setOrderStatus("SHIPPED");
+            
+            // Send a final notification that the entire order is shipped
+            if (order.getUser() != null) {
+                notificationService.createNotification(
+                    order.getUser().getUserId(),
+                    "Great news! Your complete order #" + orderId + " has been shipped!",
+                    "ORDER_SHIPPED",
+                    "/profile?tab=orders"
+                );
+            }
+        }
+        
         return orderRepo.save(order);
     }
 

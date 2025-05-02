@@ -19,7 +19,11 @@ public class OrderItem {
     private BigDecimal orderProductPrice;
     private BigDecimal orderedProductPrice;
     private Integer quantityInOrder;
-
+    
+    // Add this field to track item status per seller
+    @Builder.Default
+    private String itemStatus = "PENDING"; // Default status
+    
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
     @JsonBackReference           

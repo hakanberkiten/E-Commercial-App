@@ -4,6 +4,7 @@ package com.example.e_commerce.controller;
 import com.example.e_commerce.dto.OrderRequest;
 import com.example.e_commerce.entity.Orders;
 import com.example.e_commerce.service.OrdersService;
+import com.example.e_commerce.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class OrdersController {
     private final OrdersService orderService;
+    private final NotificationService notificationService;
 
     @PostMapping("/place")
     public Orders placeOrder(@RequestBody OrderRequest req, Principal principal) {
@@ -46,6 +48,33 @@ public class OrdersController {
         
         String status = statusUpdate.get("status");
         Orders updatedOrder = orderService.updateOrderStatus(id, status);
+        return ResponseEntity.ok(updatedOrder);
+    }
+
+    @PostMapping("/{id}/status-update")
+    public ResponseEntity<Orders> updateOrderStatusPost(
+            @PathVariable Long id, 
+            @RequestBody Map<String, String> statusUpdate) {
+        
+        String status = statusUpdate.get("status");
+        Orders updatedOrder = orderService.updateOrderStatus(id, status);
+        
+        // Notify the customer about the status change
+        if (updatedOrder.getUser() != null && "SHIPPED".equals(status)) {
+            notificationService.createNotification(
+                updatedOrder.getUser().getUserId(),
+                "Your order #" + id + " has been approved and shipped!",
+                "ORDER_SHIPPED",
+                "/profile?tab=orders"
+            );
+        }
+        
+        return ResponseEntity.ok(updatedOrder);
+    }
+
+    @PostMapping("/{id}/refund")
+    public ResponseEntity<Orders> refundAndCancelOrder(@PathVariable Long id) {
+        Orders updatedOrder = orderService.refundAndCancelOrder(id);
         return ResponseEntity.ok(updatedOrder);
     }
 

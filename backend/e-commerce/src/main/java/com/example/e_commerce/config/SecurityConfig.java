@@ -65,6 +65,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/orders/all").hasAuthority("ROLE_ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SELLER")
                 .requestMatchers(HttpMethod.PATCH, "/api/orders/**/status").hasAnyAuthority("ROLE_ADMIN", "ROLE_SELLER")
+                .requestMatchers(HttpMethod.POST, "/api/orders/*/status-update").hasAnyAuthority("ROLE_ADMIN", "ROLE_SELLER")
                 
                 // Seller endpoints
                 .requestMatchers(HttpMethod.POST, "/api/products/save").hasAuthority("ROLE_SELLER")

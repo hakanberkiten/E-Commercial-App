@@ -9,6 +9,7 @@ import com.stripe.model.Customer;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.PaymentMethod;
 import com.stripe.model.PaymentMethodCollection;
+import com.stripe.model.Refund;
 import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.PaymentIntentCreateParams;
 import com.stripe.param.PaymentMethodAttachParams;
@@ -120,5 +121,24 @@ public class StripeServiceImpl {
         paymentMethod.attach(attachParams);
         
         return paymentMethod.getId();
+    }
+    
+    // Refund a payment
+    public void refundPayment(String paymentIntentId) throws StripeException {
+        Stripe.apiKey = secretKey;
+        
+        // Get the payment intent to check if it has a charge
+        PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentId);
+        
+        // If the payment intent has been charged, create a refund
+        if (paymentIntent.getLatestCharge() != null) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("charge", paymentIntent.getLatestCharge());
+            
+            Refund.create(params);
+        } else {
+            // If there's no charge yet, we can cancel the payment intent
+            paymentIntent.cancel();
+        }
     }
 }

@@ -12,3 +12,16 @@ table img {
     object-fit: cover;
     border-radius: 4px;
 }
+
+.order-row {
+    cursor: pointer;
+}
+
+.order-details-row {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.order-details-row table {
+    margin-bottom: 0;
+}

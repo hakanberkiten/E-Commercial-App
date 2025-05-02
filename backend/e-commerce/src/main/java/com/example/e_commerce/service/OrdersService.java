@@ -12,8 +12,9 @@ public interface OrdersService {
     Orders getOrderById(Long id);
     void deleteOrder(Long id);
     Orders placeOrder(OrderRequest request);
-// Add these methods to your OrdersService interface
-
-List<Orders> getOrdersBySellerId(Long sellerId);
-Orders updateOrderStatus(Long orderId, String status);
+    List<Orders> getOrdersBySellerId(Long sellerId);
+    Orders updateOrderStatus(Long orderId, String status);
+    Orders refundAndCancelOrder(Long orderId);
+    Orders approveSellerItems(Long orderId, Long sellerId);
+    
 }
