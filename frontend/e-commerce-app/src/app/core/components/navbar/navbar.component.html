@@ -129,7 +129,8 @@
                                     </a>
                                 </li>
                                 <li *ngIf="isCustomerOrSeller()">
-                                    <a class="dropdown-item py-2" routerLink="/orders">
+                                    <a class="dropdown-item py-2" routerLink="/profile"
+                                        [queryParams]="{tab: 'myorders'}">
                                         <i class="bi bi-bag-check me-2"></i>My Orders
                                     </a>
                                 </li>
