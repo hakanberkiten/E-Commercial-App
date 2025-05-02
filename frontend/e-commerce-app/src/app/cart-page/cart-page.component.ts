@@ -41,7 +41,23 @@ export class CartPageComponent implements OnInit {
 
   loadCartItems(): void {
     this.cartService.list()
-      .subscribe(i => this.items = i, e => this.error = e);
+      .subscribe({
+        next: (items) => {
+          this.items = items;
+          // Calculate total price from all cart items
+          this.calculateTotal();
+        },
+        error: (e) => this.error = e
+      });
+  }
+
+  // Add this new method to calculate the total
+  calculateTotal(): void {
+    this.total = 0;
+    if (this.items && this.items.length > 0) {
+      this.total = this.items.reduce((sum, item) =>
+        sum + (item.product.price * item.quantityInCart), 0);
+    }
   }
 
   // Update loadPaymentMethods method to identify default card
@@ -92,12 +108,18 @@ export class CartPageComponent implements OnInit {
     const q = +newQuantity;
     if (q > 0)
       this.cartService.update(item.cartItemId, q)
-        .subscribe(() => this.loadCartItems(), e => this.error = e);
+        .subscribe({
+          next: () => this.loadCartItems(),
+          error: (e) => this.error = e
+        });
   }
 
   remove(item: CartItem): void {
     this.cartService.remove(item.cartItemId)
-      .subscribe(() => this.loadCartItems(), e => this.error = e);
+      .subscribe({
+        next: () => this.loadCartItems(),
+        error: (e) => this.error = e
+      });
   }
 
   checkUserPermission(): boolean {

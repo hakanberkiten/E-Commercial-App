@@ -315,16 +315,35 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   updateOrderStatus(orderId: number, status: string): void {
-    this.orderService.updateOrderStatus(orderId, status).subscribe({
-      next: () => {
-        this.successMessage = 'Order status updated successfully';
-        this.loadAllOrders(); // Refresh order list
-        setTimeout(() => this.successMessage = '', 3000);
-      },
-      error: (error) => {
-        this.errorMessage = `Failed to update order status: ${error.message}`;
-        setTimeout(() => this.errorMessage = '', 3000);
+    if (status === 'CANCELLED') {
+      // If the order is being canceled, use the method that returns products to stock
+      if (confirm('Are you sure you want to cancel this order? Products will be returned to stock, and a refund will be issued to the customer.')) {
+        this.orderService.refundAndCancelOrder(orderId).subscribe({
+          next: () => {
+            this.successMessage = 'Order has been canceled, and products have been returned to stock';
+            this.loadAllOrders(); // Refresh the order list
+            setTimeout(() => this.successMessage = '', 3000);
+          },
+          error: (error) => {
+            this.errorMessage = `Failed to cancel the order: ${error.message}`;
+            setTimeout(() => this.errorMessage = '', 3000);
+          }
+        });
       }
-    });
+    } else {
+      // Use the normal method for other status updates
+      this.orderService.updateOrderStatus(orderId, status).subscribe({
+        next: () => {
+          this.successMessage = 'Order status updated successfully';
+          this.loadAllOrders(); // Refresh the order list
+          setTimeout(() => this.successMessage = '', 3000);
+        },
+        error: (error) => {
+          this.errorMessage = `Failed to update order status: ${error.message}`;
+          setTimeout(() => this.errorMessage = '', 3000);
+        }
+      });
+    }
   }
-}
+  }
+

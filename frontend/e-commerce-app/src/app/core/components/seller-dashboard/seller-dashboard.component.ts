@@ -288,13 +288,14 @@ export class SellerDashboardComponent implements OnInit {
   }
 
   cancelOrder(orderId: number): void {
-    if (!confirm('Are you sure you want to cancel this order? The customer will receive a refund.')) {
+    if (!confirm('Are you sure you want to cancel this order? Items will be returned to inventory and the customer will receive a refund.')) {
       return;
     }
     this.isProcessing = true;
 
     this.orderService.refundAndCancelOrder(orderId).subscribe({
       next: () => {
+        // Handle UI updates after cancellation
         this.customerOrders = this.customerOrders.filter(o => o.id !== orderId);
         this.successMessage = 'Order cancelled and payment refunded to customer!';
         this.isProcessing = false;

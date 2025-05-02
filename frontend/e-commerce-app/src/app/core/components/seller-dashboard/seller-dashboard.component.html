@@ -158,8 +158,16 @@
                                                 <i *ngIf="!isProcessing" class="bi bi-check2 me-1"></i>Approve & Ship
                                             </button>
 
+                                            <!-- Add the cancel button here -->
+                                            <button *ngIf="order.status !== 'CANCELLED' && order.status !== 'SHIPPED'"
+                                                class="btn btn-sm btn-danger" (click)="cancelOrder(order.id)"
+                                                [disabled]="isProcessing">
+                                                <i class="bi bi-x-circle me-1"></i>Cancel
+                                            </button>
+
                                             <!-- Show indicator when this seller has shipped but waiting on others -->
-                                            <span *ngIf="order.sellerApproved && order.status !== 'SHIPPED' && order.isMultiSellerOrder"
+                                            <span
+                                                *ngIf="order.sellerApproved && order.status !== 'SHIPPED' && order.isMultiSellerOrder"
                                                 class="badge bg-info">
                                                 Your items shipped - Waiting for other sellers
                                             </span>
