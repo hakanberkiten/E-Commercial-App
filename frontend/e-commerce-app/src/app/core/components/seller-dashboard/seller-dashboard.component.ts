@@ -1,11 +1,14 @@
+// src/app/seller/dashboard/seller-dashboard.component.ts
+
 import { Component, OnInit } from '@angular/core';
-import { CategoryService } from '../../services/category.service';
-import { Category } from '../../../shared/models/category.model';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+
+import { CategoryService } from '../../services/category.service';
 import { ProductService } from '../../../core/services/product.service';
 import { OrderService } from '../../../core/services/order.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { Router } from '@angular/router';
+import { Category } from '../../../shared/models/category.model';
 
 @Component({
   selector: 'app-seller-dashboard',
@@ -24,12 +27,12 @@ export class SellerDashboardComponent implements OnInit {
   selectedCategoryId: number | null = null;
   isLoading = false;
   error: string | null = null;
-  productSuccessMessage: string = '';
-  productErrorMessage: string = '';
+  productSuccessMessage = '';
+  productErrorMessage = '';
   expandedOrderId: number | null = null;
   isProcessing = false;
-  successMessage: string = '';
-  errorMessage: string = '';
+  successMessage = '';
+  errorMessage = '';
 
   constructor(
     private categoryService: CategoryService,
@@ -78,16 +81,16 @@ export class SellerDashboardComponent implements OnInit {
     this.selectedCategoryId = categoryId ? parseInt(categoryId, 10) : null;
   }
 
-  loadSellerProducts() {
+  loadSellerProducts(): void {
     const currentUser = this.authService.getCurrentUser();
     const sellerId = currentUser ? currentUser.userId : null;
     if (!sellerId) {
       console.error('Error: Seller ID is null');
       return;
     }
+
     this.productService.getProductsBySellerId(sellerId).subscribe({
       next: (products) => {
-        // Transform backend model to frontend model
         this.sellerProducts = products.map(product => ({
           id: product.productId,
           name: product.productName,
@@ -96,7 +99,6 @@ export class SellerDashboardComponent implements OnInit {
           stockQuantity: product.quantityInStock,
           imageUrl: product.image,
           category: product.category,
-          // Keep the original data too if needed for backend operations
           ...product
         }));
       },
@@ -106,7 +108,7 @@ export class SellerDashboardComponent implements OnInit {
     });
   }
 
-  loadSellerOrders() {
+  loadSellerOrders(): void {
     const currentUser = this.authService.getCurrentUser();
     const sellerId = currentUser ? currentUser.userId : null;
     if (!sellerId) {
@@ -116,27 +118,24 @@ export class SellerDashboardComponent implements OnInit {
 
     this.orderService.getOrdersBySellerId(sellerId).subscribe({
       next: (orders) => {
-        // Filter out canceled orders
-        const activeOrders = orders.filter(order => order.orderStatus !== 'CANCELLED');
-
-        // Transform the remaining active orders into a format easier to display
+        const activeOrders = orders.filter(o => o.orderStatus !== 'CANCELLED');
         this.customerOrders = activeOrders.map(order => {
-          // Calculate total for this seller's products in the order
-          const sellerTotal = order.items.reduce((sum: number, item: any) =>
-            sum + (item.orderedProductPrice || 0), 0);
-
-          // Check if all of this seller's items are approved
           const sellerItems = order.items.filter((item: any) =>
-            item.product.seller.userId === sellerId);
-
+            item.product.seller.userId === sellerId
+          );
+          const sellerTotal = sellerItems.reduce(
+            (sum: number, item: any) => sum + (item.orderedProductPrice || 0),
+            0
+          );
           const sellerApproved = sellerItems.every((item: any) =>
-            item.itemStatus === 'SHIPPED');
+            item.itemStatus === 'SHIPPED'
+          );
 
           return {
             id: order.orderId,
             orderDate: new Date(order.orderDate),
             status: order.orderStatus,
-            sellerApproved: sellerApproved,
+            sellerApproved,
             customer: {
               id: order.user?.userId,
               name: `${order.user?.firstName || ''} ${order.user?.lastName || ''}`.trim() || 'Unknown',
@@ -160,26 +159,27 @@ export class SellerDashboardComponent implements OnInit {
     });
   }
 
-  editProduct(product: any) {
+  editProduct(product: any): void {
     this.isEditing = true;
     this.selectedProduct = product;
     this.productForm.patchValue({
-      id: product.productId,           // Changed from id to productId
-      name: product.productName,       // Changed from name to productName
-      description: product.description, // This one matches
-      price: product.price,            // This one matches
-      stockQuantity: product.quantityInStock, // Changed from stockQuantity to quantityInStock
-      imageUrl: product.image,         // Changed from imageUrl to image
-      category: product.category.categoryId  // Changed from category.id to category.categoryId
+      id: product.productId,
+      name: product.productName,
+      description: product.description,
+      price: product.price,
+      stockQuantity: product.quantityInStock,
+      imageUrl: product.image,
+      category: product.category.categoryId
     });
   }
-  addNewProduct() {
+
+  addNewProduct(): void {
     this.isEditing = false;
     this.selectedProduct = null;
     this.productForm.reset();
   }
 
-  saveProduct() {
+  saveProduct(): void {
     if (this.productForm.invalid) {
       return;
     }
@@ -191,12 +191,10 @@ export class SellerDashboardComponent implements OnInit {
       return;
     }
 
-    // Get the image URL from form or use default if empty
     const imageUrl = this.productForm.value.imageUrl?.trim()
       ? this.productForm.value.imageUrl
       : 'https://i.imgur.com/xzEfMjC.png';
 
-    // Map form values to backend model property names
     const productData = {
       productId: this.productForm.value.id,
       productName: this.productForm.value.name,
@@ -207,7 +205,7 @@ export class SellerDashboardComponent implements OnInit {
       category: { categoryId: this.productForm.value.category },
       seller: {
         userId: sellerId,
-        role: { roleId: 2 } // Add this line with the seller role ID
+        role: { roleId: 2 }
       }
     };
 
@@ -217,12 +215,12 @@ export class SellerDashboardComponent implements OnInit {
           this.loadSellerProducts();
           this.addNewProduct();
           this.productSuccessMessage = 'Product updated successfully!';
-          setTimeout(() => this.productSuccessMessage = '', 3000);
+          setTimeout(() => (this.productSuccessMessage = ''), 3000);
         },
         error: (error) => {
           console.error('Error updating product', error);
           this.productErrorMessage = 'Failed to update product. Please try again.';
-          setTimeout(() => this.productErrorMessage = '', 3000);
+          setTimeout(() => (this.productErrorMessage = ''), 3000);
         }
       });
     } else {
@@ -231,113 +229,91 @@ export class SellerDashboardComponent implements OnInit {
           this.loadSellerProducts();
           this.addNewProduct();
           this.productSuccessMessage = 'Product added successfully!';
-          setTimeout(() => this.productSuccessMessage = '', 3000);
+          setTimeout(() => (this.productSuccessMessage = ''), 3000);
         },
         error: (error) => {
           console.error('Error creating product', error);
           this.productErrorMessage = 'Failed to add product. Please try again.';
-          setTimeout(() => this.productErrorMessage = '', 3000);
+          setTimeout(() => (this.productErrorMessage = ''), 3000);
         }
       });
     }
   }
 
-  approveOrder(orderId: number) {
-    if (confirm('Are you sure you want to approve and ship your items in this order?')) {
-      this.isProcessing = true;
-
-      this.orderService.approveSellerItems(orderId).subscribe({
-        next: (updatedOrder) => {
-          console.log('Order approved successfully:', updatedOrder);
-
-          // Find the order in the current list
-          const orderIndex = this.customerOrders.findIndex(order => order.id === orderId);
-          if (orderIndex >= 0) {
-            // Update just the status display for this seller
-            this.customerOrders[orderIndex].sellerApproved = true;
-
-            // If all items are now approved, update to shipped
-            if (updatedOrder.orderStatus === 'SHIPPED') {
-              this.customerOrders[orderIndex].status = 'SHIPPED';
-            } else {
-              this.customerOrders[orderIndex].status = 'PARTIALLY_SHIPPED';
-            }
-          }
-
-          this.successMessage = 'Your items have been approved and marked for shipping! Earnings have been added to your account.';
-          this.isProcessing = false;
-          setTimeout(() => this.successMessage = '', 3000);
-        },
-        error: (error) => {
-          console.error('Error approving order', error);
-
-          if (error.noPaymentMethod) {
-            // Special handling for missing payment method
-            this.errorMessage = 'You need to add a payment method in your profile before approving orders.';
-
-            // Ask user if they want to go to profile page to add a payment method
-            if (confirm('Would you like to add a payment method now?')) {
-              this.router.navigate(['/profile'], { queryParams: { tab: 'payment' } });
-            }
-          } else {
-            this.errorMessage = error.error?.message || 'Failed to approve items. Please try again.';
-          }
-
-          this.isProcessing = false;
-          setTimeout(() => this.errorMessage = '', 3000);
-        }
-      });
+  approveOrder(orderId: number): void {
+    if (!confirm('Are you sure you want to approve and ship your items in this order?')) {
+      return;
     }
+    this.isProcessing = true;
+
+    this.orderService.approveSellerItems(orderId).subscribe({
+      next: (updatedOrder) => {
+        const idx = this.customerOrders.findIndex(o => o.id === orderId);
+        if (idx >= 0) {
+          this.customerOrders[idx].sellerApproved = true;
+          this.customerOrders[idx].status =
+            updatedOrder.orderStatus === 'SHIPPED' ? 'SHIPPED' : 'PARTIALLY_SHIPPED';
+        }
+        this.successMessage = 'Your items have been approved and marked for shipping!';
+        this.isProcessing = false;
+        setTimeout(() => (this.successMessage = ''), 3000);
+      },
+      error: (error) => {
+        console.error('Error approving order', error);
+        this.errorMessage =
+          'You need to add a payment method in your profile before approving orders.';
+        this.router.navigate(['/profile'], { queryParams: { tab: 'payment' } });
+        this.isProcessing = false;
+        setTimeout(() => (this.errorMessage = ''), 3000);
+      }
+    });
   }
 
-  cancelOrder(orderId: number) {
-    if (confirm('Are you sure you want to cancel this order? The customer will receive a refund.')) {
-      this.isProcessing = true;
-      this.orderService.refundAndCancelOrder(orderId).subscribe({
-        next: () => {
-          // Remove the canceled order from the local array instead of reloading
-          this.customerOrders = this.customerOrders.filter(order => order.id !== orderId);
-          this.successMessage = 'Order cancelled and payment refunded to customer!';
-          this.isProcessing = false;
-          setTimeout(() => this.successMessage = '', 3000);
-        },
-        error: (error) => {
-          console.error('Error cancelling order', error);
-          this.errorMessage = 'Failed to cancel order. Please try again.';
-          this.isProcessing = false;
-          setTimeout(() => this.errorMessage = '', 3000);
-        }
-      });
+  cancelOrder(orderId: number): void {
+    if (!confirm('Are you sure you want to cancel this order? The customer will receive a refund.')) {
+      return;
     }
+    this.isProcessing = true;
+
+    this.orderService.refundAndCancelOrder(orderId).subscribe({
+      next: () => {
+        this.customerOrders = this.customerOrders.filter(o => o.id !== orderId);
+        this.successMessage = 'Order cancelled and payment refunded to customer!';
+        this.isProcessing = false;
+        setTimeout(() => (this.successMessage = ''), 3000);
+      },
+      error: (error) => {
+        console.error('Error cancelling order', error);
+        this.errorMessage = 'Failed to cancel order. Please try again.';
+        this.isProcessing = false;
+        setTimeout(() => (this.errorMessage = ''), 3000);
+      }
+    });
   }
 
-  deleteProduct(product: any) {
-    if (confirm(`Are you sure you want to delete ${product.productName || product.name}? This will also remove all related reviews and cannot be undone.`)) {
-      // Use only productId since that's what the backend expects (not id)
-      const productId = product.productId;
-
-      console.log('Deleting product with ID:', productId);
-
-      this.productService.deleteProduct(productId).subscribe({
-        next: () => {
-          this.loadSellerProducts();
-          this.productSuccessMessage = 'Product deleted successfully!';
-          setTimeout(() => this.productSuccessMessage = '', 3000);
-        },
-        error: (error) => {
-          console.error('Error deleting product:', error);
-          this.productErrorMessage = `Error deleting product: ${error.status === 403 ? 'Permission denied' : error.message || 'Unknown error'}`;
-          setTimeout(() => this.productErrorMessage = '', 3000);
-        }
-      });
+  deleteProduct(product: any): void {
+    const confirmMsg = `Are you sure you want to delete "${product.productName || product.name}"?
+This will also remove all related reviews and cannot be undone.`;
+    if (!confirm(confirmMsg)) {
+      return;
     }
+
+    this.productService.deleteProduct(product.productId).subscribe({
+      next: () => {
+        this.loadSellerProducts();
+        this.productSuccessMessage = 'Product deleted successfully!';
+        setTimeout(() => (this.productSuccessMessage = ''), 3000);
+      },
+      error: (error) => {
+        console.error('Error deleting product:', error);
+        this.productErrorMessage = `Error deleting product: ${error.status === 403 ? 'Permission denied' : error.message || 'Unknown error'
+          }`;
+        setTimeout(() => (this.productErrorMessage = ''), 3000);
+      }
+    });
   }
 
   toggleOrderDetails(orderId: number): void {
-    if (this.expandedOrderId === orderId) {
-      this.expandedOrderId = null;
-    } else {
-      this.expandedOrderId = orderId;
-    }
+    this.expandedOrderId = this.expandedOrderId === orderId ? null : orderId;
   }
 }
