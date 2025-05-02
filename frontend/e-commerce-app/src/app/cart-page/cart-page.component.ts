@@ -23,6 +23,7 @@ export class CartPageComponent implements OnInit {
   errorMessage: string = '';
   successMessage: string = '';
   addresses: any[] = []; // New property to hold user addresses
+  isSettingDefault: boolean = false; // Add to the existing properties
 
   constructor(
     private cartService: CartService,
@@ -43,6 +44,7 @@ export class CartPageComponent implements OnInit {
       .subscribe(i => this.items = i, e => this.error = e);
   }
 
+  // Update loadPaymentMethods method to identify default card
   loadPaymentMethods(): void {
     const currentUser = this.authService.getCurrentUser();
     if (!currentUser) return;
@@ -54,7 +56,12 @@ export class CartPageComponent implements OnInit {
         this.paymentSvc.getUserCards(currentUser.userId).subscribe({
           next: (cards) => {
             this.savedCards = cards;
-            if (cards.length > 0) {
+            const defaultCard = cards.find(card => card.isDefault === true);
+
+            // If there's a default card, select it
+            if (defaultCard) {
+              this.selectedPaymentMethod = defaultCard.id;
+            } else if (cards.length > 0) {
               this.selectedPaymentMethod = cards[0].id;
             }
           },
@@ -203,6 +210,39 @@ export class CartPageComponent implements OnInit {
         if (error.status === 401) {
           this.errorMessage = 'Your session may have expired. Please try logging in again.';
         }
+      }
+    });
+  }
+
+  // Add method to set default payment method
+  setDefaultPaymentMethod(paymentMethodId: string): void {
+    if (this.isSettingDefault) return;
+
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+
+    this.isSettingDefault = true;
+
+    this.paymentSvc.setDefaultPaymentMethod(currentUser.userId, paymentMethodId).subscribe({
+      next: () => {
+        // Update local data to reflect the change
+        this.savedCards = this.savedCards.map(card => ({
+          ...card,
+          isDefault: card.id === paymentMethodId
+        }));
+
+        // Auto-select the default card
+        this.selectedPaymentMethod = paymentMethodId;
+
+        this.isSettingDefault = false;
+        this.successMessage = 'Default payment method updated';
+        setTimeout(() => this.successMessage = '', 3000);
+      },
+      error: (error) => {
+        console.error('Error setting default payment method:', error);
+        this.isSettingDefault = false;
+        this.errorMessage = 'Failed to set default payment method. Please try again.';
+        setTimeout(() => this.errorMessage = '', 3000);
       }
     });
   }

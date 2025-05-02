@@ -85,6 +85,15 @@ export class CustomerComponent implements OnInit {
       return;
     }
 
+    const currentUser = this.auth.getCurrentUser();
+
+    // Check if the current user is the seller of this product
+    if (currentUser && p.seller && p.seller.userId === currentUser.userId) {
+      this.error = `You cannot purchase your own product "${p.productName}".`;
+      setTimeout(() => this.error = '', 3000);
+    return;
+  }
+
     this.cartSvc.add(p.productId, 1)
       .subscribe({
         next: (item) => {

@@ -8,5 +8,5 @@ export interface Product {
   quantityInStock: number;
   reviewCount?: number;
   productRate?: number;
-
+  seller: { userId: number };
 }

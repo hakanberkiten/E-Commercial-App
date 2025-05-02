@@ -58,6 +58,13 @@ export class PaymentService {
     return this.http.post<any>('/api/payments/process', paymentData);
   }
 
+  // Set default payment method for a customer
+  setDefaultPaymentMethod(userId: number, paymentMethodId: string): Observable<any> {
+    return this.http.post(
+      `/api/payments/stripe/customers/${userId}/payment-methods/default`,
+      { paymentMethodId }
+    );
+  }
 
   completeOrder(orderData: {
     userId: number;
