@@ -126,6 +126,14 @@
                         </div>
                     </div>
 
+                    <!-- Address Warning Message -->
+                    <div *ngIf="addresses.length === 0" class="alert alert-warning mb-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        You need to add a shipping address before checkout.
+                        <a routerLink="/profile" [queryParams]="{tab: 'addresses'}" class="alert-link">Add an address in your profile</a>
+                    </div>
+
+                    <!-- Payment Warning Message -->
                     <div *ngIf="savedCards.length === 0" class="alert alert-warning mb-3">
                         <i class="bi bi-exclamation-triangle me-2"></i>
                         You need to add a payment method before checkout.
@@ -134,7 +142,7 @@
 
                     <!-- Checkout Button -->
                     <button class="btn btn-primary w-100"
-                        [disabled]="items.length === 0 || savedCards.length === 0 || !selectedPaymentMethod || isProcessing"
+                        [disabled]="items.length === 0 || savedCards.length === 0 || addresses.length === 0 || !selectedPaymentMethod || isProcessing"
                         (click)="checkout()">
                         <span *ngIf="!isProcessing">Complete Order</span>
                         <span *ngIf="isProcessing">

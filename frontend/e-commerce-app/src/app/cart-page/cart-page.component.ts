@@ -10,54 +10,40 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 @Component({
   selector: 'app-cart-page',
   standalone: false,
-  templateUrl: './cart-page.component.html'
+  templateUrl: './cart-page.component.html',
+  styleUrls: ['./cart-page.component.css']
 })
 export class CartPageComponent implements OnInit {
   items: CartItem[] = [];
-  error = '';
+  total: number = 0;
+  error: string = '';
   savedCards: any[] = [];
-  selectedPaymentMethod: string | null = null;
+  selectedPaymentMethod: string = '';
   isProcessing: boolean = false;
   errorMessage: string = '';
   successMessage: string = '';
+  addresses: any[] = []; // New property to hold user addresses
 
   constructor(
-    private cartSvc: CartService,
+    private cartService: CartService,
     private paymentSvc: PaymentService,
     private authService: AuthService,
-    private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
+    private router: Router
   ) { }
 
-  ngOnInit() {
-    this.load();
-    this.loadUserCards();
+  ngOnInit(): void {
+    this.loadCartItems();
+    this.loadPaymentMethods();
+    this.loadUserAddresses(); // Add this method call
   }
 
-  load() {
-    this.cartSvc.list()
+  loadCartItems(): void {
+    this.cartService.list()
       .subscribe(i => this.items = i, e => this.error = e);
   }
 
-  remove(item: CartItem) {
-    this.cartSvc.remove(item.cartItemId)
-      .subscribe(() => this.load(), e => this.error = e);
-  }
-
-  update(item: CartItem, qty: string) {
-    const q = +qty;
-    if (q > 0)
-      this.cartSvc.update(item.cartItemId, q)
-        .subscribe(() => this.load(), e => this.error = e);
-  }
-
-  get total() {
-    return this.items
-      .map(i => i.product.price * i.quantityInCart)
-      .reduce((a, b) => a + b, 0);
-  }
-
-  loadUserCards() {
+  loadPaymentMethods(): void {
     const currentUser = this.authService.getCurrentUser();
     if (!currentUser) return;
 
@@ -79,6 +65,34 @@ export class CartPageComponent implements OnInit {
     });
   }
 
+  // Add this new method to load user addresses
+  loadUserAddresses(): void {
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      this.http.get<any[]>(`/api/users/${currentUser.userId}/addresses`).subscribe({
+        next: (addresses) => {
+          this.addresses = addresses;
+        },
+        error: (err) => {
+          console.error('Error loading addresses:', err);
+          this.addresses = [];
+        }
+      });
+    }
+  }
+
+  update(item: CartItem, newQuantity: string): void {
+    const q = +newQuantity;
+    if (q > 0)
+      this.cartService.update(item.cartItemId, q)
+        .subscribe(() => this.loadCartItems(), e => this.error = e);
+  }
+
+  remove(item: CartItem): void {
+    this.cartService.remove(item.cartItemId)
+      .subscribe(() => this.loadCartItems(), e => this.error = e);
+  }
+
   checkUserPermission(): boolean {
     const userRole = this.authService.getUserRole();
     if (userRole !== 'ROLE_CUSTOMER' && userRole !== 'ROLE_SELLER') {
@@ -88,7 +102,7 @@ export class CartPageComponent implements OnInit {
     return true;
   }
 
-  checkout() {
+  checkout(): void {
     if (!this.selectedPaymentMethod) {
       this.errorMessage = 'Please select a payment method';
       return;
@@ -101,6 +115,11 @@ export class CartPageComponent implements OnInit {
     }
 
     if (!this.checkUserPermission()) {
+      return;
+    }
+
+    if (this.addresses.length === 0) {
+      this.errorMessage = "Please add a shipping address before checkout";
       return;
     }
 
@@ -153,7 +172,7 @@ export class CartPageComponent implements OnInit {
 
         // Clear cart items one by one from the server
         const clearCartPromises = this.items.map(item =>
-          this.cartSvc.remove(item.cartItemId).toPromise()
+          this.cartService.remove(item.cartItemId).toPromise()
         );
 
         Promise.all(clearCartPromises)
