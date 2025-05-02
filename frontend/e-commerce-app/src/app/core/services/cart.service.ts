@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
-import { BehaviorSubject, Observable, of, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, Observable, of, switchMap, tap, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
 import { CartItem } from '../../shared/models/cartitem.model';
@@ -43,6 +43,15 @@ export class CartService {
   }
 
   add(productId: number, quantity: number): Observable<CartItem> {
+    // Check authentication first
+    if (!localStorage.getItem('jwt_token')) {
+      // Return an error Observable with a friendly message
+      return throwError(() => ({
+        status: 401,
+        message: 'Please login to add items to your cart'
+      }));
+    }
+
     return this.list().pipe(
       switchMap(items => {
         const existingItem = items.find(item => item.product.productId === productId);
@@ -52,7 +61,17 @@ export class CartService {
         } else {
           return this.http.post<CartItem>('/api/cart/items', { productId, quantity })
             .pipe(
-              tap(() => this.refreshCartCount())
+              tap(() => this.refreshCartCount()),
+              catchError(error => {
+                // Handle HTTP errors with better messages
+                if (error.status === 403 || error.status === 401) {
+                  return throwError(() => ({
+                    status: error.status,
+                    message: 'Please login to add items to your cart'
+                  }));
+                }
+                return throwError(() => error);
+              })
             );
         }
       })

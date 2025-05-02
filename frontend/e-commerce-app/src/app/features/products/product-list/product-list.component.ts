@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ProductService } from '../../../core/services/product.service';
 import { Product } from '../../../shared/models/product.model';
 import { CartService } from '../../../core/services/cart.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-product-list',
@@ -21,7 +22,8 @@ export class ProductListComponent implements OnInit {
   constructor(
     private productService: ProductService,
     private route: ActivatedRoute,
-    private cartService: CartService
+    private cartService: CartService,
+    private authService: AuthService
   ) { }
 
   ngOnInit() {
@@ -62,6 +64,17 @@ export class ProductListComponent implements OnInit {
   }
 
   addToCart(product: Product): void {
+    // Check if user is logged in first
+    if (!this.authService.isLoggedIn()) {
+      this.error = `Please login to add items to your cart`;
+      setTimeout(() => {
+        this.error = '';
+        // Optional: Redirect to login
+        // this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
+      }, 3000);
+      return;
+    }
+
     if (product.quantityInStock <= 0) {
       this.error = `Sorry, "${product.productName}" is currently out of stock.`;
       setTimeout(() => this.error = '', 3000);

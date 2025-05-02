@@ -87,12 +87,23 @@ export class CustomerComponent implements OnInit {
 
     const currentUser = this.auth.getCurrentUser();
 
+    // Check if user is logged in first
+    if (!currentUser) {
+      this.error = `Please login to add items to your cart`;
+      setTimeout(() => {
+        this.error = '';
+        // Optional: Redirect to login
+        // this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
+      }, 3000);
+      return;
+    }
+
     // Check if the current user is the seller of this product
     if (currentUser && p.seller && p.seller.userId === currentUser.userId) {
       this.error = `You cannot purchase your own product "${p.productName}".`;
       setTimeout(() => this.error = '', 3000);
-    return;
-  }
+      return;
+    }
 
     this.cartSvc.add(p.productId, 1)
       .subscribe({
