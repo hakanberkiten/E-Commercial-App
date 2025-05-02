@@ -151,13 +151,24 @@ export class CartPageComponent implements OnInit {
         this.isProcessing = false;
         this.successMessage = 'Order placed successfully!';
 
-        // Clear cart after successful order
-        this.items = [];
+        // Clear cart items one by one from the server
+        const clearCartPromises = this.items.map(item =>
+          this.cartSvc.remove(item.cartItemId).toPromise()
+        );
 
-        // Navigate to order confirmation or orders page after a delay
-        setTimeout(() => {
-          this.router.navigate(['/profile'], { queryParams: { tab: 'orders' } });
-        }, 2000);
+        Promise.all(clearCartPromises)
+          .then(() => {
+            // Clear the local items array
+            this.items = [];
+
+            // Navigate to order confirmation or orders page after a delay
+            setTimeout(() => {
+              this.router.navigate(['/profile'], { queryParams: { tab: 'orders' } });
+            }, 2000);
+          })
+          .catch(error => {
+            console.error('Error clearing cart:', error);
+          });
       },
       error: (error) => {
         this.isProcessing = false;
