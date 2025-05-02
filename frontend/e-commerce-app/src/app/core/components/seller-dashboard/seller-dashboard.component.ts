@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ProductService } from '../../../core/services/product.service';
 import { OrderService } from '../../../core/services/order.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-seller-dashboard',
@@ -35,7 +36,8 @@ export class SellerDashboardComponent implements OnInit {
     private productService: ProductService,
     private orderService: OrderService,
     private authService: AuthService,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private router: Router
   ) {
     this.productForm = this.formBuilder.group({
       id: [null],
@@ -262,13 +264,25 @@ export class SellerDashboardComponent implements OnInit {
             }
           }
 
-          this.successMessage = 'Your items have been approved and marked for shipping!';
+          this.successMessage = 'Your items have been approved and marked for shipping! Earnings have been added to your account.';
           this.isProcessing = false;
           setTimeout(() => this.successMessage = '', 3000);
         },
         error: (error) => {
           console.error('Error approving order', error);
-          this.errorMessage = error.error?.message || 'Failed to approve items. Please try again.';
+
+          if (error.noPaymentMethod) {
+            // Special handling for missing payment method
+            this.errorMessage = 'You need to add a payment method in your profile before approving orders.';
+
+            // Ask user if they want to go to profile page to add a payment method
+            if (confirm('Would you like to add a payment method now?')) {
+              this.router.navigate(['/profile'], { queryParams: { tab: 'payment' } });
+            }
+          } else {
+            this.errorMessage = error.error?.message || 'Failed to approve items. Please try again.';
+          }
+
           this.isProcessing = false;
           setTimeout(() => this.errorMessage = '', 3000);
         }

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 
@@ -70,6 +70,15 @@ export class OrderService {
           console.log(`Seller items approved for order ${orderId}:`, response);
         }),
         catchError(error => {
+          // Special handling for missing payment method
+          if (error.error?.code === 'NO_PAYMENT_METHOD') {
+            console.error('Missing payment method:', error.error?.error);
+            return throwError(() => ({
+              error: { message: error.error?.error || 'You need to add a payment method in your profile before approving orders' },
+              noPaymentMethod: true
+            }));
+          }
+
           console.error(`Error approving items for order ${orderId}:`, error);
           throw error;
         })

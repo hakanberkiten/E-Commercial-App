@@ -3,10 +3,14 @@ package com.example.e_commerce.controller;
 
 import com.example.e_commerce.dto.OrderRequest;
 import com.example.e_commerce.entity.Orders;
+import com.example.e_commerce.entity.User;
 import com.example.e_commerce.service.OrdersService;
+import com.example.e_commerce.service.impl.StripeServiceImpl;
 import com.example.e_commerce.service.NotificationService;
+import com.example.e_commerce.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +24,8 @@ import java.util.Map;
 public class OrdersController {
     private final OrdersService orderService;
     private final NotificationService notificationService;
+    private final StripeServiceImpl stripeService;
+    private final UserRepository userRepository;
 
     @PostMapping("/place")
     public Orders placeOrder(@RequestBody OrderRequest req, Principal principal) {
@@ -94,7 +100,7 @@ public class OrdersController {
     }
 
     @PostMapping("/{orderId}/approve-seller-items")
-    public ResponseEntity<Orders> approveSellerItems(
+    public ResponseEntity<?> approveSellerItems(
         @PathVariable Long orderId,
         @RequestBody Map<String, Long> requestBody,
         Principal principal
@@ -104,10 +110,36 @@ public class OrdersController {
             throw new IllegalArgumentException("Seller ID is required");
         }
         
-        // Verify the principal has permission to approve these items
-        // (Check if the authenticated user is the seller)
+        // First check if seller has a payment method registered
+        User seller = userRepository.findById(sellerId)
+            .orElseThrow(() -> new RuntimeException("Seller not found"));
         
-        Orders updatedOrder = orderService.approveSellerItems(orderId, sellerId);
-        return ResponseEntity.ok(updatedOrder);
+        // Check if the seller has a Stripe account and payment method
+        if (seller.getStripeCustomerId() == null || seller.getStripeCustomerId().isEmpty()) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "You need to add a payment method in your profile before approving orders",
+                            "code", "NO_PAYMENT_METHOD"));
+        }
+        
+        try {
+            // Check if the seller has any payment methods
+            List<Map<String, Object>> cards = stripeService.getCustomerCards(seller.getStripeCustomerId());
+            if (cards.isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "You need to add a payment method in your profile before approving orders",
+                                "code", "NO_PAYMENT_METHOD"));
+            }
+            
+            // Verify the principal has permission to approve these items
+            // (Check if the authenticated user is the seller)
+            
+            // Process the approval and payment
+            Orders updatedOrder = orderService.approveSellerItemsAndProcessPayment(orderId, sellerId);
+            return ResponseEntity.ok(updatedOrder);
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to process approval: " + e.getMessage()));
+        }
     }
 }

@@ -16,5 +16,5 @@ public interface OrdersService {
     Orders updateOrderStatus(Long orderId, String status);
     Orders refundAndCancelOrder(Long orderId);
     Orders approveSellerItems(Long orderId, Long sellerId);
-    
+    Orders approveSellerItemsAndProcessPayment(Long orderId, Long sellerId);
 }

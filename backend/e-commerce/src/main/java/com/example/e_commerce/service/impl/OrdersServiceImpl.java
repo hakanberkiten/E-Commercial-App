@@ -334,6 +334,112 @@ public class OrdersServiceImpl implements OrdersService {
         return orderRepo.save(order);
     }
 
+    @Transactional
+    @Override
+    public Orders approveSellerItemsAndProcessPayment(Long orderId, Long sellerId) {
+        Orders order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        
+        // Check if order status allows approval
+        if ("CANCELLED".equals(order.getOrderStatus())) {
+            throw new RuntimeException("Cannot approve items for a cancelled order");
+        }
+        
+        boolean foundSellerItems = false;
+        boolean allItemsApproved = true;
+        BigDecimal sellerEarnings = BigDecimal.ZERO;
+        
+        // Update status of this seller's items and calculate earnings
+        for (OrderItem item : order.getItems()) {
+            // Check if this item belongs to the current seller
+            if (item.getProduct() != null && 
+                item.getProduct().getSeller() != null && 
+                item.getProduct().getSeller().getUserId().equals(sellerId)) {
+                
+                // Mark this seller's item as shipped
+                item.setItemStatus("SHIPPED");
+                itemRepo.save(item);
+                foundSellerItems = true;
+                
+                // Calculate earnings for this item
+                BigDecimal itemPrice = BigDecimal.valueOf(item.getProduct().getPrice());
+                BigDecimal quantity = BigDecimal.valueOf(item.getQuantityInOrder());
+                BigDecimal subtotal = itemPrice.multiply(quantity);
+                
+                // Apply platform fee (e.g., 10%)
+                BigDecimal platformFeePercent = new BigDecimal("0.10");
+                BigDecimal platformFee = subtotal.multiply(platformFeePercent);
+                BigDecimal sellerAmount = subtotal.subtract(platformFee);
+                
+                sellerEarnings = sellerEarnings.add(sellerAmount);
+                
+                // Notify customer that seller has approved their items
+                if (order.getUser() != null) {
+                    notificationService.createNotification(
+                        order.getUser().getUserId(),
+                        "Items from " + item.getProduct().getSeller().getFirstName() + 
+                        " in your order #" + orderId + " have been shipped!",
+                        "ORDER_PARTIAL_SHIPPED",
+                        "/profile?tab=orders"
+                    );
+                }
+            } else if (!"SHIPPED".equals(item.getItemStatus())) {
+                // If any item is not shipped yet, the whole order isn't ready
+                allItemsApproved = false;
+            }
+        }
+        
+        if (!foundSellerItems) {
+            throw new RuntimeException("No items found for this seller in the order");
+        }
+        
+        // Process payment to seller
+        if (sellerEarnings.compareTo(BigDecimal.ZERO) > 0) {
+            User seller = userRepo.findById(sellerId)
+                .orElseThrow(() -> new RuntimeException("Seller not found"));
+            
+            try {
+                // Process payment to seller account
+                Payment paymentRecord = Payment.builder()
+                    .user(seller)
+                    .amount(sellerEarnings)
+                    .currency("USD")
+                    .paymentMethod("stripe_transfer")
+                    .status("COMPLETED")
+                    .build();
+                
+                payRepo.save(paymentRecord);
+                
+                // Create a notification for the seller about earnings
+                notificationService.createNotification(
+                    sellerId,
+                    "You've earned $" + sellerEarnings + " from order #" + orderId,
+                    "EARNINGS",
+                    "/profile?tab=earnings"
+                );
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to process seller payment: " + e.getMessage());
+            }
+        }
+        
+        // If all items are now approved, update the overall order status
+        if (allItemsApproved) {
+            order.setOrderStatus("SHIPPED");
+            
+            // Send a final notification that the entire order is shipped
+            if (order.getUser() != null) {
+                notificationService.createNotification(
+                    order.getUser().getUserId(),
+                    "Great news! Your complete order #" + orderId + " has been shipped!",
+                    "ORDER_SHIPPED",
+                    "/profile?tab=orders"
+                );
+            }
+        }
+        
+        return orderRepo.save(order);
+    }
+
     // Helper method to validate order status
     private boolean isValidOrderStatus(String status) {
         // Define the valid status values your application supports
