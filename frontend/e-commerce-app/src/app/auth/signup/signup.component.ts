@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormControl, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -24,11 +24,37 @@ export class SignupComponent implements OnInit {
       lastName: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      mobileNumber: ['', [Validators.required]]
+      mobileNumber: ['', [Validators.required, this.mobileNumberValidator()]]
     });
   }
 
   ngOnInit(): void { }
+
+  // Custom mobile number validator
+  mobileNumberValidator() {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = control.value;
+
+      if (!value) {
+        return null; // Let required validator handle empty values
+      }
+
+      // Remove any non-digit characters
+      const phoneNumber = value.replace(/\D/g, '');
+
+      // Check if number is exactly 10 digits
+      if (phoneNumber.length !== 10) {
+        return { invalidLength: true };
+      }
+
+      // Check if number starts with 0
+      if (phoneNumber.startsWith('0')) {
+        return { startsWithZero: true };
+      }
+
+      return null;
+    };
+  }
 
   onSubmit(): void {
     this.errorMsg = '';
@@ -45,7 +71,6 @@ export class SignupComponent implements OnInit {
       next: (response) => {
         console.log('Signup success:', response);
         this.loading = false;
-        // Slash ile başla - bu daha güvenilir yönlendirme sağlar
         this.router.navigate(['/login']);
       },
       error: (err) => {
