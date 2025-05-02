@@ -53,51 +53,39 @@
                     <button type="button" class="btn-close" (click)="cardError = ''"></button>
                 </div>
             </div>
-<!-- Main Tab Navigation Card -->
-<div class="card border-0 shadow-sm rounded-4">
-    <!-- Tab Navigation -->
-    <div class="card-header p-0 bg-white border-bottom-0">
-      <ul class="nav nav-pills nav-fill">
-        <li class="nav-item">
-          <button
-            class="nav-link"
-            [class.active]="activeTab === 'profile'"
-            (click)="setActiveTab('profile')"
-          >
-            <i class="bi bi-person me-2"></i>Profile
-          </button>
-        </li>
-        <li class="nav-item">
-          <button
-            class="nav-link"
-            [class.active]="activeTab === 'addresses'"
-            (click)="setActiveTab('addresses')"
-          >
-            <i class="bi bi-geo-alt me-2"></i>Addresses
-          </button>
-        </li>
-        <li class="nav-item" *ngIf="!isAdmin()">
-          <button
-            class="nav-link"
-            [class.active]="activeTab === 'payment'"
-            (click)="setActiveTab('payment')"
-          >
-            <i class="bi bi-credit-card me-2"></i>Payment Methods
-          </button>
-        </li>
-        <li class="nav-item" *ngIf="!isAdmin()">
-          <button
-            class="nav-link"
-            [class.active]="activeTab === 'orders'"
-            (click)="setActiveTab('orders')"
-          >
-            <i class="bi bi-box-seam me-2"></i>Orders
-          </button>
-        </li>
-      </ul>
-    </div>
-  </div>
-  
+            <!-- Main Tab Navigation Card -->
+            <div class="card border-0 shadow-sm rounded-4">
+                <!-- Tab Navigation -->
+                <div class="card-header p-0 bg-white border-bottom-0">
+                    <ul class="nav nav-pills nav-fill">
+                        <li class="nav-item">
+                            <button class="nav-link" [class.active]="activeTab === 'profile'"
+                                (click)="setActiveTab('profile')">
+                                <i class="bi bi-person me-2"></i>Profile
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" [class.active]="activeTab === 'addresses'"
+                                (click)="setActiveTab('addresses')">
+                                <i class="bi bi-geo-alt me-2"></i>Addresses
+                            </button>
+                        </li>
+                        <li class="nav-item" *ngIf="!isAdmin()">
+                            <button class="nav-link" [class.active]="activeTab === 'payment'"
+                                (click)="setActiveTab('payment')">
+                                <i class="bi bi-credit-card me-2"></i>Payment Methods
+                            </button>
+                        </li>
+                        <li class="nav-item" *ngIf="!isAdmin()">
+                            <button class="nav-link" [class.active]="activeTab === 'orders'"
+                                (click)="setActiveTab('orders')">
+                                <i class="bi bi-box-seam me-2"></i>Payment History
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
 
             <!-- Tab Content -->
             <div class="card-body p-4">
@@ -440,11 +428,10 @@
                     <!-- ORDERS TAB - Only for non-admins -->
                     <div class="tab-pane fade" [class.show]="activeTab === 'orders'"
                         [class.active]="activeTab === 'orders'" *ngIf="!isAdmin()">
-                        <h4 class="mb-4">My Orders</h4>
 
                         <!-- Payment History -->
                         <div class="mb-4">
-                            <h5 class="mb-3">Payment History</h5>
+                            <h4 class="mb-3">Payment History</h4>
 
                             <!-- No payment history message -->
                             <div *ngIf="paymentHistory.length === 0" class="alert alert-info">
@@ -483,11 +470,7 @@
                             </div>
                         </div>
 
-                        <div class="text-center">
-                            <a routerLink="/orders" class="btn btn-outline-primary">
-                                <i class="bi bi-bag-check me-2"></i>View All Orders
-                            </a>
-                        </div>
+
                     </div>
                 </div>
             </div>
