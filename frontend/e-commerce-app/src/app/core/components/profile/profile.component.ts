@@ -622,7 +622,7 @@ export class ProfileComponent implements OnInit {
 
   canBeReturned(order: any): boolean {
     return order.orderStatus !== 'CANCELLED' &&
-      ['PENDING', 'PROCESSING', 'SHIPPED', 'PARTIALLY_SHIPPED'].includes(order.orderStatus);
+      ['PENDING', 'PROCESSING', 'SHIPPED', 'PARTIALLY_SHIPPED', 'DELIVERED'].includes(order.orderStatus);
   }
 
   showReturnConfirmation(order: any): void {
@@ -640,7 +640,12 @@ export class ProfileComponent implements OnInit {
 
     this.isProcessingReturn = true;
 
-    this.orderService.returnOrder(this.orderToReturn.orderId).subscribe({
+    // Choose the appropriate method based on order status
+    const refundMethod = this.orderToReturn.orderStatus === 'DELIVERED' ?
+      this.orderService.returnDeliveredOrder(this.orderToReturn.orderId) :
+      this.orderService.returnOrder(this.orderToReturn.orderId);
+
+    refundMethod.subscribe({
       next: () => {
         const index = this.userOrders.findIndex(
           order => order.orderId === this.orderToReturn.orderId
@@ -652,7 +657,12 @@ export class ProfileComponent implements OnInit {
 
         this.hideReturnConfirmation();
 
-        this.successMessage = 'Your order has been returned successfully and a refund has been processed to your original payment method.';
+        // Customize message based on order status
+        const statusMsg = this.orderToReturn.orderStatus === 'DELIVERED' ?
+          'Your return request has been approved and a refund has been processed. Please return the items as per the return policy.' :
+          'Your order has been returned successfully and a refund has been processed to your original payment method.';
+
+        this.successMessage = statusMsg;
 
         if (isPlatformBrowser(this.platformId)) {
           window.scrollTo(0, 0);

@@ -701,6 +701,62 @@ public class OrdersServiceImpl implements OrdersService {
         return savedOrder;
     }
 
+    @Transactional
+    @Override
+    public Orders refundDeliveredOrder(Long orderId) {
+        Orders order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+                
+        // Check if order is delivered
+        if (!"DELIVERED".equals(order.getOrderStatus())) {
+            throw new RuntimeException("Only delivered orders can be refunded with this method");
+        }
+        
+        // Process refund through Stripe
+        if (order.getPayment() != null) {
+            Payment payment = order.getPayment();
+            
+            try {
+                // Process refund through Stripe
+                stripeService.refundPayment(payment.getStripePaymentIntentId());
+                
+                // Update payment status
+                payment.setStatus("REFUNDED");
+                payRepo.save(payment);
+                
+                // Create notification for customer
+                if (order.getUser() != null) {
+                    notificationService.createNotification(
+                        order.getUser().getUserId(),
+                        "Your return for order #" + orderId + " has been processed and refunded",
+                        "ORDER_RETURNED",
+                        "/profile?tab=orders"
+                    );
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to process refund: " + e.getMessage());
+            }
+        }
+        
+        // Update order status
+        order.setOrderStatus("RETURNED");
+        
+        // Also update item statuses
+        if (order.getItems() != null) {
+            for (OrderItem item : order.getItems()) {
+                item.setItemStatus("RETURNED");
+                itemRepo.save(item);
+                
+                // If seller has already been paid for this item, deduct the earnings
+                if (item.getProduct().getSeller() != null) {
+                    deductSellerEarnings(item, orderId);
+                }
+            }
+        }
+        
+        return orderRepo.save(order);
+    }
+
     @Override
     public List<Orders> getOrdersByUserId(Long userId) {
         // Find orders belonging to this user

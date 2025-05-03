@@ -132,6 +132,23 @@ public class OrdersController {
         return ResponseEntity.ok(updatedOrder);
     }
 
+    @PostMapping("/{id}/refund-delivered")
+    public ResponseEntity<Orders> refundDeliveredOrder(@PathVariable Long id) {
+        Orders updatedOrder = orderService.refundDeliveredOrder(id);
+        
+        // Create notification for customer
+        if (updatedOrder.getUser() != null) {
+            notificationService.createNotification(
+                updatedOrder.getUser().getUserId(),
+                "Your return request for order #" + id + " has been approved. A refund has been processed to your original payment method.",
+                "ORDER_RETURNED",
+                "/profile?tab=orders"
+            );
+        }
+        
+        return ResponseEntity.ok(updatedOrder);
+    }
+
     @GetMapping("/all")
     public List<Orders> all() { 
         return orderService.getAllOrders(); 

@@ -66,8 +66,24 @@ export class OrderService {
         })
       );
   }
+
   returnOrder(orderId: number): Observable<any> {
-    return this.http.post(`/api/orders/${orderId}/refund`,{});
+    return this.refundAndCancelOrder(orderId, 'customer');
+  }
+
+  // Add a new method for returning delivered orders
+  returnDeliveredOrder(orderId: number): Observable<any> {
+    const url = `/api/orders/${orderId}/refund-delivered`;
+
+    return this.http.post(url, {}).pipe(
+      tap(response => {
+        console.log('Delivered order refunded successfully:', response);
+      }),
+      catchError(error => {
+        console.error('Error refunding delivered order:', error);
+        return throwError(() => new Error(error.error?.message || 'Failed to process return'));
+      })
+    );
   }
 
   refundAndCancelOrder(orderId: number, cancelledBy?: string): Observable<any> {

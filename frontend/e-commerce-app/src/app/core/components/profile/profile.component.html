@@ -645,6 +645,9 @@
                                             <li>Cancel your entire order</li>
                                             <li>Return all items to inventory</li>
                                             <li>Process a refund to your original payment method</li>
+                                            <li *ngIf="orderToReturn?.orderStatus === 'DELIVERED'">
+                                                Note: For delivered orders, items must be returned in original condition
+                                            </li>
                                         </ul>
                                         <p>This action cannot be undone.</p>
                                     </div>
