@@ -207,31 +207,36 @@ public class OrdersServiceImpl implements OrdersService {
         List<Orders> allOrders = orderRepo.findAll();
         
         // 2. Filter orders that contain products from the specified seller
-        // AND are not cancelled orders
+        // AND are not completely cancelled orders
         return allOrders.stream()
             .filter(order -> 
                 // Check that the order has items that belong to this seller
                 order.getItems() != null && 
+                // And at least one of those items is NOT cancelled for this seller
                 order.getItems().stream()
-                    .anyMatch(item -> item.getProduct() != null && 
-                              item.getProduct().getSeller() != null &&
-                              item.getProduct().getSeller().getUserId() != null &&
-                              item.getProduct().getSeller().getUserId().equals(sellerId)) &&
-                // And the order is not cancelled
-                !"CANCELLED".equals(order.getOrderStatus())
+                    .anyMatch(item -> 
+                        item.getProduct() != null && 
+                        item.getProduct().getSeller() != null &&
+                        item.getProduct().getSeller().getUserId() != null &&
+                        item.getProduct().getSeller().getUserId().equals(sellerId) &&
+                        !"CANCELLED".equals(item.getItemStatus()))
             )
             .peek(order -> {
                 // Filter the order items to only include those for this seller's products
-                // This ensures sellers only see their own products in each order
+                // that are NOT cancelled
                 List<OrderItem> sellerItems = order.getItems().stream()
-                    .filter(item -> item.getProduct() != null && 
-                            item.getProduct().getSeller() != null &&
-                            item.getProduct().getSeller().getUserId().equals(sellerId))
+                    .filter(item -> 
+                        item.getProduct() != null && 
+                        item.getProduct().getSeller() != null &&
+                        item.getProduct().getSeller().getUserId().equals(sellerId) &&
+                        !"CANCELLED".equals(item.getItemStatus()))
                     .toList();
                 
-                // Create a new list with only the seller's items
+                // Create a new list with only the seller's active items
                 order.setItems(new ArrayList<>(sellerItems));
             })
+            // Remove orders where we filtered out all items (empty orders)
+            .filter(order -> !order.getItems().isEmpty())
             .toList();
     }
 
