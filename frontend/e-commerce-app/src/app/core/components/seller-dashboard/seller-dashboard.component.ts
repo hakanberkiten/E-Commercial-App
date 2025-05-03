@@ -118,7 +118,6 @@ export class SellerDashboardComponent implements OnInit {
       console.error('Error: Seller ID is null');
       return;
     }
-
     this.orderService.getOrdersBySellerId(sellerId).subscribe({
       next: (orders) => {
         // Process the orders
@@ -161,7 +160,7 @@ export class SellerDashboardComponent implements OnInit {
               0
             )
           };
-        });
+        }).sort((a, b) => b.id - a.id); 
       },
       error: (error) => {
         console.error('Error loading seller orders', error);
@@ -377,7 +376,7 @@ This will also remove all related reviews and cannot be undone.`;
                 price: item.product.price,
                 subtotal: item.orderedProductPrice,
                 status: item.itemStatus || item.status ||
-                        (dbOrderStatus === 'DELIVERED' ? 'DELIVERED' : 'PENDING')
+                  (dbOrderStatus === 'DELIVERED' ? 'DELIVERED' : 'PENDING')
               };
             });
           }
