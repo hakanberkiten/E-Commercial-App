@@ -82,13 +82,22 @@ export class NotificationsComponent implements OnInit {
 
   getNotificationIcon(type: string): string {
     switch (type) {
-      case 'ORDER': return 'bi-bag-check';
-      case 'ACCOUNT': return 'bi-person';
-      case 'PRODUCT': return 'bi-box';
-      case 'PAYMENT': return 'bi-credit-card';
-      case 'SELLER_REQUEST': return 'bi-shop';
-      case 'SYSTEM': return 'bi-gear';
-      default: return 'bi-bell';
+      case 'ORDER':
+        return 'bi-bag-check';
+      case 'ORDER_SHIPPED':
+      case 'ORDER_PARTIAL_SHIPPED':
+        return 'bi-truck';
+      case 'ORDER_CANCELLED':
+      case 'ORDER_CANCELLED_BY_SELLER':
+        return 'bi-x-circle';
+      case 'EARNINGS':
+        return 'bi-cash';
+      case 'EARNINGS_DEDUCTION':
+        return 'bi-cash-coin';
+      case 'SELLER_REQUEST':
+        return 'bi-shop';
+      default:
+        return 'bi-bell';
     }
   }
 

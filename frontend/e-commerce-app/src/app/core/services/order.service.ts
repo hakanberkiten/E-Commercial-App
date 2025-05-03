@@ -42,7 +42,8 @@ export class OrderService {
   }
   returnOrder(orderId: number): Observable<any> {
     return this.http.post(`/api/orders/${orderId}/refund`,{});
-}
+  }
+
   refundAndCancelOrder(orderId: number, cancelledBy?: string): Observable<any> {
     const url = cancelledBy ?
       `/api/orders/${orderId}/refund?cancelledBy=${cancelledBy}` :

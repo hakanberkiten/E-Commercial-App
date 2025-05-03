@@ -4,6 +4,7 @@ package com.example.e_commerce.controller;
 import com.example.e_commerce.dto.OrderRequest;
 import com.example.e_commerce.entity.Orders;
 import com.example.e_commerce.entity.User;
+import com.example.e_commerce.entity.OrderItem;
 import com.example.e_commerce.service.OrdersService;
 import com.example.e_commerce.service.impl.StripeServiceImpl;
 import com.example.e_commerce.service.NotificationService;
@@ -87,27 +88,35 @@ public class OrdersController {
     @PostMapping("/{id}/refund")
     public ResponseEntity<Orders> refundAndCancelOrder(
             @PathVariable Long id, 
-            @RequestParam(required = false) String cancelledBy,
-            Principal principal) {
+            @RequestParam(required = false) String cancelledBy) {
         
-        try {
-            Orders updatedOrder = orderService.refundAndCancelOrder(id);
-            
-            // Create an additional admin notification if cancelled by admin
-            if ("admin".equals(cancelledBy) && updatedOrder.getUser() != null) {
+        Orders updatedOrder = orderService.refundAndCancelOrder(id);
+        
+        // If cancelled by seller, create an additional notification for the customer
+        if ("seller".equals(cancelledBy)) {
+            Orders order = updatedOrder; // use the returned order
+            if (order.getUser() != null) {
+                // Find a sample seller name from order items
+                String sellerName = "The seller";
+                if (order.getItems() != null && !order.getItems().isEmpty()) {
+                    for (OrderItem item : order.getItems()) {
+                        if (item.getProduct() != null && item.getProduct().getSeller() != null) {
+                            sellerName = item.getProduct().getSeller().getFirstName();
+                            break;
+                        }
+                    }
+                }
+                
                 notificationService.createNotification(
-                    updatedOrder.getUser().getUserId(),
-                    "Your order #" + id + " has been cancelled by an administrator",
-                    "ADMIN_CANCELLED",
+                    order.getUser().getUserId(),
+                    sellerName + " has cancelled your order #" + id + ". A full refund has been processed.",
+                    "ORDER_CANCELLED_BY_SELLER",
                     "/profile?tab=orders"
                 );
             }
-            
-            return ResponseEntity.ok(updatedOrder);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
         }
+        
+        return ResponseEntity.ok(updatedOrder);
     }
 
     @GetMapping("/all")

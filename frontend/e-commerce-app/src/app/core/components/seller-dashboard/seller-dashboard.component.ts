@@ -288,24 +288,34 @@ export class SellerDashboardComponent implements OnInit {
   }
 
   cancelOrder(orderId: number): void {
-    if (!confirm('Are you sure you want to cancel this order? Items will be returned to inventory and the customer will receive a refund.')) {
+    if (!confirm('Are you sure you want to cancel this order? This will:\n- Return items to inventory\n- Process a refund to the customer\n- Deduct any earnings you\'ve received')) {
       return;
     }
+
     this.isProcessing = true;
 
-    this.orderService.refundAndCancelOrder(orderId).subscribe({
+    this.orderService.refundAndCancelOrder(orderId, 'seller').subscribe({
       next: () => {
-        // Handle UI updates after cancellation
-        this.customerOrders = this.customerOrders.filter(o => o.id !== orderId);
-        this.successMessage = 'Order cancelled and payment refunded to customer!';
+        // Update UI to reflect the cancelled order
+        const index = this.customerOrders.findIndex(o => o.id === orderId);
+        if (index !== -1) {
+          this.customerOrders[index].status = 'CANCELLED';
+        }
+
+        this.successMessage = 'Order cancelled successfully. Products have been returned to inventory and customer has been refunded.';
         this.isProcessing = false;
-        setTimeout(() => (this.successMessage = ''), 3000);
+
+        // Reload orders after a short delay to ensure everything is up to date
+        setTimeout(() => {
+          this.loadSellerOrders();
+          this.successMessage = '';
+        }, 3000);
       },
       error: (error) => {
         console.error('Error cancelling order', error);
-        this.errorMessage = 'Failed to cancel order. Please try again.';
+        this.errorMessage = error.message || 'Failed to cancel order. Please try again.';
         this.isProcessing = false;
-        setTimeout(() => (this.errorMessage = ''), 3000);
+        setTimeout(() => this.errorMessage = '', 3000);
       }
     });
   }

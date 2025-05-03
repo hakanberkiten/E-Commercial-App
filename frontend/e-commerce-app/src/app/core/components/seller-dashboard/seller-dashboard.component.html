@@ -166,6 +166,13 @@
                                                 <i class="bi bi-x-circle me-1"></i>Cancel
                                             </button>
 
+                                            <!-- Add this button for cancelling shipped orders with a warning -->
+                                            <button *ngIf="order.status !== 'CANCELLED' && order.status === 'SHIPPED'"
+                                                class="btn btn-sm btn-outline-danger" (click)="cancelOrder(order.id)"
+                                                [disabled]="isProcessing">
+                                                <i class="bi bi-x-circle me-1"></i>Cancel & Refund
+                                            </button>
+
                                             <!-- Show indicator when this seller has shipped but waiting on others -->
                                             <span
                                                 *ngIf="order.sellerApproved && order.status !== 'SHIPPED' && order.isMultiSellerOrder"
