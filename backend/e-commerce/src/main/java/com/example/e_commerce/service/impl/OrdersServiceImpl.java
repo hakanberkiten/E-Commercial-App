@@ -17,6 +17,7 @@ import com.example.e_commerce.repository.UserRepository;
 import com.example.e_commerce.service.OrdersService;
 import com.example.e_commerce.service.NotificationService;
 import com.example.e_commerce.service.PaymentService;
+import com.example.e_commerce.service.EmailService;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
@@ -41,6 +42,7 @@ public class OrdersServiceImpl implements OrdersService {
     private final PaymentService paymentService;
     private final StripeServiceImpl stripeService;
     private final EntityManager entityManager;
+    private final EmailService emailService;
 
     @Override
     public Orders saveOrder(Orders order) {
@@ -143,7 +145,18 @@ public class OrdersServiceImpl implements OrdersService {
         );
 
         // 7️⃣ Son kez kaydedip döndür
-        return orderRepo.save(order);
+        Orders savedOrder = orderRepo.save(order);
+
+        // Send email confirmation if this is a valid email
+        try {
+            // Your existing email sending code
+            emailService.sendOrderConfirmation(savedOrder);
+        } catch (Exception e) {
+            // Log the error but don't throw it
+            System.out.println("Failed to send order confirmation email: " + e.getMessage());
+            // Don't rethrow - let the order complete anyway
+        }
+        return savedOrder;
     }
 
     @Override
