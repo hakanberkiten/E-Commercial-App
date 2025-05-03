@@ -7,6 +7,7 @@ import com.example.e_commerce.entity.Payment;
 
 import java.util.List;
 import java.util.Map;
+import java.math.BigDecimal;
 
 public interface PaymentService {
     Payment savePayment(Payment payment);
@@ -19,4 +20,5 @@ public interface PaymentService {
     Payment processPayment(PaymentRequest paymentRequest);
     List<Payment> getPaymentsByUserId(Long userId);
     String attachPaymentMethod(Long userId, String paymentMethodId);
+    void deductFromSellerEarnings(Long sellerId, BigDecimal amount, Long orderId);
 }

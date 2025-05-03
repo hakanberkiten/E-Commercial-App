@@ -15,6 +15,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -166,6 +167,38 @@ public class PaymentServiceImpl implements PaymentService {
             return stripeService.attachPaymentMethodToCustomer(user.getStripeCustomerId(), paymentMethodId);
         } catch (StripeException e) {
             throw new RuntimeException("Failed to add payment method: " + e.getMessage());
+        }
+    }
+
+    @Transactional
+    @Override
+    public void deductFromSellerEarnings(Long sellerId, BigDecimal amount, Long orderId) {
+        User seller = userRepository.findById(sellerId)
+                .orElseThrow(() -> new RuntimeException("Seller not found"));
+                
+        // Create a negative payment record to track the deduction
+        Payment deduction = Payment.builder()
+                .user(seller)
+                .amount(amount.negate()) // Negative amount for deduction
+                .currency("USD")
+                .paymentMethod("refund_deduction")
+                .status("COMPLETED")
+                .build();
+                
+        payRepo.save(deduction);
+        
+        // If the seller has a Stripe account, also reflect this in Stripe
+        if (seller.getStripeCustomerId() != null && !seller.getStripeCustomerId().isEmpty()) {
+            try {
+                stripeService.deductFromSellerBalance(
+                    seller.getStripeCustomerId(), 
+                    amount, 
+                    "Refund deduction for order #" + orderId
+                );
+            } catch (StripeException e) {
+                // Log the error but don't fail the transaction
+                System.err.println("Failed to process Stripe deduction: " + e.getMessage());
+            }
         }
     }
 }

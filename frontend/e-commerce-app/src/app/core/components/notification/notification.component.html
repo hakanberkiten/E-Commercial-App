@@ -40,6 +40,9 @@
                                 <div class="notification-icon me-3">
                                     <i class="bi" [ngClass]="getNotificationIcon(notification.type)"></i>
                                 </div>
+                                <div *ngIf="notification.type === 'EARNINGS_DEDUCTION'" class="notification-icon bg-warning text-dark">
+                                    <i class="bi bi-cash-coin"></i>
+                                </div>
                                 <div>
                                     <h5 class="mb-1">{{ notification.message }}</h5>
                                     <small class="text-muted">{{ formatNotificationTime(notification.createdAt)

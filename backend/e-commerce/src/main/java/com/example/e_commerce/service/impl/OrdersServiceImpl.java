@@ -239,6 +239,41 @@ public class OrdersServiceImpl implements OrdersService {
                     
                     System.out.println("Returned " + item.getQuantityInOrder() + " units of product " + 
                         product.getProductId() + " to stock. New quantity: " + newQuantity);
+                    
+                    // If seller has already been paid for this item, deduct the earnings
+                    if ("SHIPPED".equals(item.getItemStatus()) && item.getProduct().getSeller() != null) {
+                        User seller = item.getProduct().getSeller();
+                        
+                        // Calculate the original seller earnings for this item
+                        BigDecimal itemPrice = BigDecimal.valueOf(item.getProduct().getPrice());
+                        BigDecimal quantity = BigDecimal.valueOf(item.getQuantityInOrder());
+                        BigDecimal subtotal = itemPrice.multiply(quantity);
+                        
+                        // Apply the same platform fee calculation that was used for earnings (e.g., 10%)
+                        BigDecimal platformFeePercent = new BigDecimal("0.10");
+                        BigDecimal platformFee = subtotal.multiply(platformFeePercent);
+                        BigDecimal sellerAmount = subtotal.subtract(platformFee);
+                        
+                        // Track this deduction by creating a negative payment record
+                        Payment deductionPayment = Payment.builder()
+                            .user(seller)
+                            .amount(sellerAmount.negate()) // Use negative amount to indicate deduction
+                            .currency("USD")
+                            .paymentMethod("stripe_deduction")
+                            .status("DEDUCTED")
+                            .build();
+                        
+                        payRepo.save(deductionPayment);
+                        
+                        // Send notification to seller about earnings deduction
+                        notificationService.createNotification(
+                            seller.getUserId(),
+                            "A refund has been issued for order #" + orderId + ". $" + sellerAmount + 
+                            " has been deducted from your earnings.",
+                            "EARNINGS_DEDUCTION",
+                            "/profile?tab=earnings"
+                        );
+                    }
                 }
             }
         }

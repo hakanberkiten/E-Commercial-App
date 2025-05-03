@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -155,5 +156,22 @@ public class StripeServiceImpl {
             System.err.println("Stripe error during refund: " + e.getMessage());
             throw e;
         }
+    }
+    
+    // Add this method to handle deducting from seller's stripe account
+    public void deductFromSellerBalance(String stripeAccountId, BigDecimal amount, String reason) throws StripeException {
+        Stripe.apiKey = secretKey;
+        
+        // In a real-world scenario, you would use Stripe Connect to handle 
+        // deductions from connected accounts. For now, we're just logging the action.
+        System.out.println("Deducting " + amount + " from seller Stripe account: " + stripeAccountId + 
+                          " for reason: " + reason);
+        
+        // For actual implementation with Stripe Connect, you would use code like:
+        // Map<String, Object> params = new HashMap<>();
+        // params.put("amount", amount.multiply(new BigDecimal("100")).longValue());
+        // params.put("currency", "usd");
+        // params.put("description", reason);
+        // Transfer.create(params);
     }
 }
