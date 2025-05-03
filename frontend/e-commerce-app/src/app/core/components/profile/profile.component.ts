@@ -1,11 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+// src/app/profile/profile.component.ts
+
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { PaymentService } from '../../services/payment.service';
 import { HttpClient } from '@angular/common/http';
+import { OrderService } from '../../services/order.service';
 import { loadStripe, Stripe, StripeElements, StripeCardElement } from '@stripe/stripe-js';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-profile',
@@ -60,12 +64,20 @@ export class ProfileComponent implements OnInit {
   loadingOrders: boolean = false;
   expandedOrderId: number | null = null;
 
+  // Return-related properties
+  isProcessingReturn = false;
+  showConfirmDialog = false;
+  currentReturnOrderId: number | null = null;
+  orderToReturn: any = null;
+
   constructor(
     private auth: AuthService,
     private fb: FormBuilder,
     private router: Router,
+    private http: HttpClient,
+    private orderService: OrderService,
     private paymentService: PaymentService,
-    private http: HttpClient
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.profileForm = this.fb.group({
       firstName: ['', Validators.required],
@@ -319,7 +331,7 @@ export class ProfileComponent implements OnInit {
 
   toggleOrderDetails(orderId: number): void {
     // If opening a different order, fetch fresh data first
-    if (this.expandedOrderId !== orderId && orderId !== null) {
+    if (this.expandedOrderId !== orderId) {
       this.loadUserOrders();
     }
     this.expandedOrderId = this.expandedOrderId === orderId ? null : orderId;
@@ -341,7 +353,6 @@ export class ProfileComponent implements OnInit {
       // Mevcut adresi düzenleme - ensure ID is properly set
       this.selectedAddress = address;
       console.log('Editing address:', address); // Add debug log
-
       this.addressForm.patchValue({
         addressId: address.id, // Make sure this is not undefined
         street: address.street,
@@ -352,8 +363,6 @@ export class ProfileComponent implements OnInit {
         buildingName: address.buildingName,
         isDefault: address.isDefault
       });
-
-      // Double-check that ID was set correctly
       console.log('Form value after patch:', this.addressForm.value);
     } else if (this.editAddressMode) {
       // Reset form for new address
@@ -386,7 +395,7 @@ export class ProfileComponent implements OnInit {
     };
 
     this.auth.updateProfile(updatedProfile).subscribe({
-      next: (response) => {
+      next: () => {
         this.loading = false;
         this.successMessage = 'Profile updated successfully!';
         this.editMode = false;
@@ -410,28 +419,25 @@ export class ProfileComponent implements OnInit {
       userId: this.currentUser?.userId.toString(),
     };
 
-    // Check if addressId exists and is not null/undefined before converting
     if (addressData.addressId !== undefined && addressData.addressId !== null) {
       addressData.id = addressData.addressId;
       delete addressData.addressId;
     }
 
-    // Log the addressData to debug
     console.log('Address data being submitted:', addressData);
 
-    // Check if it's an update (has valid ID) or new address
     const request = addressData.id
       ? this.auth.updateAddress(addressData)
       : this.auth.addAddress(addressData);
 
     request.subscribe({
-      next: (response) => {
+      next: () => {
         this.addressLoading = false;
         this.addressSuccessMessage = addressData.id
           ? 'Address updated successfully!'
           : 'Address added successfully!';
         this.editAddressMode = false;
-        this.loadUserAddresses(); // Adresleri yeniden yükle
+        this.loadUserAddresses();
       },
       error: (err) => {
         this.addressLoading = false;
@@ -447,7 +453,7 @@ export class ProfileComponent implements OnInit {
     this.auth.deleteAddress(addressId).subscribe({
       next: () => {
         this.addressSuccessMessage = 'Address deleted successfully!';
-        this.loadUserAddresses(); // Adresleri yeniden yükle
+        this.loadUserAddresses();
       },
       error: (err) => {
         this.addressErrorMessage = 'Failed to delete address';
@@ -460,7 +466,7 @@ export class ProfileComponent implements OnInit {
     this.auth.setDefaultAddress(addressId, this.currentUser?.userId?.toString() || '').subscribe({
       next: () => {
         this.addressSuccessMessage = 'Default address updated!';
-        this.loadUserAddresses(); // Adresleri yeniden yükle
+        this.loadUserAddresses();
       },
       error: (err) => {
         this.addressErrorMessage = 'Failed to update default address';
@@ -469,19 +475,17 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  // Change Password modunu aç/kapat
   toggleChangePasswordMode(): void {
     this.changePasswordMode = !this.changePasswordMode;
     if (this.changePasswordMode) {
-      this.editMode = false; // Profil düzenleme modunu kapat
-      this.editAddressMode = false; // Adres düzenleme modunu kapat
+      this.editMode = false;
+      this.editAddressMode = false;
       this.passwordForm.reset();
     }
     this.passwordSuccessMessage = '';
     this.passwordErrorMessage = '';
   }
 
-  // Şifre değiştirme işlemi
   onPasswordSubmit(): void {
     if (this.passwordForm.invalid) return;
 
@@ -507,7 +511,6 @@ export class ProfileComponent implements OnInit {
         this.passwordSuccessMessage = 'Password changed successfully!';
         this.passwordForm.reset();
 
-        // 3 saniye sonra şifre değiştirme modunu kapat
         setTimeout(() => {
           this.changePasswordMode = false;
           this.passwordSuccessMessage = '';
@@ -520,9 +523,8 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  // Add a new card
   async addNewCard(): Promise<void> {
-    console.log('Add card button clicked'); // Debug log
+    console.log('Add card button clicked');
     console.log('Stripe available:', !!this.stripe);
     console.log('Card element available:', !!this.card);
     console.log('Current user available:', !!this.currentUser);
@@ -540,7 +542,6 @@ export class ProfileComponent implements OnInit {
 
     try {
       console.log('Creating payment method...');
-      // Create payment method with card element
       const result = await this.stripe.createPaymentMethod({
         type: 'card',
         card: this.card
@@ -556,16 +557,14 @@ export class ProfileComponent implements OnInit {
 
       if (result.paymentMethod) {
         console.log('Sending payment method to backend...');
-        // Send only the payment method ID to your backend
         this.paymentService.addCardToken(
           this.currentUser.userId,
           result.paymentMethod.id
         ).subscribe({
-          next: (response) => {
-            console.log('Card added successfully:', response);
+          next: () => {
+            console.log('Card added successfully');
             this.cardSubmitting = false;
             this.cardSuccess = 'Card added successfully!';
-            // Reset the card element for future use
             if (this.card) {
               this.card.clear();
             }
@@ -586,24 +585,17 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  // Set card as default
   setDefaultCard(cardId: string): void {
-    // For this implementation, we'll just designate this as the default in the UI
-    // You could extend the backend to support this if needed
     alert('Default card functionality would be implemented here');
   }
 
-  // Add this method to the ProfileComponent
   isAdmin(): boolean {
     return this.currentUser?.role?.roleName === 'ADMIN' ||
       this.currentUser?.role?.roleName === 'ROLE_ADMIN';
   }
 
-  // Update this method to allow admins to access both profile and addresses tabs
   setActiveTab(tab: string): void {
     this.activeTab = tab;
-
-    // Load the appropriate data based on tab
     if (tab === 'myorders') {
       this.loadUserOrders();
     } else if (tab === 'payment') {
@@ -613,10 +605,61 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  // Add this as a utility method
   hasOrders(): boolean {
     const hasOrdersValue = Array.isArray(this.userOrders) && this.userOrders.length > 0;
     console.log('Has orders check:', hasOrdersValue, this.userOrders);
     return hasOrdersValue;
+  }
+
+  canBeReturned(order: any): boolean {
+    return order.orderStatus !== 'CANCELLED' &&
+      ['PENDING', 'PROCESSING', 'SHIPPED', 'PARTIALLY_SHIPPED'].includes(order.orderStatus);
+  }
+
+  showReturnConfirmation(order: any): void {
+    this.orderToReturn = order;
+    this.showConfirmDialog = true;
+  }
+
+  hideReturnConfirmation(): void {
+    this.showConfirmDialog = false;
+    this.orderToReturn = null;
+  }
+
+  processOrderReturn(): void {
+    if (!this.orderToReturn) return;
+
+    this.isProcessingReturn = true;
+
+    this.orderService.returnOrder(this.orderToReturn.orderId).subscribe({
+      next: () => {
+        const index = this.userOrders.findIndex(
+          order => order.orderId === this.orderToReturn.orderId
+        );
+
+        if (index !== -1) {
+          this.userOrders[index].orderStatus = 'CANCELLED';
+        }
+
+        this.hideReturnConfirmation();
+
+        this.successMessage = 'Your order has been returned successfully and a refund has been processed to your original payment method.';
+
+        if (isPlatformBrowser(this.platformId)) {
+          window.scrollTo(0, 0);
+        }
+      },
+      error: (error) => {
+        console.error('Error returning order:', error);
+
+        this.hideReturnConfirmation();
+
+        this.errorMessage = error.error?.message || 'Failed to process your return request. Please contact customer support.';
+
+        if (isPlatformBrowser(this.platformId)) {
+          window.scrollTo(0, 0);
+        }
+      }
+    });
   }
 }

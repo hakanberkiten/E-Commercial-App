@@ -85,9 +85,29 @@ public class OrdersController {
     }
 
     @PostMapping("/{id}/refund")
-    public ResponseEntity<Orders> refundAndCancelOrder(@PathVariable Long id) {
-        Orders updatedOrder = orderService.refundAndCancelOrder(id);
-        return ResponseEntity.ok(updatedOrder);
+    public ResponseEntity<Orders> refundAndCancelOrder(
+            @PathVariable Long id, 
+            @RequestParam(required = false) String cancelledBy,
+            Principal principal) {
+        
+        try {
+            Orders updatedOrder = orderService.refundAndCancelOrder(id);
+            
+            // Create an additional admin notification if cancelled by admin
+            if ("admin".equals(cancelledBy) && updatedOrder.getUser() != null) {
+                notificationService.createNotification(
+                    updatedOrder.getUser().getUserId(),
+                    "Your order #" + id + " has been cancelled by an administrator",
+                    "ADMIN_CANCELLED",
+                    "/profile?tab=orders"
+                );
+            }
+            
+            return ResponseEntity.ok(updatedOrder);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
     }
 
     @GetMapping("/all")

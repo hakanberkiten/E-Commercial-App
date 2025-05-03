@@ -129,20 +129,31 @@ public class StripeServiceImpl {
     
     // Refund a payment
     public void refundPayment(String paymentIntentId) throws StripeException {
+        if (paymentIntentId == null || paymentIntentId.isEmpty()) {
+            throw new IllegalArgumentException("Payment intent ID cannot be null or empty");
+        }
+        
         Stripe.apiKey = secretKey;
         
-        // Get the payment intent to check if it has a charge
-        PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentId);
-        
-        // If the payment intent has been charged, create a refund
-        if (paymentIntent.getLatestCharge() != null) {
-            Map<String, Object> params = new HashMap<>();
-            params.put("charge", paymentIntent.getLatestCharge());
+        try {
+            // Get the payment intent to check if it has a charge
+            PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentId);
             
-            Refund.create(params);
-        } else {
-            // If there's no charge yet, we can cancel the payment intent
-            paymentIntent.cancel();
+            // If the payment intent has been charged, create a refund
+            if (paymentIntent.getLatestCharge() != null) {
+                Map<String, Object> params = new HashMap<>();
+                params.put("charge", paymentIntent.getLatestCharge());
+                
+                Refund refund = Refund.create(params);
+                System.out.println("Refund processed successfully: " + refund.getId());
+            } else {
+                // If there's no charge yet, we can cancel the payment intent
+                paymentIntent.cancel();
+                System.out.println("Payment intent cancelled: " + paymentIntent.getId());
+            }
+        } catch (StripeException e) {
+            System.err.println("Stripe error during refund: " + e.getMessage());
+            throw e;
         }
     }
 }

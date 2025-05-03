@@ -217,10 +217,14 @@ public class OrdersServiceImpl implements OrdersService {
         Orders order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
                 
-        // Only allow refund if the order status is PENDING or APPROVED
-        if (!"PENDING".equals(order.getOrderStatus()) && 
-            !"APPROVED".equals(order.getOrderStatus())) {
-            throw new RuntimeException("Order cannot be refunded in its current status: " + order.getOrderStatus());
+        // Check if order is already cancelled
+        if ("CANCELLED".equals(order.getOrderStatus())) {
+            throw new RuntimeException("Order is already cancelled");
+        }
+        
+        // Don't allow cancellation of delivered orders
+        if ("DELIVERED".equals(order.getOrderStatus())) {
+            throw new RuntimeException("Delivered orders cannot be cancelled");
         }
         
         // Return items to inventory
@@ -267,6 +271,15 @@ public class OrdersServiceImpl implements OrdersService {
         
         // Update order status
         order.setOrderStatus("CANCELLED");
+        
+        // Also update item statuses
+        if (order.getItems() != null) {
+            for (OrderItem item : order.getItems()) {
+                item.setItemStatus("CANCELLED");
+                itemRepo.save(item);
+            }
+        }
+        
         return orderRepo.save(order);
     }
 

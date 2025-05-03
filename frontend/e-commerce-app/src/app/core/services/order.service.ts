@@ -40,11 +40,21 @@ export class OrderService {
         })
       );
   }
+  returnOrder(orderId: number): Observable<any> {
+    return this.http.post(`/api/orders/${orderId}/refund`,{});
+}
+  refundAndCancelOrder(orderId: number, cancelledBy?: string): Observable<any> {
+    const url = cancelledBy ?
+      `/api/orders/${orderId}/refund?cancelledBy=${cancelledBy}` :
+      `/api/orders/${orderId}/refund`;
 
-  refundAndCancelOrder(orderId: number): Observable<any> {
-    return this.http.post(`/api/orders/${orderId}/refund`, {}).pipe(
+    return this.http.post(url, {}).pipe(
       tap(response => {
         console.log('Order refunded and cancelled successfully:', response);
+      }),
+      catchError(error => {
+        console.error('Error refunding order:', error);
+        return throwError(() => new Error(error.error?.message || 'Failed to cancel order'));
       })
     );
   }

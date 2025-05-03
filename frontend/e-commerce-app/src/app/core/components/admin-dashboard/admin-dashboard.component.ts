@@ -316,34 +316,35 @@ export class AdminDashboardComponent implements OnInit {
 
   updateOrderStatus(orderId: number, status: string): void {
     if (status === 'CANCELLED') {
-      // If the order is being canceled, use the method that returns products to stock
       if (confirm('Are you sure you want to cancel this order? Products will be returned to stock, and a refund will be issued to the customer.')) {
-        this.orderService.refundAndCancelOrder(orderId).subscribe({
+        this.orderService.refundAndCancelOrder(orderId, 'admin').subscribe({
           next: () => {
             this.successMessage = 'Order has been canceled, and products have been returned to stock';
             this.loadAllOrders(); // Refresh the order list
             setTimeout(() => this.successMessage = '', 3000);
           },
           error: (error) => {
-            this.errorMessage = `Failed to cancel the order: ${error.message}`;
+            console.error('Error cancelling order:', error);
+            this.errorMessage = `Failed to cancel the order: ${error.message || 'Unknown error'}`;
             setTimeout(() => this.errorMessage = '', 3000);
           }
         });
       }
     } else {
-      // Use the normal method for other status updates
+      // For PENDING or other statuses, use the regular update method
       this.orderService.updateOrderStatus(orderId, status).subscribe({
         next: () => {
-          this.successMessage = 'Order status updated successfully';
+          this.successMessage = `Order status updated to ${status} successfully`;
           this.loadAllOrders(); // Refresh the order list
           setTimeout(() => this.successMessage = '', 3000);
         },
         error: (error) => {
-          this.errorMessage = `Failed to update order status: ${error.message}`;
+          console.error('Error updating order status:', error);
+          this.errorMessage = `Failed to update order status: ${error.message || 'Unknown error'}`;
           setTimeout(() => this.errorMessage = '', 3000);
         }
       });
     }
   }
-  }
+}
 

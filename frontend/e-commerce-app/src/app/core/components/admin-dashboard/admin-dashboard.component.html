@@ -343,11 +343,11 @@
                                 </td>
                                 <td>
                                     <span class="badge rounded-pill py-2 px-3" [ngClass]="{
-                                            'bg-warning text-dark': order.orderStatus === 'PROCESSING',
-                                            'bg-info': order.orderStatus === 'SHIPPED',
-                                            'bg-success': order.orderStatus === 'DELIVERED',
-                                            'bg-danger': order.orderStatus === 'CANCELLED'
-                                        }">
+                                        'bg-warning text-dark': order.orderStatus === 'PENDING',
+                                        'bg-info': order.orderStatus === 'SHIPPED',
+                                        'bg-success': order.orderStatus === 'DELIVERED',
+                                        'bg-danger': order.orderStatus === 'CANCELLED'
+                                    }">
                                         {{ order.orderStatus }}
                                     </span>
                                 </td>
@@ -361,7 +361,7 @@
                                             </button>
                                             <ul class="dropdown-menu">
                                                 <li><button class="dropdown-item"
-                                                        (click)="updateOrderStatus(order.orderId, 'PROCESSING')">Processing</button>
+                                                        (click)="updateOrderStatus(order.orderId, 'PENDING')">Pending</button>
                                                 </li>
                                                 <li><button class="dropdown-item"
                                                         (click)="updateOrderStatus(order.orderId, 'SHIPPED')">Shipped</button>
