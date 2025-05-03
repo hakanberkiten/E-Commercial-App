@@ -276,14 +276,17 @@ export class ProfileComponent implements OnInit {
           }
           return payment;
         });
-        console.log('Payment history loaded:', this.paymentHistory);
+
+        // Sort payment history by ID in descending order
+        this.paymentHistory.sort((a, b) => b.paymentId - a.paymentId);
+
+        console.log('Payment history loaded and sorted:', this.paymentHistory);
       },
       error: (error) => {
         console.error('Error loading payment history:', error);
       }
     });
   }
-
   loadUserOrders() {
     this.loadingOrders = true;
     const currentUser = this.auth.getCurrentUser();
@@ -297,6 +300,10 @@ export class ProfileComponent implements OnInit {
     this.orderService.getOrdersByUserId(currentUser.userId).subscribe({
       next: (orders) => {
         this.userOrders = orders;
+
+        // Sort orders by ID in descending order
+        this.userOrders.sort((a, b) => b.orderId - a.orderId);
+
         this.loadingOrders = false;
       },
       error: (error) => {
