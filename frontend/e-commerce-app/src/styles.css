@@ -298,7 +298,6 @@ body.dark-mode .input-group-text {
     color: #ffffff !important;
     /* Beyaz yazı */
     border-color: rgba(177, 156, 255, 0.4) !important;
-    /* Mor tonlu kenarlık */
 }
 
 /* Checkbox ve radio butonlar için */
@@ -1590,4 +1589,86 @@ body.dark-mode footer .modal-header {
 
 body.dark-mode footer .modal-footer {
     border-top-color: rgba(177, 156, 255, 0.25) !important;
+}
+
+/* Admin Reset Password Modal - Dark Mode - Yeşil kenarlıklı versiyon */
+body.dark-mode .modal.reset-password-modal,
+body.dark-mode .modal.password-reset-modal,
+body.dark-mode .modal[id*="resetPassword"],
+body.dark-mode div[id*="resetPassword"],
+body.dark-mode .admin-dashboard #password-reset-section {
+  background-color: rgba(26, 21, 37, 0.9) !important;
+}
+
+/* Modal içerik stili */
+body.dark-mode .modal.reset-password-modal .modal-content,
+body.dark-mode .modal.password-reset-modal .modal-content,
+body.dark-mode .modal[id*="resetPassword"] .modal-content,
+body.dark-mode div[id*="resetPassword"] .modal-content,
+body.dark-mode .admin-dashboard #password-reset-section {
+  background-color: #1a1525 !important;  /* Daha koyu arka plan */
+  border: 1px solid #4caf50 !important;  /* Yeşil kenarlık */
+  box-shadow: 0 0 15px rgba(76, 175, 80, 0.3) !important; /* Yeşil gölge */
+}
+
+/* Modal başlığı */
+body.dark-mode .modal.reset-password-modal .modal-header,
+body.dark-mode .modal.password-reset-modal .modal-header,
+body.dark-mode .modal[id*="resetPassword"] .modal-header,
+body.dark-mode div[id*="resetPassword"] .modal-header,
+body.dark-mode .admin-dashboard #password-reset-section .card-header {
+  background-color: #251a36 !important;
+  color: #ffffff !important;
+  border-bottom: 1px solid rgba(76, 175, 80, 0.4) !important; /* Yeşil kenarlık */
+}
+
+/* Input alan stili */
+body.dark-mode .modal.reset-password-modal input,
+body.dark-mode .modal.password-reset-modal input,
+body.dark-mode .modal[id*="resetPassword"] input,
+body.dark-mode div[id*="resetPassword"] input,
+body.dark-mode .admin-dashboard #password-reset-section input {
+  background-color: #19132b !important;
+  color: #4caf50 !important; /* Yeşil yazı rengi */
+  border: 1px solid rgba(76, 175, 80, 0.5) !important; /* Yeşil kenarlık */
+  caret-color: #4caf50 !important; /* İmleç rengi yeşil */
+}
+
+/* Reset Password butonu */
+body.dark-mode .modal.reset-password-modal .btn-primary,
+body.dark-mode .modal.password-reset-modal .btn-primary,
+body.dark-mode .modal[id*="resetPassword"] .btn-primary,
+body.dark-mode div[id*="resetPassword"] .btn-primary,
+body.dark-mode .admin-dashboard #password-reset-section .btn-primary {
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 4px 10px rgba(106, 17, 203, 0.3) !important;
+}
+
+/* Cancel butonu */
+body.dark-mode .modal.reset-password-modal .btn-secondary,
+body.dark-mode .modal.password-reset-modal .btn-secondary,
+body.dark-mode .modal[id*="resetPassword"] .btn-secondary,
+body.dark-mode div[id*="resetPassword"] .btn-secondary,
+body.dark-mode .admin-dashboard #password-reset-section .btn-outline-secondary {
+  background-color: #342447 !important;
+  color: #e0e0e0 !important;
+  border: 1px solid rgba(177, 156, 255, 0.4) !important;
+}
+
+/* Şifre görünürlük butonu için */
+body.dark-mode .modal.reset-password-modal .input-group-text,
+body.dark-mode .modal.password-reset-modal .input-group-text,
+body.dark-mode .modal[id*="resetPassword"] .input-group-text,
+body.dark-mode div[id*="resetPassword"] .input-group-text,
+body.dark-mode .admin-dashboard #password-reset-section .input-group-text {
+  background-color: #251a36 !important;
+  color: #4caf50 !important; /* Yeşil ikon rengi */
+  border-color: rgba(76, 175, 80, 0.5) !important; /* Yeşil kenarlık */
+}
+
+/* Modal arka planındaki overlay */
+body.dark-mode .modal-backdrop.show {
+  background-color: rgba(0, 0, 0, 0.7) !important;
 }
