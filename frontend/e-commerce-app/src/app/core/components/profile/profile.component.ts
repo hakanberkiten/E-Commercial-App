@@ -317,12 +317,12 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  toggleOrderDetails(orderId: number) {
-    if (this.expandedOrderId === orderId) {
-      this.expandedOrderId = null;
-    } else {
-      this.expandedOrderId = orderId;
+  toggleOrderDetails(orderId: number): void {
+    // If opening a different order, fetch fresh data first
+    if (this.expandedOrderId !== orderId && orderId !== null) {
+      this.loadUserOrders();
     }
+    this.expandedOrderId = this.expandedOrderId === orderId ? null : orderId;
   }
 
   toggleEditMode(): void {

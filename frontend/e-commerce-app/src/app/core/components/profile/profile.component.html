@@ -579,9 +579,11 @@
                                                 <span class="badge" [ngClass]="{
                                                     'bg-warning text-dark': item.itemStatus === 'PENDING',
                                                     'bg-info': item.itemStatus === 'SHIPPED',
-                                                    'bg-success': item.itemStatus === 'DELIVERED'
+                                                    'bg-success': item.itemStatus === 'DELIVERED',
+                                                    'bg-danger': item.itemStatus === 'CANCELLED'
                                                 }">
-                                                    {{ item.itemStatus }}
+                                                    {{ order.orderStatus === 'CANCELLED' ? 'CANCELLED' : item.itemStatus
+                                                    }}
                                                 </span>
                                             </td>
                                         </tr>
