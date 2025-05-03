@@ -27,7 +27,7 @@ public class EmailServiceImpl implements EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             
             helper.setTo(order.getEmail());
-            helper.setSubject("Siparişiniz Onaylandı - Sipariş #" + order.getOrderId());
+            helper.setSubject("Your Order is Confirmed - Order #" + order.getOrderId());
             helper.setFrom("ecommerce.x.07.07@gmail.com");
             
             String content = buildOrderEmailContent(order);

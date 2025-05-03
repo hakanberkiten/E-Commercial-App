@@ -197,7 +197,7 @@ export class CartPageComponent implements OnInit {
     ).subscribe({
       next: (response) => {
         this.isProcessing = false;
-        this.successMessage = 'Order placed successfully!';
+        this.successMessage = 'Your order has been placed successfully! Order details have been sent to your email.';
 
         // Clear cart items one by one from the server
         const clearCartPromises = this.items.map(item =>
@@ -210,9 +210,7 @@ export class CartPageComponent implements OnInit {
             this.items = [];
 
             // Navigate to order confirmation or orders page after a delay
-            setTimeout(() => {
-              this.router.navigate(['/profile'], { queryParams: { tab: 'orders' } });
-            }, 2000);
+
           })
           .catch(error => {
             console.error('Error clearing cart:', error);
