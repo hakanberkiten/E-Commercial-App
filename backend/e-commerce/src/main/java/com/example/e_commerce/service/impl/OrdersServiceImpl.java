@@ -545,6 +545,157 @@ public class OrdersServiceImpl implements OrdersService {
         return orderRepo.save(order);
     }
 
+    @Transactional
+    @Override
+    public Orders cancelSellerItems(Long orderId, Long sellerId) {
+        Orders order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+                
+        // Don't allow cancellation if order is already delivered
+        if ("DELIVERED".equals(order.getOrderStatus())) {
+            throw new RuntimeException("Cannot cancel items from a delivered order");
+        }
+        
+        boolean foundSellerItems = false;
+        BigDecimal refundAmount = BigDecimal.ZERO;
+        
+        // 1. Önce tüm öğeleri kontrol et ve kaç tane iptal edilmemiş öğe kaldığını say
+        int remainingNonCancelledItems = 0;
+        int sellerItemCount = 0;
+        
+        for (OrderItem item : order.getItems()) {
+            // Satıcıya ait öğeleri say
+            if (item.getProduct() != null && 
+                item.getProduct().getSeller() != null && 
+                item.getProduct().getSeller().getUserId().equals(sellerId)) {
+                sellerItemCount++;
+            }
+            
+            // Henüz iptal edilmemiş öğeleri say
+            if (!"CANCELLED".equals(item.getItemStatus())) {
+                remainingNonCancelledItems++;
+            }
+        }
+        
+        // Son satıcı olup olmadığını kontrol et - kalan iptal edilmemiş öğe sayısı bu satıcının öğe sayısına eşitse
+        boolean isLastSeller = remainingNonCancelledItems <= sellerItemCount;
+        System.out.println("Remaining non-cancelled items: " + remainingNonCancelledItems + ", Seller items: " + sellerItemCount + ", Is last seller: " + isLastSeller);
+        
+        // 2. Şimdi satıcının öğelerini iptal et ve iade miktarını hesapla
+        for (OrderItem item : order.getItems()) {
+            // Check if this item belongs to the current seller
+            if (item.getProduct() != null && 
+                item.getProduct().getSeller() != null && 
+                item.getProduct().getSeller().getUserId().equals(sellerId)) {
+                
+                // Only process if item isn't already cancelled
+                if (!"CANCELLED".equals(item.getItemStatus())) {
+                    System.out.println("Cancelling item ID: " + item.getOrderItemId() + ", previous status: " + item.getItemStatus());
+                    
+                    // Return product to inventory
+                    Product product = item.getProduct();
+                    int newQuantity = product.getQuantityInStock() + item.getQuantityInOrder();
+                    product.setQuantityInStock(newQuantity);
+                    productRepo.save(product);
+                    
+                    System.out.println("Returned " + item.getQuantityInOrder() + " units of product " + 
+                        product.getProductId() + " to stock. New quantity: " + newQuantity);
+                    
+                    // Add to refund amount
+                    refundAmount = refundAmount.add(item.getOrderedProductPrice());
+                    
+                    // Mark item as cancelled
+                    item.setItemStatus("CANCELLED");
+                    itemRepo.save(item);
+                    foundSellerItems = true;
+                    
+                    // Deduct from seller earnings if the item was already shipped
+                    if ("SHIPPED".equals(item.getItemStatus()) || "APPROVED".equals(item.getItemStatus())) {
+                        deductSellerEarnings(item, orderId);
+                    }
+                }
+            }
+        }
+        
+        if (!foundSellerItems) {
+            throw new RuntimeException("No items found for this seller in the order");
+        }
+        
+        // 3. İade işlemini yap - eğer son satıcı ise tam iade, değilse kısmi iade yap
+        if (refundAmount.compareTo(BigDecimal.ZERO) > 0 && order.getPayment() != null) {
+            try {
+                if (isLastSeller) {
+                    // Son satıcı için tam iade işlemi yap
+                    System.out.println("Processing full refund for last seller");
+                    stripeService.refundPayment(order.getPayment().getStripePaymentIntentId());
+                    
+                    // Tam iadeyi kaydet
+                    Payment refundPayment = Payment.builder()
+                        .user(order.getUser())
+                        .amount(order.getTotalAmount().negate()) // Tüm sipariş tutarı
+                        .currency("USD")
+                        .paymentMethod("refund")
+                        .status("REFUNDED")
+                        .build();
+                    payRepo.save(refundPayment);
+                    
+                    // Müşteriye tam iade bildirimi gönder
+                    notificationService.createNotification(
+                        order.getUser().getUserId(),
+                        "All items in your order #" + orderId + " have been cancelled. A full refund of $" + 
+                        order.getTotalAmount() + " has been processed.",
+                        "ORDER_FULLY_CANCELLED",
+                        "/profile?tab=orders"
+                    );
+                } else {
+                    // Kısmi iade işlemi yap
+                    System.out.println("Processing partial refund of $" + refundAmount);
+                    stripeService.createPartialRefund(order.getPayment().getStripePaymentIntentId(), refundAmount);
+                    
+                    // Kısmi iadeyi kaydet
+                    Payment refundPayment = Payment.builder()
+                        .user(order.getUser())
+                        .amount(refundAmount.negate())
+                        .currency("USD")
+                        .paymentMethod("refund")
+                        .status("REFUNDED")
+                        .build();
+                    payRepo.save(refundPayment);
+                    
+                    // Müşteriye kısmi iade bildirimi gönder
+                    notificationService.createNotification(
+                        order.getUser().getUserId(),
+                        "Some items in your order #" + orderId + " have been cancelled. $" + refundAmount + 
+                        " has been refunded to your original payment method.",
+                        "PARTIAL_ORDER_CANCELLED",
+                        "/profile?tab=orders"
+                    );
+                }
+            } catch (Exception e) {
+                System.err.println("Refund error: " + e.getMessage());
+                e.printStackTrace();
+                throw new RuntimeException("Failed to process refund: " + e.getMessage());
+            }
+        }
+        
+        // 4. Sipariş durumunu güncelle
+        if (isLastSeller) {
+            // Bu son satıcı ise, siparişi tamamen iptal edilmiş olarak işaretle
+            order.setOrderStatus("CANCELLED");
+        } else {
+            // Değilse, kalan öğelerin durumuna göre sipariş durumunu güncelle
+            updateOrderStatusBasedOnItems(order);
+        }
+        
+        Orders savedOrder = orderRepo.save(order);
+        
+        // Force refresh order data to ensure all clients see current state
+        entityManager.flush();
+        entityManager.refresh(savedOrder);
+        
+        return savedOrder;
+    }
+
     @Override
     public List<Orders> getOrdersByUserId(Long userId) {
         // Find orders belonging to this user
@@ -552,6 +703,88 @@ public class OrdersServiceImpl implements OrdersService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
                 
         return orderRepo.findByUserOrderByOrderDateDesc(user);
+    }
+
+    // Helper method to deduct seller earnings
+    private void deductSellerEarnings(OrderItem item, Long orderId) {
+        User seller = item.getProduct().getSeller();
+        
+        // Calculate the original seller earnings for this item
+        BigDecimal itemPrice = BigDecimal.valueOf(item.getProduct().getPrice());
+        BigDecimal quantity = BigDecimal.valueOf(item.getQuantityInOrder());
+        BigDecimal subtotal = itemPrice.multiply(quantity);
+        
+        // Apply platform fee calculation
+        BigDecimal platformFeePercent = new BigDecimal("0.10");
+        BigDecimal platformFee = subtotal.multiply(platformFeePercent);
+        BigDecimal sellerAmount = subtotal.subtract(platformFee);
+        
+        // Track this deduction with a negative payment record
+        Payment deductionPayment = Payment.builder()
+            .user(seller)
+            .amount(sellerAmount.negate())
+            .currency("USD")
+            .paymentMethod("stripe_deduction")
+            .status("DEDUCTED")
+            .build();
+        
+        payRepo.save(deductionPayment);
+        
+        // Notify seller about earnings deduction
+        notificationService.createNotification(
+            seller.getUserId(),
+            "Items from order #" + orderId + " have been cancelled. $" + sellerAmount + 
+            " has been deducted from your earnings.",
+            "EARNINGS_DEDUCTION",
+            "/profile?tab=earnings"
+        );
+    }
+
+    // Helper method to update order status based on remaining items
+    private void updateOrderStatusBasedOnItems(Orders order) {
+        // Count items by status
+        int totalItems = 0;
+        int cancelledItems = 0;
+        int shippedItems = 0;
+        int deliveredItems = 0;
+        
+        for (OrderItem item : order.getItems()) {
+            totalItems++;
+            switch (item.getItemStatus()) {
+                case "CANCELLED":
+                    cancelledItems++;
+                    break;
+                case "SHIPPED":
+                    shippedItems++;
+                    break;
+                case "DELIVERED":
+                    deliveredItems++;
+                    break;
+            }
+        }
+        
+        // Determine overall order status
+        if (cancelledItems == totalItems) {
+            // All items cancelled = order cancelled
+            order.setOrderStatus("CANCELLED");
+        } else if (deliveredItems > 0) {
+            // Any items delivered = show as partially or fully delivered
+            if (deliveredItems + cancelledItems == totalItems) {
+                order.setOrderStatus("DELIVERED");
+            } else {
+                order.setOrderStatus("PARTIALLY_DELIVERED");
+            }
+        } else if (shippedItems > 0) {
+            // Any items shipped = show as partially or fully shipped
+            if (shippedItems + cancelledItems == totalItems) {
+                order.setOrderStatus("SHIPPED");
+            } else {
+                order.setOrderStatus("PARTIALLY_SHIPPED");
+            }
+        } else {
+            // Otherwise pending
+            order.setOrderStatus("PENDING");
+        }
     }
 
     // Helper method to validate order status

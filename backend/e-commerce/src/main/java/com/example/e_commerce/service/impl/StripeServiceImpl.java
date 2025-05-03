@@ -158,6 +158,27 @@ public class StripeServiceImpl {
         }
     }
     
+    /**
+     * Creates a partial refund for a specific payment intent
+     * 
+     * @param paymentIntentId The Stripe payment intent ID
+     * @param amount The amount to refund (must be less than or equal to the original payment amount)
+     * @return The refund object
+     * @throws StripeException If the refund fails
+     */
+    public Refund createPartialRefund(String paymentIntentId, BigDecimal amount) throws StripeException {
+        Stripe.apiKey = secretKey;
+        
+        // Convert BigDecimal amount to cents (Stripe uses smallest currency unit)
+        long amountInCents = amount.multiply(new BigDecimal("100")).longValue();
+        
+        Map<String, Object> params = new HashMap<>();
+        params.put("payment_intent", paymentIntentId);
+        params.put("amount", amountInCents);
+        
+        return Refund.create(params);
+    }
+    
     // Add this method to handle deducting from seller's stripe account
     public void deductFromSellerBalance(String stripeAccountId, BigDecimal amount, String reason) throws StripeException {
         Stripe.apiKey = secretKey;

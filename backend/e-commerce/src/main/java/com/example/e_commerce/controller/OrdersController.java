@@ -9,6 +9,7 @@ import com.example.e_commerce.service.OrdersService;
 import com.example.e_commerce.service.impl.StripeServiceImpl;
 import com.example.e_commerce.service.NotificationService;
 import com.example.e_commerce.repository.UserRepository;
+import com.example.e_commerce.service.UserService; // Import UserService
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,7 @@ public class OrdersController {
     private final NotificationService notificationService;
     private final StripeServiceImpl stripeService;
     private final UserRepository userRepository;
+    private final UserService userService; // Add this field
 
     @PostMapping("/place")
     public Orders placeOrder(@RequestBody OrderRequest req, Principal principal) {
@@ -192,6 +194,45 @@ public class OrdersController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Failed to process approval: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{orderId}/cancel-seller-items")
+    public ResponseEntity<?> cancelSellerItems(
+        @PathVariable Long orderId,
+        @RequestBody Map<String, Long> requestBody,
+        Principal principal
+    ) {
+        Long sellerId = requestBody.get("sellerId");
+        if (sellerId == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Seller ID is required"));
+        }
+        
+        try {
+            // Verify the principal has permission to cancel these items
+            User currentUser = userService.findByEmail(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+                
+            System.out.println("Cancel seller items request - Order ID: " + orderId + ", Seller ID: " + sellerId + 
+                                ", User: " + principal.getName() + " (ID: " + currentUser.getUserId() + ")");
+            
+            // Only allow seller to cancel their own items
+            if (!currentUser.getUserId().equals(sellerId)) {
+                System.out.println("Permission denied: User ID " + currentUser.getUserId() + " tried to cancel items for Seller ID " + sellerId);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "You can only cancel your own items"));
+            }
+            
+            Orders updatedOrder = orderService.cancelSellerItems(orderId, sellerId);
+            System.out.println("Successfully cancelled seller items - New order status: " + updatedOrder.getOrderStatus());
+            
+            // Return more item details in response so frontend can update properly
+            return ResponseEntity.ok(updatedOrder);
+        } catch (Exception e) {
+            System.err.println("Error cancelling seller items: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to cancel items: " + e.getMessage()));
         }
     }
 }

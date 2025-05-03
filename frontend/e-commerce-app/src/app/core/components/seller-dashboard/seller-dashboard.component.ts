@@ -160,7 +160,7 @@ export class SellerDashboardComponent implements OnInit {
               0
             )
           };
-        }).sort((a, b) => b.id - a.id); 
+        }).sort((a, b) => b.id - a.id);
       },
       error: (error) => {
         console.error('Error loading seller orders', error);
@@ -285,30 +285,43 @@ export class SellerDashboardComponent implements OnInit {
   }
 
   cancelOrder(orderId: number): void {
-    if (!confirm('Are you sure you want to cancel this order? This will:\n- Return items to inventory\n- Process a refund to the customer\n- Deduct any earnings you\'ve received')) {
+    if (!confirm('Are you sure you want to cancel your items in this order? This will:\n- Return your items to inventory\n- Process a refund to the customer for your items only\n- Other sellers\' items will remain active')) {
       return;
     }
 
     this.isProcessing = true;
 
-    this.orderService.refundAndCancelOrder(orderId, 'seller').subscribe({
-      next: () => {
+    this.orderService.cancelSellerItems(orderId).subscribe({
+      next: (updatedOrder) => {
+        console.log('Order updated after cancellation:', updatedOrder);
+
+        // Update the local order representation
         const index = this.customerOrders.findIndex(o => o.id === orderId);
         if (index !== -1) {
-          this.customerOrders[index].status = 'CANCELLED';
+          // Replace the entire order with updated data
+          this.customerOrders[index] = {
+            ...this.customerOrders[index],
+            status: updatedOrder.orderStatus,
+            items: updatedOrder.items.map((item: { itemStatus?: string; status?: string }) => ({
+              ...item,
+              // Ensure status reflects the server value
+              status: item.itemStatus || item.status
+            }))
+          };
         }
 
-        this.successMessage = 'Order cancelled successfully. Products have been returned to inventory and customer has been refunded.';
+        this.successMessage = 'Your items have been cancelled. The customer has been refunded for these items.';
         this.isProcessing = false;
 
+        // Refresh order list to get current state
         setTimeout(() => {
           this.loadSellerOrders();
           this.successMessage = '';
-        }, 3000);
+        }, 2000);
       },
       error: (error) => {
-        console.error('Error cancelling order', error);
-        this.errorMessage = error.message || 'Failed to cancel order. Please try again.';
+        console.error('Error cancelling items', error);
+        this.errorMessage = error.message || 'Failed to cancel items. Please try again.';
         this.isProcessing = false;
         setTimeout(() => this.errorMessage = '', 3000);
       }

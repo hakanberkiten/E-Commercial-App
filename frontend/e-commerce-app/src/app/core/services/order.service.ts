@@ -126,4 +126,26 @@ export class OrderService {
         })
       );
   }
+
+  cancelSellerItems(orderId: number): Observable<any> {
+    const currentUser = this.authService.getCurrentUser();
+    const sellerId = currentUser?.userId;
+
+    if (!sellerId) {
+      console.error('Error: Cannot cancel items. Seller ID not found');
+      return throwError(() => new Error('Seller ID not available'));
+    }
+
+    return this.http.post(`/api/orders/${orderId}/cancel-seller-items`, {
+      sellerId: sellerId
+    }).pipe(
+      tap(response => {
+        console.log('Seller items cancelled successfully:', response);
+      }),
+      catchError(error => {
+        console.error('Error cancelling seller items:', error);
+        return throwError(() => new Error(error.error?.message || 'Failed to cancel items'));
+      })
+    );
+  }
 }
