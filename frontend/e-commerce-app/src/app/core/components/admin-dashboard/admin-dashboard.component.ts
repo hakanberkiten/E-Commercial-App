@@ -303,7 +303,8 @@ export class AdminDashboardComponent implements OnInit {
     this.loadingOrders = true;
     this.http.get<any[]>('/api/orders/all').subscribe({
       next: (data) => {
-        this.orders = data;
+        // Sort orders by orderId in descending order (newest first)
+        this.orders = data.sort((a, b) => b.orderId - a.orderId);
         this.loadingOrders = false;
       },
       error: (error) => {

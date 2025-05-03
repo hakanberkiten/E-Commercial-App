@@ -335,7 +335,7 @@
                             <tr *ngFor="let order of orders">
                                 <td># {{ order.orderId }}</td>
                                 <td>{{ order.user?.firstName }} {{ order.user?.lastName }}</td>
-                                <td>{{ order.orderDate | date:'medium' }}</td>
+                                <td>{{ order.orderDate | date:'mediumDate' }}</td>
                                 <td>
                                     <span class="badge bg-success bg-opacity-10 text-success fs-6">
                                         ${{ order.totalAmount?.toFixed(2) }}
@@ -356,8 +356,7 @@
                                         <div class="btn-group">
                                             <button type="button"
                                                 class="btn btn-outline-secondary dropdown-toggle btn-sm"
-                                                data-bs-toggle="dropdown"
-                                                aria-expanded="false"
+                                                data-bs-toggle="dropdown" aria-expanded="false"
                                                 [disabled]="order.orderStatus === 'CANCELLED'">
                                                 Update Status
                                             </button>
