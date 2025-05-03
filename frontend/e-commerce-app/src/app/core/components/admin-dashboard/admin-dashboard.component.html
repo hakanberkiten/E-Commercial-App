@@ -111,7 +111,7 @@
                                                         (click)="setUserRole(user, roleIds.ADMIN)">Admin</button></li>
                                             </ul>
                                         </div>
-                                        <button (click)="resetUserPassword(user.userId)"
+                                        <button (click)="resetUserPassword(user.userId, user.firstName)"
                                             class="btn btn-outline-warning btn-sm">
                                             <i class="bi bi-key"></i>
                                         </button>
@@ -131,6 +131,40 @@
                     <i class="bi bi-exclamation-circle display-4 text-muted"></i>
                     <p class="mt-3">No users found.</p>
                 </div>
+            </div>
+        </div>
+
+        <!-- Password Reset Section -->
+        <div *ngIf="isResettingPassword" id="password-reset-section"
+            class="card mt-3 border-warning animate__animated animate__fadeIn">
+            <div class="card-header bg-warning-subtle d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Reset Password for {{userBeingReset?.firstName || 'User'}}</h5>
+                <button type="button" class="btn-close" (click)="cancelPasswordReset()"></button>
+            </div>
+            <div class="card-body">
+                <form [formGroup]="resetPasswordForm" (submit)="submitPasswordReset()">
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">New Password</label>
+                        <div class="input-group">
+                            <input [type]="showPassword ? 'text' : 'password'" class="form-control" id="newPassword"
+                                formControlName="newPassword" placeholder="Enter new password">
+                            <button class="btn btn-outline-secondary" type="button"
+                                (click)="togglePasswordVisibility()">
+                                <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                            </button>
+                        </div>
+                        <div *ngIf="resetPasswordForm.get('newPassword')?.invalid && resetPasswordForm.get('newPassword')?.touched"
+                            class="form-text text-danger">
+                            Password must be at least 6 characters
+                        </div>
+                    </div>
+                    <div class="d-flex">
+                        <button type="submit" class="btn btn-primary" [disabled]="resetPasswordForm.invalid">Reset
+                            Password</button>
+                        <button type="button" class="btn btn-outline-secondary ms-2"
+                            (click)="cancelPasswordReset()">Cancel</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

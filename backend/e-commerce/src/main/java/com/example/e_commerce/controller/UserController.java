@@ -185,24 +185,24 @@ public class UserController {
     }
 
     @PostMapping("/{userId}/reset-password")
-    public ResponseEntity<?> resetUserPassword(@PathVariable Long userId) {
+    public ResponseEntity<?> resetUserPassword(@PathVariable Long userId, @RequestBody Map<String, String> passwordData) {
         try {
             User user = userService.getUserById(userId);
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found"));
             }
             
-            // Generate a random temporary password
-            String tempPassword = UUID.randomUUID().toString().substring(0, 8);
-            user.setPassword(passwordEncoder.encode(tempPassword));
+            // Get the new password from the request body
+            String newPassword = passwordData.get("newPassword");
+            if (newPassword == null || newPassword.length() < 6) {
+                return ResponseEntity.badRequest().body(Map.of("message", "New password must be at least 6 characters"));
+            }
+            
+            // Encrypt and save the new password
+            user.setPassword(passwordEncoder.encode(newPassword));
             userService.saveUser(user);
             
-            // In a real application, you would send an email with the temporary password
-            // For now, we'll just return it in the response
-            return ResponseEntity.ok(Map.of(
-                "message", "Password reset successfully",
-                "temporaryPassword", tempPassword
-            ));
+            return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Error resetting password: " + e.getMessage()));

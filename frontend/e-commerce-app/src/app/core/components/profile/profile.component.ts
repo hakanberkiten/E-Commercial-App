@@ -190,7 +190,7 @@ export class ProfileComponent implements OnInit {
               style: {
                 base: {
                   fontSize: '16px',
-                  color: '#32325d',
+                  color: '#8a6fff',
                 }
               }
             });

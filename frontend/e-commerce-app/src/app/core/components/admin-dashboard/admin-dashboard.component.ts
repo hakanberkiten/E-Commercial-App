@@ -5,12 +5,13 @@ import { ProductService } from '../../services/product.service';
 import { OrderService } from '../../services/order.service';
 import { User, AuthService } from '../../services/auth.service';
 import { CategoryService } from '../../services/category.service';
+declare var bootstrap: any;
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: false,
   templateUrl: './admin-dashboard.component.html',
-  styleUrl: './admin-dashboard.component.css'
+  styleUrls: ['./admin-dashboard.component.css']
 })
 export class AdminDashboardComponent implements OnInit {
   // Active tab tracking
@@ -50,6 +51,14 @@ export class AdminDashboardComponent implements OnInit {
   categories: any[] = [];
   isEditing: boolean = false;
 
+  // Password reset
+  resetPasswordForm!: FormGroup;
+  selectedUserId: number = 0;
+  passwordResetModal: any;
+  showPassword: boolean = false;
+  isResettingPassword: boolean = false;
+  userBeingReset: any = null;
+
   constructor(
     private http: HttpClient,
     private formBuilder: FormBuilder,
@@ -74,6 +83,11 @@ export class AdminDashboardComponent implements OnInit {
       image: [''],
       quantityInStock: [0, [Validators.required, Validators.min(0)]],
       categoryId: [null, Validators.required]
+    });
+
+    // Initialize the resetPasswordForm
+    this.resetPasswordForm = this.formBuilder.group({
+      newPassword: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
@@ -187,19 +201,50 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
-  resetUserPassword(userId: number): void {
-    if (confirm('Are you sure you want to reset this user\'s password?')) {
-      this.http.post(`/api/users/${userId}/reset-password`, {}).subscribe({
-        next: () => {
-          this.successMessage = 'Password reset successfully. User will receive an email with instructions.';
-          setTimeout(() => this.successMessage = '', 3000);
-        },
-        error: (error) => {
-          this.errorMessage = `Failed to reset password: ${error.message}`;
-          setTimeout(() => this.errorMessage = '', 3000);
-        }
-      });
+  resetUserPassword(userId: number, userName: string = ''): void {
+    this.selectedUserId = userId;
+    this.userBeingReset = this.users.find(u => u.userId === userId) || { firstName: userName };
+    this.resetPasswordForm.reset();
+    this.isResettingPassword = true;
+
+    // Scroll to the password reset section if needed
+    setTimeout(() => {
+      const resetSection = document.getElementById('password-reset-section');
+      if (resetSection) {
+        resetSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  submitPasswordReset(): void {
+    if (this.resetPasswordForm.invalid) {
+      return;
     }
+
+    const newPassword = this.resetPasswordForm.get('newPassword')?.value;
+
+    this.http.post(`/api/users/${this.selectedUserId}/reset-password`, { newPassword }).subscribe({
+      next: () => {
+        this.successMessage = 'Password has been successfully changed';
+        this.isResettingPassword = false;
+        this.userBeingReset = null;
+        setTimeout(() => this.successMessage = '', 3000);
+      },
+      error: (error) => {
+        this.errorMessage = `Failed to reset password: ${error.message || 'Unknown error'}`;
+        setTimeout(() => this.errorMessage = '', 3000);
+      }
+    });
+  }
+
+  cancelPasswordReset(): void {
+    this.isResettingPassword = false;
+    this.userBeingReset = null;
+    this.resetPasswordForm.reset();
   }
 
   // Product management methods

@@ -2,134 +2,193 @@
 
 /* Dark Mode Variables with Purple Theme - Enhanced for readability */
 :root {
-  /* Light mode stays the same */
-  --body-bg: #ffffff;
-  --text-color: #333333;
-  --card-bg: #ffffff;
-  --card-border: rgba(0, 0, 0, 0.125);
-  --navbar-bg: #ffffff;
-  --navbar-text: #212529;
-  --input-bg: #ffffff;
-  --input-text: #212529;
-  --input-border: #ced4da;
-  --btn-primary-bg: #3f51b5;
-  --btn-primary-text: #ffffff;
-  --shadow-color: rgba(0, 0, 0, 0.15);
-  --transition-speed: 0.3s;
+    /* Light mode stays the same */
+    --body-bg: #ffffff;
+    --text-color: #333333;
+    --card-bg: #ffffff;
+    --card-border: rgba(0, 0, 0, 0.125);
+    --navbar-bg: #ffffff;
+    --navbar-text: #212529;
+    --input-bg: #ffffff;
+    --input-text: #212529;
+    --input-border: #ced4da;
+    --btn-primary-bg: #3f51b5;
+    --btn-primary-text: #ffffff;
+    --shadow-color: rgba(0, 0, 0, 0.15);
+    --transition-speed: 0.3s;
 }
 
 /* Improved dark mode colors */
 body.dark-mode {
-  --body-bg: #1a1525;
-  /* Daha koyu arka plan */
-  --text-color: #ffffff;
-  /* Beyaz metin */
-  --card-bg: #251a36;
-  /* Daha koyu kart arka planı */
-  --card-border: rgba(177, 156, 255, 0.25);
-  --navbar-bg: #2d1f42;
-  /* Daha koyu navbar */
-  --navbar-text: #ffffff;
-  --input-bg: #342447;
-  /* Daha koyu input */
-  --input-text: #ffffff;
-  --input-border: #8779b6;
-  --btn-primary-bg: #6a55c2;
-  /* Daha koyu buton */
-  --btn-primary-text: #ffffff;
-  --shadow-color: rgba(0, 0, 0, 0.4);
-  --bs-body-bg: #1a1525 !important;
-  --bs-body-color: #ffffff !important;
-  --bs-dark: #251a36 !important;
-  --bs-light: #342447 !important;
-  --bs-primary: #6a55c2 !important;
-  --bs-secondary: #8779b6 !important;
-  --bs-border-color: rgba(177, 156, 255, 0.25) !important;
-  --bs-card-bg: #251a36 !important;
-  --bs-card-border-color: rgba(177, 156, 255, 0.25) !important;
-  --bs-modal-bg: #251a36 !important;
-  --bs-dropdown-bg: #251a36 !important;
-  --bs-dropdown-link-color: #ffffff !important;
-  --bs-dropdown-link-hover-bg: #342447 !important;
-  --bs-navbar-color: rgba(255, 255, 255, 0.85) !important;
-  --bs-table-bg: #251a36 !important;
-  data-bs-theme: "dark";
+    --body-bg: #1a1525;
+    /* Daha koyu arka plan */
+    --text-color: #ffffff;
+    /* Beyaz metin */
+    --card-bg: #251a36;
+    /* Daha koyu kart arka planı */
+    --card-border: rgba(177, 156, 255, 0.25);
+    --navbar-bg: #2d1f42;
+    /* Daha koyu navbar */
+    --navbar-text: #ffffff;
+    --input-bg: #342447;
+    /* Daha koyu input */
+    --input-text: #ffffff;
+    --input-border: #8779b6;
+    --btn-primary-bg: #6a55c2;
+    /* Daha koyu buton */
+    --btn-primary-text: #ffffff;
+    --shadow-color: rgba(0, 0, 0, 0.4);
+    --bs-body-bg: #1a1525 !important;
+    --bs-body-color: #ffffff !important;
+    --bs-dark: #251a36 !important;
+    --bs-light: #342447 !important;
+    --bs-primary: #6a55c2 !important;
+    --bs-secondary: #8779b6 !important;
+    --bs-border-color: rgba(177, 156, 255, 0.25) !important;
+    --bs-card-bg: #251a36 !important;
+    --bs-card-border-color: rgba(177, 156, 255, 0.25) !important;
+    --bs-modal-bg: #251a36 !important;
+    --bs-dropdown-bg: #251a36 !important;
+    --bs-dropdown-link-color: #ffffff !important;
+    --bs-dropdown-link-hover-bg: #342447 !important;
+    --bs-navbar-color: rgba(255, 255, 255, 0.85) !important;
+    --bs-table-bg: #251a36 !important;
+    data-bs-theme: "dark";
+}
+
+/* Signup sayfası dark mode düzeltmeleri - daha agresif seçicilerle */
+body.dark-mode app-signup,
+body.dark-mode app-signup>*,
+body.dark-mode app-signup .container,
+body.dark-mode app-signup .container-fluid,
+body.dark-mode app-signup .row,
+body.dark-mode app-signup .col,
+body.dark-mode .signup-container,
+body.dark-mode .signup-page,
+body.dark-mode .auth-wrapper,
+body.dark-mode .signup-wrapper {
+    background-color: #1a1525 !important;
+}
+
+/* Body element için daha agresif düzeltme */
+body.dark-mode {
+    background-color: #1a1525 !important;
+}
+
+/* Signup sayfasındaki tüm alt seviye konteynerler */
+body.dark-mode app-signup .container>*,
+body.dark-mode app-signup .container-fluid>*,
+body.dark-mode app-signup .row>*,
+body.dark-mode app-signup main,
+body.dark-mode app-signup section,
+body.dark-mode app-signup div[class*="container"] {
+    background-color: #1a1525 !important;
+}
+
+/* Angular root element */
+body.dark-mode app-root {
+    background-color: #1a1525 !important;
+}
+
+/* HTML ve body elementleri için */
+html.dark-mode,
+body.dark-mode {
+    background-color: #1a1525 !important;
+}
+
+/* Main içerik alanı */
+body.dark-mode main.content {
+    background-color: #1a1525 !important;
+}
+
+/* Container içindeki wrapperlara yönelik */
+body.dark-mode .wrapper,
+body.dark-mode .page-wrapper,
+body.dark-mode .content-wrapper {
+    background-color: #1a1525 !important;
+}
+
+/* Inline stil olarak background ayarlanmış olabilecek elementler */
+body.dark-mode [style*="background-color"],
+body.dark-mode [style*="background:"] {
+    background-color: #1a1525 !important;
+    background: #1a1525 !important;
 }
 
 html,
 body {
-  height: 100%;
+    height: 100%;
 }
 
 body {
-  margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-  background-color: var(--body-bg);
-  color: var(--text-color);
-  transition: background-color var(--transition-speed) ease,
-      color var(--transition-speed) ease;
+    margin: 0;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+    background-color: var(--body-bg);
+    color: var(--text-color);
+    transition: background-color var(--transition-speed) ease,
+        color var(--transition-speed) ease;
 }
 
 /* Navbar styling */
 .navbar {
-  background-color: var(--navbar-bg) !important;
-  transition: background-color var(--transition-speed) ease;
+    background-color: var(--navbar-bg) !important;
+    transition: background-color var(--transition-speed) ease;
 }
 
 .navbar-light .navbar-brand,
 .navbar-light .navbar-nav .nav-link {
-  color: var(--navbar-text);
-  transition: color var(--transition-speed) ease;
+    color: var(--navbar-text);
+    transition: color var(--transition-speed) ease;
 }
 
 /* Cards styling */
 .card {
-  background-color: var(--card-bg);
-  border-color: var(--card-border);
-  transition: background-color var(--transition-speed) ease,
-      border-color var(--transition-speed) ease;
+    background-color: var(--card-bg);
+    border-color: var(--card-border);
+    transition: background-color var(--transition-speed) ease,
+        border-color var(--transition-speed) ease;
 }
 
 /* Add a subtle purple border to cards in dark mode */
 body.dark-mode .card {
-  border-left: 3px solid #6a55c2;
+    border-left: 3px solid #6a55c2;
 }
 
 /* Product card specific styling for dark mode */
 body.dark-mode .card-body {
-  background-color: #251a36;
+    background-color: #251a36;
 }
 
 body.dark-mode .card-title,
 body.dark-mode .card-text {
-  color: #ffffff;
+    color: #ffffff;
 }
 
 body.dark-mode .card-footer {
-  background-color: #2d1f42;
-  border-top-color: rgba(177, 156, 255, 0.25);
+    background-color: #2d1f42;
+    border-top-color: rgba(177, 156, 255, 0.25);
 }
 
 /* Price tags - ensure high visibility */
 body.dark-mode .price {
-  color: #a5c2ff !important;
-  font-weight: 600;
+    color: #a5c2ff !important;
+    font-weight: 600;
 }
 
 /* Form controls */
 .form-control {
-  background-color: var(--input-bg);
-  border-color: var(--input-border);
-  color: var(--input-text);
-  transition: background-color var(--transition-speed) ease,
-      border-color var(--transition-speed) ease,
-      color var(--transition-speed) ease;
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--input-text);
+    transition: background-color var(--transition-speed) ease,
+        border-color var(--transition-speed) ease,
+        color var(--transition-speed) ease;
 }
 
 /* Ensure form controls have high contrast */
 body.dark-mode .form-control:focus {
-  border-color: #b3a5ff;
-  box-shadow: 0 0 0 0.25rem rgba(179, 165, 255, 0.25);
+    border-color: #b3a5ff;
+    box-shadow: 0 0 0 0.25rem rgba(179, 165, 255, 0.25);
 }
 
 /* Ensure text inputs are readable */
@@ -138,149 +197,458 @@ body.dark-mode input[type="email"],
 body.dark-mode input[type="password"],
 body.dark-mode input[type="number"],
 body.dark-mode textarea {
-  color: #ffffff;
-  background-color: #342447;
-  border-color: #8779b6;
+    color: #ffffff;
+    background-color: #342447;
+    border-color: #8779b6;
 }
 
 /* Add this class to elements that should invert colors in dark mode */
 .dark-mode-invert {
-  filter: invert(0);
-  transition: filter var(--transition-speed) ease;
+    filter: invert(0);
+    transition: filter var(--transition-speed) ease;
 }
 
 body.dark-mode .dark-mode-invert {
-  filter: invert(1);
+    filter: invert(1);
+}
+
+/* Form elemanları için geliştirilmiş dark mode stilleri */
+body.dark-mode input,
+body.dark-mode textarea,
+body.dark-mode select,
+body.dark-mode .form-control {
+    background-color: #211630 !important;
+    /* Daha koyu arka plan */
+    color: #ffffff !important;
+    /* Beyaz yazı */
+    border-color: rgba(177, 156, 255, 0.4) !important;
+    /* Mor tonlu kenarlık */
+}
+
+/* Input alanları için focus durumu */
+body.dark-mode input:focus,
+body.dark-mode textarea:focus,
+body.dark-mode select:focus,
+body.dark-mode .form-control:focus {
+    background-color: #2c1e40 !important;
+    /* Odaklanıldığında biraz daha açık renk */
+    border-color: #6a55c2 !important;
+    /* Daha belirgin mor kenarlık */
+    box-shadow: 0 0 0 0.25rem rgba(106, 85, 194, 0.25) !important;
+    /* Mor gölge */
+}
+
+/* Placeholder için geliştirilen stil */
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder,
+body.dark-mode select::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+    /* Beyazın yarı saydamı */
+    opacity: 1 !important;
+    /* Görünürlüğünü arttır */
+}
+
+/* Özel kredi kartı input alanları için */
+body.dark-mode .stripe-element-container,
+body.dark-mode .StripeElement,
+body.dark-mode div[id*="card-element"],
+body.dark-mode div[id*="stripe-element"],
+body.dark-mode input[data-stripe],
+body.dark-mode .payment-form .form-control {
+    background-color: #211630 !important;
+    color: #ffffff !important;
+    border-color: rgba(177, 156, 255, 0.4) !important;
+    padding: 12px !important;
+    /* Daha büyük alan */
+}
+
+/* Kredi kartı numarası için özel görünüm */
+body.dark-mode .credit-card-input {
+    letter-spacing: 1px !important;
+    /* Rakamlar arası mesafeyi arttır */
+    font-family: monospace !important;
+    /* Monospace font daha okunaklı */
+}
+
+/* Form içindeki label'lar için stil */
+body.dark-mode label {
+    color: #d8d0f7 !important;
+    /* Açık mor */
+    margin-bottom: 0.25rem !important;
+    /* Label ile input arası mesafe */
+}
+
+/* Read-only veya disabled input alanları için */
+body.dark-mode input[readonly],
+body.dark-mode input:disabled,
+body.dark-mode select:disabled,
+body.dark-mode .form-control:disabled {
+    background-color: #19132a !important;
+    /* Daha koyu arka plan */
+    color: rgba(255, 255, 255, 0.7) !important;
+    /* Biraz soluk yazı */
+    border-color: rgba(177, 156, 255, 0.2) !important;
+    /* Daha soluk kenarlık */
+}
+
+/* Input grupları için özel stil */
+body.dark-mode .input-group-text {
+    background-color: #2c1e40 !important;
+    /* Arka plan daha koyu */
+    color: #ffffff !important;
+    /* Beyaz yazı */
+    border-color: rgba(177, 156, 255, 0.4) !important;
+    /* Mor tonlu kenarlık */
+}
+
+/* Checkbox ve radio butonlar için */
+body.dark-mode .form-check-input {
+    background-color: #211630 !important;
+    border-color: rgba(177, 156, 255, 0.4) !important;
+}
+
+body.dark-mode .form-check-input:checked {
+    background-color: #6a55c2 !important;
+    border-color: #6a55c2 !important;
+}
+
+/* Login ve Signup Form Input Alanları için Dark Mode Düzeltmeleri */
+body.dark-mode app-login input,
+body.dark-mode app-signup input,
+body.dark-mode app-login .form-control,
+body.dark-mode app-signup .form-control,
+body.dark-mode .auth-page input,
+body.dark-mode .login-page input,
+body.dark-mode .signup-page input {
+    background-color: #211630 !important;
+    color: #ffffff !important;
+    border-color: rgba(177, 156, 255, 0.4) !important;
+}
+
+/* Aktif, hover veya focus durumlarında da arka plan rengini koru */
+body.dark-mode app-login input:hover,
+body.dark-mode app-signup input:hover,
+body.dark-mode app-login input:focus,
+body.dark-mode app-signup input:focus,
+body.dark-mode app-login input:active,
+body.dark-mode app-signup input:active,
+body.dark-mode app-login .form-control:hover,
+body.dark-mode app-signup .form-control:hover,
+body.dark-mode app-login .form-control:focus,
+body.dark-mode app-signup .form-control:focus,
+body.dark-mode app-login .form-control:active,
+body.dark-mode app-signup .form-control:active,
+body.dark-mode .auth-page input:focus,
+body.dark-mode .login-page input:focus,
+body.dark-mode .signup-page input:focus,
+body.dark-mode .auth-page input:hover,
+body.dark-mode .login-page input:hover,
+body.dark-mode .signup-page input:hover {
+    background-color: #211630 !important;
+    color: #ffffff !important;
+    border-color: #6a55c2 !important;
+    box-shadow: 0 0 0 0.25rem rgba(106, 85, 194, 0.25) !important;
+}
+
+/* Autofill durumundaki arka plan rengini düzeltme */
+body.dark-mode input:-webkit-autofill,
+body.dark-mode input:-webkit-autofill:hover,
+body.dark-mode input:-webkit-autofill:focus,
+body.dark-mode input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #211630 inset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Kredi kartı input alanları için dark mode düzeltmesi */
+body.dark-mode .card-input,
+body.dark-mode input.credit-card-input,
+body.dark-mode input[placeholder*="card"],
+body.dark-mode input[placeholder*="Card"],
+body.dark-mode input[autocomplete*="cc-"],
+body.dark-mode app-profile input[type="text"],
+body.dark-mode .profile-container .credit-card-form input {
+    background-color: #211630 !important;
+    color: #ffffff !important;
+    /* Beyaz yazı rengi */
+    border-color: rgba(177, 156, 255, 0.4) !important;
+    caret-color: #ffffff !important;
+    /* İmleç rengi */
+}
+
+/* Stripe veya diğer ödeme işlemcileri için iframe içindeki elementler */
+body.dark-mode .card-field-frame,
+body.dark-mode iframe[name*="card"],
+body.dark-mode iframe[name*="stripe"],
+body.dark-mode .card-element-container iframe {
+    background-color: #211630 !important;
+    color: #ffffff !important;
+}
+
+/* Özel kredi kartı numarası stillemesi */
+body.dark-mode input.cc-number,
+body.dark-mode input[name*="card"],
+body.dark-mode input[name*="credit"],
+body.dark-mode input[placeholder*="1234"] {
+    color: #ffffff !important;
+    letter-spacing: 1px !important;
+    font-family: monospace !important;
+}
+
+/* Form içindeki diğer elementlerin de koyu temada beyaz yazı ile görünmesini sağlama */
+body.dark-mode .add-card-form label,
+body.dark-mode .card-form-container label,
+body.dark-mode .payment-form label,
+body.dark-mode .add-card-form .form-text {
+    color: #d8d0f7 !important;
+}
+
+/* Kredi kartı input alanlarında yazıların daha net görünmesi için özel düzenleme */
+body.dark-mode #card-element,
+body.dark-mode #card-element iframe,
+body.dark-mode div[id*="card-element"],
+body.dark-mode div[id*="stripe-element"],
+body.dark-mode div[class*="StripeElement"],
+body.dark-mode .profile-container input[type*="text"],
+body.dark-mode .profile-container input.credit-card-input,
+body.dark-mode app-profile input.form-control,
+body.dark-mode input[placeholder*="4242"],
+body.dark-mode input[name*="cc-"],
+body.dark-mode input[data-stripe],
+body.dark-mode input.cc-number {
+    background-color: #19132b !important;
+    color: #ffffff !important;
+    caret-color: #ffffff !important;
+    /* Yazarken cursor'ın görünmesi için */
+    border-color: #8779b6 !important;
+    font-family: monospace !important;
+    /* Rakamların net görünmesi için */
+    letter-spacing: 1px !important;
+    /* Karakterler arası boşluk */
+    text-shadow: 0 0 0 #ffffff !important;
+    /* Metni daha net göstermek için */
+    -webkit-text-fill-color: #ffffff !important;
+    /* Safari için */
+}
+
+/* Input içindeki yazı/sayı renk ve kontrastını artır */
+body.dark-mode #card-element *,
+body.dark-mode div[id*="card-element"] *,
+body.dark-mode div[id*="stripe-element"] *,
+body.dark-mode div[class*="StripeElement"] * {
+    color: #ffffff !important;
+    font-weight: 500 !important;
+}
+
+/* Stripe iframe içindeki elemanlar için */
+body.dark-mode .StripeElement--focus {
+    border-color: #6a55c2 !important;
+    box-shadow: 0 0 0 1px #6a55c2 !important;
+}
+
+/* "Add New Card" başlığı altındaki iframe içeren div */
+body.dark-mode div#card-element {
+    background-color: #19132b !important;
+    padding: 10px !important;
+    border-radius: 4px !important;
+    border: 1px solid #8779b6 !important;
+}
+
+/* Autofill durumunda renkleri koru */
+body.dark-mode input:-webkit-autofill,
+body.dark-mode input:-webkit-autofill:hover,
+body.dark-mode input:-webkit-autofill:focus,
+body.dark-mode input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #19132b inset !important;
+    box-shadow: 0 0 0 30px #19132b inset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    caret-color: #ffffff !important;
+}
+
+/* Kredi kartı formunun tüm placeholder metinleri için */
+body.dark-mode #card-element::placeholder,
+body.dark-mode div[id*="card-element"]::placeholder,
+body.dark-mode div[class*="StripeElement"]::placeholder,
+body.dark-mode input[placeholder*="4242"]::placeholder,
+body.dark-mode input.cc-number::placeholder {
+    color: #b3a5ff !important;
+    opacity: 1 !important;
+}
+
+/* Stripe elementinden sonra gelen hata mesajları için */
+body.dark-mode #card-errors,
+body.dark-mode div[id*="card-errors"] {
+    color: #ff6b6b !important;
+    margin-top: 8px !important;
+}
+
+/* Stripe kredi kartı elementleri için metin rengi düzeltmesi - dark mode */
+body.dark-mode .ElementsApp,
+body.dark-mode .ElementsApp .InputElement,
+body.dark-mode .StripeElement .InputElement,
+body.dark-mode iframe.StripeElement .ElementsApp {
+    font-size: 16px !important;
+    color: #ffffff !important;
+    /* Beyaz renk */
+    font-weight: 500 !important;
+    /* Daha kalın font */
+    text-shadow: 0 0 0 #ffffff !important;
+    /* Metni daha belirgin yapmak için */
+}
+
+/* Özel Stripe iframe stili */
+body.dark-mode .StripeElement {
+    background-color: #19132b !important;
+    /* Daha koyu arka plan */
+    padding: 12px !important;
+    border-radius: 4px !important;
+    border: 1px solid #8779b6 !important;
+}
+
+/* İframe içindeki metinleri beyaz yap */
+body.dark-mode .CardField-input-wrapper,
+body.dark-mode .CardField-number-input,
+body.dark-mode .CardField iframe,
+body.dark-mode div[id*="card-element"] iframe {
+    color: #ffffff !important;
+}
+
+/* Stripe elementlerindeki tüm giriş alanları */
+body.dark-mode .StripeElement--empty,
+body.dark-mode .StripeElement--focus,
+body.dark-mode .StripeElement--invalid,
+body.dark-mode .StripeElement--complete {
+    background-color: #19132b !important;
 }
 
 /* Theme toggle button styling */
 .theme-toggle-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
 }
 
 body:not(.dark-mode) .theme-toggle-btn {
-  background-color: #f0f0f0;
-  color: #212529;
-  border: 1px solid #dee2e6;
+    background-color: #f0f0f0;
+    color: #212529;
+    border: 1px solid #dee2e6;
 }
 
 body.dark-mode .theme-toggle-btn {
-  background-color: #343a40;
-  color: #f8f9fa;
-  border: 1px solid #212529;
+    background-color: #343a40;
+    color: #f8f9fa;
+    border: 1px solid #212529;
 }
 
 .theme-toggle-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .theme-toggle-btn i {
-  font-size: 1.2rem;
+    font-size: 1.2rem;
 }
 
 /* Enhanced theme toggle button for dark purple theme */
 body.dark-mode .btn-theme-toggle {
-  background: linear-gradient(145deg, #2d1f42, #342447);
-  color: #c5b8f9;
-  border: 1px solid #8779b6;
+    background: linear-gradient(145deg, #2d1f42, #342447);
+    color: #c5b8f9;
+    border: 1px solid #8779b6;
 }
 
 body.dark-mode .btn-theme-toggle:hover {
-  background: linear-gradient(145deg, #342447, #2d1f42);
-  color: #ffffff;
+    background: linear-gradient(145deg, #342447, #2d1f42);
+    color: #ffffff;
 }
 
 /* Additional dark mode styling specific to dark purple theme */
 body.dark-mode .dropdown-menu {
-  background-color: #251a36;
-  border-color: rgba(177, 156, 255, 0.25);
+    background-color: #251a36;
+    border-color: rgba(177, 156, 255, 0.25);
 }
 
 body.dark-mode .dropdown-item {
-  color: #ffffff;
+    color: #ffffff;
 }
 
 body.dark-mode .dropdown-item:hover {
-  background-color: #342447;
-  color: #ffffff;
+    background-color: #342447;
+    color: #ffffff;
 }
 
 body.dark-mode .table {
-  color: #ffffff;
+    color: #ffffff;
 }
 
 body.dark-mode .table-light,
 body.dark-mode .table-light>th,
 body.dark-mode .table-light>td {
-  background-color: #342447;
-  color: #ffffff;
+    background-color: #342447;
+    color: #ffffff;
 }
 
 body.dark-mode .modal-content {
-  background-color: #251a36;
-  border-color: rgba(177, 156, 255, 0.25);
+    background-color: #251a36;
+    border-color: rgba(177, 156, 255, 0.25);
 }
 
 body.dark-mode .close {
-  color: #ffffff;
+    color: #ffffff;
 }
 
 /* Buttons in dark mode */
 body.dark-mode .btn-primary {
-  background-color: #6a55c2;
-  border-color: #6a55c2;
+    background-color: #6a55c2;
+    border-color: #6a55c2;
 }
 
 body.dark-mode .btn-primary:hover {
-  background-color: #8b7af0;
-  border-color: #6a55c2;
+    background-color: #8b7af0;
+    border-color: #6a55c2;
 }
 
 body.dark-mode .btn-outline-primary {
-  color: #b3a5ff;
-  border-color: #b3a5ff;
+    color: #b3a5ff;
+    border-color: #b3a5ff;
 }
 
 body.dark-mode .btn-outline-primary:hover {
-  background-color: #6a55c2;
-  color: #ffffff;
+    background-color: #6a55c2;
+    color: #ffffff;
 }
 
 /* Links in dark mode */
 body.dark-mode a:not(.btn):not(.nav-link) {
-  color: #b3a5ff;
+    color: #b3a5ff;
 }
 
 body.dark-mode a:not(.btn):not(.nav-link):hover {
-  color: #d1caff;
+    color: #d1caff;
 }
 
 /* Add purple accents to various UI elements */
 body.dark-mode .border-primary {
-  border-color: #6a55c2 !important;
+    border-color: #6a55c2 !important;
 }
 
 body.dark-mode .bg-primary {
-  background-color: #6a55c2 !important;
+    background-color: #6a55c2 !important;
 }
 
 body.dark-mode .text-primary {
-  color: #a995ff !important;
+    color: #a995ff !important;
 }
 
 /* Add these rules to ensure all text is visible in dark mode */
 
 /* Make all text elements white in dark mode by default */
 body.dark-mode * {
-  color: #ffffff;
+    color: #ffffff;
 }
 
 /* Override specific elements that need different colors */
@@ -290,8 +658,8 @@ body.dark-mode .text-primary,
 body.dark-mode a.text-primary,
 body.dark-mode .btn-primary,
 body.dark-mode .nav-link.active {
-  /* These keep their specific colors */
-  color: inherit;
+    /* These keep their specific colors */
+    color: inherit;
 }
 
 /* Ensure all headings are white */
@@ -307,12 +675,12 @@ body.dark-mode .h3,
 body.dark-mode .h4,
 body.dark-mode .h5,
 body.dark-mode .h6 {
-  color: #ffffff;
+    color: #ffffff;
 }
 
 /* Ensure form labels are white */
 body.dark-mode label {
-  color: #ffffff;
+    color: #ffffff;
 }
 
 /* Ensure card titles and text are white */
@@ -320,75 +688,75 @@ body.dark-mode .card-title,
 body.dark-mode .card-text,
 body.dark-mode .card-header,
 body.dark-mode .card-body {
-  color: #ffffff;
+    color: #ffffff;
 }
 
 /* Ensure list items are white */
 body.dark-mode .list-group-item {
-  color: #ffffff;
-  background-color: #251a36;
+    color: #ffffff;
+    background-color: #251a36;
 }
 
 /* Fix for dropdown text in dark mode */
 body.dark-mode .dropdown-menu,
 body.dark-mode .dropdown-item,
 body.dark-mode .dropdown-toggle {
-  color: #ffffff;
+    color: #ffffff;
 }
 
 /* Make sure table text is white */
 body.dark-mode .table,
 body.dark-mode .table th,
 body.dark-mode .table td {
-  color: #ffffff;
+    color: #ffffff;
 }
 
 /* Override any unwanted black text */
 body.dark-mode .text-dark {
-  color: #ffffff !important;
+    color: #ffffff !important;
 }
 
 /* Fix for product descriptions and other content */
 body.dark-mode p,
 body.dark-mode span:not([class*="badge"]):not([class*="text-"]) {
-  color: #ffffff;
+    color: #ffffff;
 }
 
 /* Make sure buttons have proper contrast */
 body.dark-mode .btn:not(.btn-primary):not(.btn-outline-primary):not(.btn-success):not(.btn-danger):not(.btn-warning):not(.btn-info) {
-  color: #ffffff;
-  background-color: #342447;
-  border-color: #6a55c2;
+    color: #ffffff;
+    background-color: #342447;
+    border-color: #6a55c2;
 }
 
 /* Fix product description text */
 body.dark-mode .product-description,
 body.dark-mode .product-title,
 body.dark-mode .product-info * {
-  color: #ffffff !important;
+    color: #ffffff !important;
 }
 
 /* Make any small text visible */
 body.dark-mode small,
 body.dark-mode .small,
 body.dark-mode .product-specs {
-  color: #e0d9f5 !important;
+    color: #e0d9f5 !important;
 }
 
 /* Fix the top bar that stays white in dark mode */
 body.dark-mode .container-fluid>.card,
 body.dark-mode .shop-header,
 body.dark-mode .page-header-container {
-  background-color: var(--card-bg) !important;
-  border-color: var(--card-border) !important;
-  color: #ffffff !important;
+    background-color: var(--card-bg) !important;
+    border-color: var(--card-border) !important;
+    color: #ffffff !important;
 }
 
 /* Ensure all product descriptions are visible */
 body.dark-mode .card-text,
 body.dark-mode .product-card .description,
 body.dark-mode .product-details :not(.badge):not(.btn):not([class="text-"]) {
-  color: #ffffff !important;
+    color: #ffffff !important;
 }
 
 /* Better styling for the shop header in dark mode */
@@ -397,22 +765,22 @@ body.dark-mode .shop-header h2,
 body.dark-mode .shop-header h3,
 body.dark-mode .shop-header .title,
 body.dark-mode .page-title {
-  color: #ffffff !important;
+    color: #ffffff !important;
 }
 
 /* Make sure all white backgrounds are converted to dark mode */
 body.dark-mode .bg-white,
 body.dark-mode .bg-light {
-  background-color: var(--card-bg) !important;
+    background-color: var(--card-bg) !important;
 }
 
 /* Specific fix for the "Shop Products" header section */
 body.dark-mode .container>.row>.col>.card,
 body.dark-mode #shop-header,
 body.dark-mode .shop-products-header {
-  background-color: var(--card-bg) !important;
-  border-color: var(--card-border) !important;
-  color: #ffffff !important;
+    background-color: var(--card-bg) !important;
+    border-color: var(--card-border) !important;
+    color: #ffffff !important;
 }
 
 /* Catch any remaining white backgrounds */
@@ -423,7 +791,7 @@ body.dark-mode .bg-body-tertiary,
 body.dark-mode .bg-body-secondary,
 body.dark-mode [class*="bg-light"],
 body.dark-mode [class*="bg-white"] {
-  background-color: var(--card-bg) !important;
+    background-color: var(--card-bg) !important;
 }
 
 /* Force all text white */
@@ -442,23 +810,23 @@ body.dark-mode h5,
 body.dark-mode h6,
 body.dark-mode label,
 body.dark-mode small {
-  color: #ffffff;
+    color: #ffffff;
 }
 
 /* Table styles */
 body.dark-mode .table,
 body.dark-mode .table-striped>tbody>tr:nth-of-type(odd)>* {
-  background-color: #251a36;
-  color: #ffffff;
+    background-color: #251a36;
+    color: #ffffff;
 }
 
 body.dark-mode .table-striped>tbody>tr:nth-of-type(even)>* {
-  background-color: #2d1f42;
-  color: #ffffff;
+    background-color: #2d1f42;
+    color: #ffffff;
 }
 
 body.dark-mode .table-hover tbody tr:hover {
-  background-color: #362553;
+    background-color: #362553;
 }
 
 /* Modal styles */
@@ -467,16 +835,16 @@ body.dark-mode .offcanvas,
 body.dark-mode .toast,
 body.dark-mode .popover,
 body.dark-mode .dropdown-menu {
-  background-color: #251a36;
-  color: #ffffff;
-  border-color: rgba(177, 156, 255, 0.25);
+    background-color: #251a36;
+    color: #ffffff;
+    border-color: rgba(177, 156, 255, 0.25);
 }
 
 /* Form styles */
 body.dark-mode select,
 body.dark-mode option {
-  background-color: var(--input-bg);
-  color: #ffffff;
+    background-color: var(--input-bg);
+    color: #ffffff;
 }
 
 /* Search results and other dynamic content */
@@ -484,9 +852,9 @@ body.dark-mode .search-results,
 body.dark-mode .dropdown-results,
 body.dark-mode .overlay,
 body.dark-mode .tooltip {
-  background-color: #251a36;
-  color: #ffffff;
-  border-color: rgba(177, 156, 255, 0.25);
+    background-color: #251a36;
+    color: #ffffff;
+    border-color: rgba(177, 156, 255, 0.25);
 }
 
 /* Exceptions for badges and styled text */
@@ -494,32 +862,32 @@ body.dark-mode .badge,
 body.dark-mode [class*="text-"],
 body.dark-mode .btn,
 body.dark-mode .alert {
-  color: inherit;
+    color: inherit;
 }
 
 /* Restore specific colored text */
 body.dark-mode .text-primary {
-  color: #a995ff !important;
+    color: #a995ff !important;
 }
 
 body.dark-mode .text-secondary {
-  color: #c5b8f9 !important;
+    color: #c5b8f9 !important;
 }
 
 body.dark-mode .text-success {
-  color: #28a745 !important;
+    color: #28a745 !important;
 }
 
 body.dark-mode .text-danger {
-  color: #dc3545 !important;
+    color: #dc3545 !important;
 }
 
 body.dark-mode .text-warning {
-  color: #ffc107 !important;
+    color: #ffc107 !important;
 }
 
 body.dark-mode .text-info {
-  color: #17a2b8 !important;
+    color: #17a2b8 !important;
 }
 
 /* Inline stiller için geçersiz kılan güçlü seçiciler */
@@ -530,28 +898,28 @@ body.dark-mode [style="background-color: rgb(255"],
 body.dark-mode [style="background:#fff"],
 body.dark-mode [style="background: white"],
 body.dark-mode [style="background: #fff"] {
-  background-color: var(--card-bg) !important;
-  background: var(--card-bg) !important;
+    background-color: var(--card-bg) !important;
+    background: var(--card-bg) !important;
 }
 
 body.dark-mode [style="color: black"],
 body.dark-mode [style="color:#000"],
 body.dark-mode [style="color: #000"],
 body.dark-mode [style="color: rgb(0, 0, 0)"] {
-  color: #ffffff !important;
+    color: #ffffff !important;
 }
 
 /* Login sayfası ve sosyal medya butonları */
 body.dark-mode .btn-social {
-  background-color: #342447 !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
-  border: 1px solid rgba(177, 156, 255, 0.25) !important;
+    background-color: #342447 !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(177, 156, 255, 0.25) !important;
 }
 
 body.dark-mode .auth-container,
 body.dark-mode .login-container,
 body.dark-mode .signup-container {
-  background-color: var(--body-bg) !important;
+    background-color: var(--body-bg) !important;
 }
 
 /* Dashboard elementleri */
@@ -561,17 +929,17 @@ body.dark-mode .data-table,
 body.dark-mode .dashboard-panel,
 body.dark-mode .seller-dashboard,
 body.dark-mode .admin-dashboard {
-  background-color: var(--card-bg) !important;
-  color: #ffffff !important;
-  border-color: rgba(177, 156, 255, 0.25) !important;
+    background-color: var(--card-bg) !important;
+    color: #ffffff !important;
+    border-color: rgba(177, 156, 255, 0.25) !important;
 }
 
 body.dark-mode .data-table tr:hover {
-  background-color: #362553 !important;
+    background-color: #362553 !important;
 }
 
 body.dark-mode .tab-navigation button:not(.active) {
-  color: #b3a5ff !important;
+    color: #b3a5ff !important;
 }
 
 /* Bildirimler ve dropdown'lar */
@@ -579,20 +947,20 @@ body.dark-mode .notification-dropdown,
 body.dark-mode .notification-header,
 body.dark-mode .notification-item,
 body.dark-mode .notification-footer {
-  background-color: #251a36 !important;
-  border-color: rgba(177, 156, 255, 0.25) !important;
-  color: #ffffff !important;
+    background-color: #251a36 !important;
+    border-color: rgba(177, 156, 255, 0.25) !important;
+    color: #ffffff !important;
 }
 
 body.dark-mode .dropdown-menu,
 body.dark-mode .dropdown-item,
 body.dark-mode .dropdown-menu.show {
-  background-color: #251a36 !important;
-  color: #ffffff !important;
+    background-color: #251a36 !important;
+    color: #ffffff !important;
 }
 
 body.dark-mode .dropdown-item:hover {
-  background-color: #362553 !important;
+    background-color: #362553 !important;
 }
 
 /* Form elemanları ve butonlar */
@@ -601,25 +969,25 @@ body.dark-mode select,
 body.dark-mode textarea,
 body.dark-mode .form-control,
 body.dark-mode .input-group-text {
-  background-color: #342447 !important;
-  color: #ffffff !important;
-  border-color: #8779b6 !important;
+    background-color: #342447 !important;
+    color: #ffffff !important;
+    border-color: #8779b6 !important;
 }
 
 body.dark-mode .btn:not(.btn-primary):not(.btn-success):not(.btn-danger):not(.btn-warning):not(.btn-info) {
-  background-color: #342447 !important;
-  color: #ffffff !important;
-  border-color: #8779b6 !important;
+    background-color: #342447 !important;
+    color: #ffffff !important;
+    border-color: #8779b6 !important;
 }
 
 body.dark-mode [class*="btn-outline-"] {
-  color: #b3a5ff !important;
-  border-color: #8779b6 !important;
+    color: #b3a5ff !important;
+    border-color: #8779b6 !important;
 }
 
 body.dark-mode [class*="btn-outline-"]:hover {
-  background-color: #342447 !important;
-  color: #ffffff !important;
+    background-color: #342447 !important;
+    color: #ffffff !important;
 }
 
 /* Dashboard ve cart header'ları için dark mode düzeltmeleri */
@@ -631,9 +999,9 @@ body.dark-mode .card-header.bg-white,
 body.dark-mode .card-header.bg-primary.bg-opacity-10,
 body.dark-mode .card-body.bg-primary.bg-opacity-10,
 body.dark-mode .container header.bg-white {
-  background-color: #251a36 !important;
-  color: #ffffff !important;
-  border-color: rgba(177, 156, 255, 0.25) !important;
+    background-color: #251a36 !important;
+    color: #ffffff !important;
+    border-color: rgba(177, 156, 255, 0.25) !important;
 }
 
 /* Özel bileşen başlıkları */
@@ -641,26 +1009,26 @@ body.dark-mode .shop-header,
 body.dark-mode .page-header-container,
 body.dark-mode .customer-container header,
 body.dark-mode .header-container {
-  background-color: #251a36 !important;
-  color: #ffffff !important;
-  border-color: rgba(177, 156, 255, 0.25) !important;
+    background-color: #251a36 !important;
+    color: #ffffff !important;
+    border-color: rgba(177, 156, 255, 0.25) !important;
 }
 
 /* Tüm dashboard panellerindeki card-header'ları düzelt */
 body.dark-mode .admin-dashboard .card,
 body.dark-mode .seller-dashboard .card,
 body.dark-mode .cart-page .card {
-  background-color: #251a36 !important;
-  color: #ffffff !important;
+    background-color: #251a36 !important;
+    color: #ffffff !important;
 }
 
 /* Tüm dashboard panellerindeki tablo başlıkları */
 body.dark-mode .table-light,
 body.dark-mode thead.table-light,
 body.dark-mode .table-light th {
-  background-color: #342447 !important;
-  color: #ffffff !important;
-  border-color: rgba(177, 156, 255, 0.25) !important;
+    background-color: #342447 !important;
+    color: #ffffff !important;
+    border-color: rgba(177, 156, 255, 0.25) !important;
 }
 
 /* Tüm dashboard panellerindeki bg-white olan elementler */
@@ -669,17 +1037,17 @@ body.dark-mode [class*="bg-light"],
 body.dark-mode .bg-white,
 body.dark-mode .bg-light,
 body.dark-mode div[class*="bg-white"] {
-  background-color: #251a36 !important;
+    background-color: #251a36 !important;
 }
 
 /* Card gövdeleri için */
 body.dark-mode .card-body {
-  background-color: #251a36 !important;
+    background-color: #251a36 !important;
 }
 
 /* Ürün listelerinin başlık bölümleri */
 body.dark-mode .customer-container header h1 {
-  color: #ffffff !important;
+    color: #ffffff !important;
 }
 
 /* Profil header'ı ve user profile için dark mode düzeltmeleri */
@@ -691,18 +1059,18 @@ body.dark-mode .user-info,
 body.dark-mode .profile-section,
 body.dark-mode .profile-card,
 body.dark-mode .profile-page header {
-  background-color: #251a36 !important;
-  color: #ffffff !important;
-  border-color: rgba(177, 156, 255, 0.25) !important;
+    background-color: #251a36 !important;
+    color: #ffffff !important;
+    border-color: rgba(177, 156, 255, 0.25) !important;
 }
 
 /* Profil sayfasındaki card'lar ve paneller */
 body.dark-mode .profile-page .card,
 body.dark-mode .profile-page .panel,
 body.dark-mode .user-profile-card {
-  background-color: #251a36 !important;
-  color: #ffffff !important;
-  border-color: rgba(177, 156, 255, 0.25) !important;
+    background-color: #251a36 !important;
+    color: #ffffff !important;
+    border-color: rgba(177, 156, 255, 0.25) !important;
 }
 
 /* Notifications merkezi ve bileşenleri için */
@@ -713,78 +1081,78 @@ body.dark-mode .notification-panel,
 body.dark-mode .dropdown-notifications,
 body.dark-mode #notification-dropdown,
 body.dark-mode .notification-wrapper {
-  background-color: #251a36 !important;
-  border-color: rgba(177, 156, 255, 0.25) !important;
+    background-color: #251a36 !important;
+    border-color: rgba(177, 156, 255, 0.25) !important;
 }
 
 /* Notification item'ları için */
 body.dark-mode .notification-item,
 body.dark-mode .notification-list-item,
 body.dark-mode .dropdown-item.notification {
-  background-color: #2d1f42 !important;
-  color: #ffffff !important;
-  border-color: rgba(177, 156, 255, 0.25) !important;
+    background-color: #2d1f42 !important;
+    color: #ffffff !important;
+    border-color: rgba(177, 156, 255, 0.25) !important;
 }
 
 body.dark-mode .notification-item:hover,
 body.dark-mode .dropdown-item.notification:hover,
 body.dark-mode .notification-list-item:hover {
-  background-color: #362553 !important;
+    background-color: #362553 !important;
 }
 
 /* Okunmamış bildirimler için özel stil */
 body.dark-mode .notification-item.unseen,
 body.dark-mode .notification-list-item.unseen {
-  background-color: rgba(106, 85, 194, 0.2) !important;
+    background-color: rgba(106, 85, 194, 0.2) !important;
 }
 
 /* Profil sekmelerinin aktif olmayanlarını düzelt */
 body.dark-mode .profile-tabs .nav-link:not(.active),
 body.dark-mode .user-profile-nav .nav-link:not(.active) {
-  color: #b3a5ff !important;
-  background-color: transparent !important;
+    color: #b3a5ff !important;
+    background-color: transparent !important;
 }
 
 /* Profil sayfasındaki avatar çerçeveleri */
 body.dark-mode .profile-avatar,
 body.dark-mode .user-avatar {
-  border-color: rgba(177, 156, 255, 0.5) !important;
-  background-color: #2d1f42 !important;
+    border-color: rgba(177, 156, 255, 0.5) !important;
+    background-color: #2d1f42 !important;
 }
 
 /* Profil sayfasındaki özel istatistik kartları */
 body.dark-mode .profile-stat-card,
 body.dark-mode .user-stat-item {
-  background-color: #2d1f42 !important;
-  border-color: rgba(177, 156, 255, 0.25) !important;
+    background-color: #2d1f42 !important;
+    border-color: rgba(177, 156, 255, 0.25) !important;
 }
 
 /* Login & Signup sayfaları için dark mode düzeltmeleri */
 body.dark-mode .login-page .card,
 body.dark-mode .signup-page .card {
-  background-color: #251a36 !important;
-  border: none !important;
+    background-color: #251a36 !important;
+    border: none !important;
 }
 
 body.dark-mode .login-page .card-body,
 body.dark-mode .signup-page .card-body {
-  background-color: #251a36 !important;
+    background-color: #251a36 !important;
 }
 
 /* Login ve signup sayfalarındaki kartların başlık bölümü için stilini koru */
 body.dark-mode .login-page .card-header,
 body.dark-mode .signup-page .card-header {
-  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%) !important;
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%) !important;
 }
 
 /* Login ve signup sayfalarındaki sosyal login butonları için dark mode */
 body.dark-mode .social-login .btn-social {
-  background-color: #342447 !important;
-  border: 1px solid rgba(177, 156, 255, 0.25) !important;
+    background-color: #342447 !important;
+    border: 1px solid rgba(177, 156, 255, 0.25) !important;
 }
 
 body.dark-mode .social-login .btn-social i {
-  color: inherit !important;
+    color: inherit !important;
 }
 
 /* Notification içindeki yazıların beyaz olduğundan emin ol */
@@ -795,13 +1163,13 @@ body.dark-mode .notification-text,
 body.dark-mode .notification-time,
 body.dark-mode .notification-header h6,
 body.dark-mode .notification-footer a {
-  color: #ffffff !important;
+    color: #ffffff !important;
 }
 
 /* Notification üzerindeki aksiyon butonlarının text renkleri korunsun */
 body.dark-mode .notification-item .btn *,
 body.dark-mode .notification-list-item .btn * {
-  color: inherit !important;
+    color: inherit !important;
 }
 
 /* Search bar için özel dark mode stili */
@@ -811,9 +1179,9 @@ body.dark-mode input[type="search"],
 body.dark-mode .navbar input[type="text"],
 body.dark-mode .navbar .search-form input,
 body.dark-mode .search-container input {
-  background-color: #342447 !important;
-  color: #ffffff !important;
-  border-color: #8779b6 !important;
+    background-color: #342447 !important;
+    color: #ffffff !important;
+    border-color: #8779b6 !important;
 }
 
 /* Search bar placeholder rengini ayarla */
@@ -821,7 +1189,7 @@ body.dark-mode .search-bar::placeholder,
 body.dark-mode .search-input::placeholder,
 body.dark-mode input[type="search"]::placeholder,
 body.dark-mode .navbar input[type="text"]::placeholder {
-  color: #6c757d !important;
+    color: #6c757d !important;
 }
 
 /* Login ve signup sayfaları için arka plan düzeltmeleri */
@@ -833,14 +1201,14 @@ body.dark-mode .login-page,
 body.dark-mode .signup-page,
 body.dark-mode .auth-bg,
 body.dark-mode .auth-container {
-  background-color: var(--body-bg) !important;
+    background-color: var(--body-bg) !important;
 }
 
 /* Login/signup sayfasının body'sine direkt uygula */
 body.dark-mode.auth-page,
 body.dark-mode.login-page,
 body.dark-mode.signup-page {
-  background-color: var(--body-bg) !important;
+    background-color: var(--body-bg) !important;
 }
 
 /* Login/signup sayfalarının ana div'leri için agresif düzeltme */
@@ -852,7 +1220,7 @@ body.dark-mode div.login-background,
 body.dark-mode div.signup-background,
 body.dark-mode div[class*="login-container"],
 body.dark-mode div[class*="signup-container"] {
-  background-color: var(--body-bg) !important;
+    background-color: var(--body-bg) !important;
 }
 
 /* En agresif çözüm - login/signup sayfalarındaki tüm container'lar */
@@ -860,83 +1228,83 @@ body.dark-mode .container-fluid,
 body.dark-mode .container,
 body.dark-mode main,
 body.dark-mode section {
-  background-color: var(--body-bg) !important;
+    background-color: var(--body-bg) !important;
 }
 
 /* Login page background fix for dark mode */
 body.dark-mode .login-page {
-  background: linear-gradient(135deg, #1a1525 0%, #251a36 100%) !important;
+    background: linear-gradient(135deg, #1a1525 0%, #251a36 100%) !important;
 }
 
 /* Signup page background fix for dark mode */
 body.dark-mode .signup-page {
-  background: linear-gradient(135deg, #1a1525 0%, #251a36 100%) !important;
+    background: linear-gradient(135deg, #1a1525 0%, #251a36 100%) !important;
 }
 
 /* Keep the header gradient vibrant in dark mode */
 body.dark-mode .login-page .card-header {
-  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%) !important;
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%) !important;
 }
 
 /* Keep the header gradient vibrant in dark mode for signup page too */
 body.dark-mode .signup-page .card-header {
-  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%) !important;
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%) !important;
 }
 
 /* Fix social login buttons in dark mode */
 body.dark-mode .social-login .btn-social {
-  background-color: #342447 !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(177, 156, 255, 0.25) !important;
+    background-color: #342447 !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(177, 156, 255, 0.25) !important;
 }
 
 body.dark-mode .social-login .text-muted {
-  color: #c5b8f9 !important;
+    color: #c5b8f9 !important;
 }
 
 /* Profile header card fix for dark mode */
 body.dark-mode .profile-header,
 body.dark-mode .card-header.bg-primary {
-  background-color: #6a55c2 !important;
-  background: #6a55c2 !important;
-  color: #ffffff !important;
-  border-color: rgba(177, 156, 255, 0.25) !important;
+    background-color: #6a55c2 !important;
+    background: #6a55c2 !important;
+    color: #ffffff !important;
+    border-color: rgba(177, 156, 255, 0.25) !important;
 }
 
 /* Fix avatar circle in dark mode */
 body.dark-mode .avatar-circle.bg-white {
-  background-color: #ffffff !important;
+    background-color: #ffffff !important;
 }
 
 /* Make sure profile content section is dark */
 body.dark-mode .profile-container .card-body,
 body.dark-mode .profile-container .card {
-  background-color: #251a36 !important;
-  color: #ffffff !important;
+    background-color: #251a36 !important;
+    color: #ffffff !important;
 }
 
 /* Override inline styles on signup and login pages */
 body.dark-mode .signup-page[style*="background"],
 body.dark-mode .login-page[style*="background"] {
-  background: linear-gradient(135deg, #1a1525 0%, #251a36 100%) !important;
+    background: linear-gradient(135deg, #1a1525 0%, #251a36 100%) !important;
 }
 
 /* Fix any remaining bootstrap containers that might be white */
 body.dark-mode .signup-page .container,
 body.dark-mode .login-page .container {
-  background-color: transparent !important;
+    background-color: transparent !important;
 }
 
 /* Ensure the html and body elements are dark in auth pages */
 body.dark-mode.signup-page,
 body.dark-mode.login-page,
 body.dark-mode {
-  background-color: #1a1525 !important;
+    background-color: #1a1525 !important;
 }
 
 /* Override any other potential white spaces */
 body.dark-mode .signup-page :not(.btn):not(.card):not(.card-header):not(.card-body):not([class="bg-"]):not([class*="text-"]) {
-  background-color: transparent !important;
+    background-color: transparent !important;
 }
 
 /* Search bar dark mode styling */
@@ -946,9 +1314,9 @@ body.dark-mode input[type="search"],
 body.dark-mode .navbar input[type="text"],
 body.dark-mode .navbar .search-form input,
 body.dark-mode .search-container input {
-  background-color: #342447 !important;
-  color: #ffffff !important;
-  border-color: #8779b6 !important;
+    background-color: #342447 !important;
+    color: #ffffff !important;
+    border-color: #8779b6 !important;
 }
 
 /* Search bar placeholder style */
@@ -956,105 +1324,270 @@ body.dark-mode .search-bar::placeholder,
 body.dark-mode .search-input::placeholder,
 body.dark-mode input[type="search"]::placeholder,
 body.dark-mode .navbar input[type="text"]::placeholder {
-  color: #c5b8f9 !important;
+    color: #c5b8f9 !important;
 }
 
 /* Search results dropdown in dark mode */
 body.dark-mode .search-results-dropdown {
-  background-color: #251a36 !important;
-  border-color: rgba(177, 156, 255, 0.25) !important;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5) !important;
+    background-color: #251a36 !important;
+    border-color: rgba(177, 156, 255, 0.25) !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5) !important;
 }
 
 /* Search result items in dark mode */
 body.dark-mode .search-result-item {
-  border-bottom-color: rgba(177, 156, 255, 0.15) !important;
+    border-bottom-color: rgba(177, 156, 255, 0.15) !important;
 }
 
 body.dark-mode .search-result-item:hover {
-  background-color: #342447 !important;
+    background-color: #342447 !important;
 }
 
 /* Make product names white in dark mode */
 body.dark-mode .search-result-name {
-  color: #ffffff !important;
+    color: #ffffff !important;
 }
 
 /* Make product prices lighter in dark mode */
 body.dark-mode .search-result-price {
-  color: #c5b8f9 !important;
+    color: #c5b8f9 !important;
 }
 
 /* See all results link in dark mode */
 body.dark-mode .search-results-dropdown .text-primary {
-  color: #b3a5ff !important;
+    color: #b3a5ff !important;
 }
 
 /* No results message in dark mode */
 body.dark-mode .search-results-dropdown .text-muted {
-  color: #a995ff !important;
+    color: #a995ff !important;
 }
 
 /* Profile page tab navigation in dark mode */
 body.dark-mode .card-header.p-0.bg-white,
 body.dark-mode .profile-container .card-header,
 body.dark-mode app-profile .card-header {
-  background-color: #2d1f42 !important;
-  /* Dark purple background */
-  border-bottom: none !important;
+    background-color: #2d1f42 !important;
+    /* Dark purple background */
+    border-bottom: none !important;
 }
 
 /* Style the nav pills in dark mode */
 body.dark-mode .nav-pills .nav-link,
 body.dark-mode app-profile .nav-pills .nav-link {
-  color: #c5b8f9 !important;
-  /* Light purple for text */
-  background-color: transparent !important;
+    color: #c5b8f9 !important;
+    /* Light purple for text */
+    background-color: transparent !important;
 }
 
 /* Style the active tab in dark mode */
 body.dark-mode .nav-pills .nav-link.active,
 body.dark-mode app-profile .nav-pills .nav-link.active {
-  background-color: #6a55c2 !important;
-  /* Medium purple for active tab */
-  color: white !important;
+    background-color: #6a55c2 !important;
+    /* Medium purple for active tab */
+    color: white !important;
 }
 
 /* Hover effect for tabs in dark mode */
 body.dark-mode .nav-pills .nav-link:hover:not(.active),
 body.dark-mode app-profile .nav-pills .nav-link:hover:not(.active) {
-  background-color: #342447 !important;
-  /* Slightly lighter than the header for hover */
-  color: white !important;
+    background-color: #342447 !important;
+    /* Slightly lighter than the header for hover */
+    color: white !important;
 }
 
 /* Super aggressive rule to make all text white in dark mode */
 body.dark-mode :not(.btn):not(.badge):not([class="btn-"]):not([class*="text-primary"]):not([class*="text-success"]):not([class*="text-danger"]):not([class*="text-warning"]):not([class*="text-info"]) {
-  color: #ffffff !important;
+    color: #ffffff !important;
 }
 
 /* Override any possible inline styles with !important */
 body.dark-mode [style*="color:"] {
-  color: #ffffff !important;
+    color: #ffffff !important;
 }
 
 /* Fix for any elements with computed styles */
 body.dark-mode [class*="text-dark"],
 body.dark-mode [class*="text-black"],
 body.dark-mode [class*="text-body"] {
-  color: #ffffff !important;
+    color: #ffffff !important;
 }
 
 /* Fix for any dynamically added content */
 body.dark-mode ::after,
 body.dark-mode ::before {
-  color: #ffffff !important;
+    color: #ffffff !important;
 }
 
 /* Make sure inputs and form controls have white text */
 body.dark-mode input::placeholder,
 body.dark-mode textarea::placeholder,
 body.dark-mode select::placeholder {
-  color: transparent !important;
-  opacity: 0 !important;
+    color: transparent !important;
+    opacity: 0 !important;
+}
+
+/* Dark Mode Alert Styles */
+body.dark-mode .alert {
+    border: 1px solid rgba(177, 156, 255, 0.25);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Success alert - dark mode */
+body.dark-mode .alert-success {
+    background-color: rgba(40, 167, 69, 0.15) !important;
+    color: #98ffb3 !important;
+    border-color: rgba(40, 167, 69, 0.5) !important;
+}
+
+/* Danger/Error alert - dark mode */
+body.dark-mode .alert-danger {
+    background-color: rgba(220, 53, 69, 0.15) !important;
+    color: #ffb3bd !important;
+    border-color: rgba(220, 53, 69, 0.5) !important;
+}
+
+/* Warning alert - dark mode */
+body.dark-mode .alert-warning {
+    background-color: rgba(255, 193, 7, 0.15) !important;
+    color: #ffe7a0 !important;
+    border-color: rgba(255, 193, 7, 0.5) !important;
+}
+
+/* Info alert - dark mode */
+body.dark-mode .alert-info {
+    background-color: rgba(23, 162, 184, 0.15) !important;
+    color: #a8e9f4 !important;
+    border-color: rgba(23, 162, 184, 0.5) !important;
+}
+
+/* Primary alert - dark mode */
+body.dark-mode .alert-primary {
+    background-color: rgba(106, 85, 194, 0.15) !important;
+    color: #c5b8f9 !important;
+    border-color: rgba(106, 85, 194, 0.5) !important;
+}
+
+/* Secondary alert - dark mode */
+body.dark-mode .alert-secondary {
+    background-color: rgba(135, 121, 182, 0.15) !important;
+    color: #d8d0f7 !important;
+    border-color: rgba(135, 121, 182, 0.5) !important;
+}
+
+/* Light alert - dark mode */
+body.dark-mode .alert-light {
+    background-color: rgba(52, 36, 71, 0.15) !important;
+    color: #ffffff !important;
+    border-color: rgba(52, 36, 71, 0.5) !important;
+}
+
+/* Dark alert - dark mode */
+body.dark-mode .alert-dark {
+    background-color: rgba(37, 26, 54, 0.15) !important;
+    color: #e0d9f5 !important;
+    border-color: rgba(37, 26, 54, 0.5) !important;
+}
+
+/* Alert close button - dark mode */
+body.dark-mode .alert .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.7;
+}
+
+/* Alert link styling - dark mode */
+body.dark-mode .alert-success a {
+    color: #6dff92 !important;
+}
+
+body.dark-mode .alert-danger a {
+    color: #ff8c9a !important;
+}
+
+body.dark-mode .alert-warning a {
+    color: #ffd24d !important;
+}
+
+body.dark-mode .alert-info a {
+    color: #5cd9f4 !important;
+}
+
+body.dark-mode .alert-primary a {
+    color: #b3a5ff !important;
+}
+
+/* Toast notifications - dark mode */
+body.dark-mode .toast {
+    background-color: #251a36 !important;
+    border-color: rgba(177, 156, 255, 0.25) !important;
+}
+
+body.dark-mode .toast-header {
+    background-color: #2d1f42 !important;
+    color: #ffffff !important;
+    border-bottom-color: rgba(177, 156, 255, 0.25) !important;
+}
+
+body.dark-mode .toast-body {
+    color: #ffffff !important;
+}
+
+/* Success toast - dark mode */
+body.dark-mode .toast.bg-success {
+    background-color: rgba(40, 167, 69, 0.15) !important;
+    color: #98ffb3 !important;
+}
+
+/* Danger toast - dark mode */
+body.dark-mode .toast.bg-danger {
+    background-color: rgba(220, 53, 69, 0.15) !important;
+    color: #ffb3bd !important;
+}
+
+/* Footer dark mode styling - iç ve dış footer renk uyumu */
+body.dark-mode footer,
+body.dark-mode footer.bg-dark,
+body.dark-mode .footer,
+body.dark-mode footer>.container,
+body.dark-mode footer>.container-fluid {
+    background-color: #1a1525 !important;
+    /* Body bg rengi ile eşleştirildi */
+    color: #ffffff !important;
+    border-top: 1px solid rgba(177, 156, 255, 0.25) !important;
+}
+
+/* Footer içeriği için daha derin seçiciler kullanarak emin olalım */
+body.dark-mode footer div,
+body.dark-mode footer section,
+body.dark-mode footer .row,
+body.dark-mode footer .col {
+    background-color: #1a1525 !important;
+}
+
+/* Halihazırda olan footer stil tanımları - renk değiştirildi */
+body.dark-mode footer .text-white-50 {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Footer içindeki buton ve bağlantılar için düzeltmeler - aynı kaldı */
+body.dark-mode footer .btn-outline-light {
+    border-color: rgba(177, 156, 255, 0.5) !important;
+}
+
+body.dark-mode footer hr.border-secondary {
+    border-color: rgba(177, 156, 255, 0.25) !important;
+}
+
+/* Footer modal içeriği - AboutUs modal */
+body.dark-mode footer .modal-content {
+    background-color: #251a36 !important;
+    border-color: rgba(177, 156, 255, 0.25) !important;
+}
+
+body.dark-mode footer .modal-header {
+    border-bottom-color: rgba(177, 156, 255, 0.25) !important;
+}
+
+body.dark-mode footer .modal-footer {
+    border-top-color: rgba(177, 156, 255, 0.25) !important;
 }
