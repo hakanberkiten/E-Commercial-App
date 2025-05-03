@@ -29,6 +29,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 
 @Service
 @RequiredArgsConstructor
@@ -755,6 +756,133 @@ public class OrdersServiceImpl implements OrdersService {
         }
         
         return orderRepo.save(order);
+    }
+
+    @Transactional
+    @Override
+    public Orders requestRefund(Long orderId, String reason) {
+        Orders order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+                
+        // Only allow refund requests for orders that are not already in a refund state
+        if (Arrays.asList("CANCELLED", "REFUNDED", "REFUND_REQUESTED", "REFUND_DENIED").contains(order.getOrderStatus())) {
+            throw new RuntimeException("Order cannot be refunded in its current state: " + order.getOrderStatus());
+        }
+        
+        // Update order status to refund requested
+        order.setOrderStatus("REFUND_REQUESTED");
+        Orders updatedOrder = orderRepo.save(order);
+        
+        // Create notification for all admins
+        List<User> adminUsers = userRepo.findByRoleName("ADMIN");
+        for (User admin : adminUsers) {
+            notificationService.createNotification(
+                admin.getUserId(),
+                "Refund requested for order #" + orderId + " by " + 
+                    order.getUser().getFirstName() + " " + order.getUser().getLastName() +
+                    ". Reason: " + reason,
+                "REFUND_REQUEST",
+                "/admin/refund-requests/" + orderId
+            );
+        }
+        
+        // Notify customer that the request has been received
+        notificationService.createNotification(
+            order.getUser().getUserId(),
+            "Your refund request for order #" + orderId + " has been submitted and is pending approval",
+            "REFUND_REQUESTED",
+            "/profile?tab=orders"
+        );
+        
+        return updatedOrder;
+    }
+
+    @Transactional
+    @Override
+    public Orders approveRefundRequest(Long orderId) {
+        Orders order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+                
+        // Verify the order is in refund requested state
+        if (!"REFUND_REQUESTED".equals(order.getOrderStatus())) {
+            throw new RuntimeException("Order is not in refund requested state");
+        }
+        
+        // Process refund through Stripe
+        if (order.getPayment() != null) {
+            Payment payment = order.getPayment();
+            
+            try {
+                // Process refund through Stripe
+                stripeService.refundPayment(payment.getStripePaymentIntentId());
+                
+                // Update payment status
+                payment.setStatus("REFUNDED");
+                payRepo.save(payment);
+                
+                // Notify customer
+                notificationService.createNotification(
+                    order.getUser().getUserId(),
+                    "Your refund request for order #" + orderId + " has been approved. A refund has been processed to your original payment method.",
+                    "REFUND_APPROVED",
+                    "/profile?tab=orders"
+                );
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to process refund: " + e.getMessage());
+            }
+        }
+        
+        // Return items to inventory
+        if (order.getItems() != null && !order.getItems().isEmpty()) {
+            for (OrderItem item : order.getItems()) {
+                Product product = item.getProduct();
+                if (product != null) {
+                    // Add the ordered quantity back to stock
+                    int newQuantity = product.getQuantityInStock() + item.getQuantityInOrder();
+                    product.setQuantityInStock(newQuantity);
+                    productRepo.save(product);
+                    
+                    // Mark item as returned
+                    item.setItemStatus("RETURNED");
+                    itemRepo.save(item);
+                    
+                    // Handle deductions from seller if needed
+                    if (item.getProduct().getSeller() != null) {
+                        deductSellerEarnings(item, orderId);
+                    }
+                }
+            }
+        }
+        
+        // Update order status
+        order.setOrderStatus("REFUNDED");
+        return orderRepo.save(order);
+    }
+
+    @Transactional
+    @Override
+    public Orders denyRefundRequest(Long orderId, String reason) {
+        Orders order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+                
+        // Verify the order is in refund requested state
+        if (!"REFUND_REQUESTED".equals(order.getOrderStatus())) {
+            throw new RuntimeException("Order is not in refund requested state");
+        }
+        
+        // Update order status
+        order.setOrderStatus("REFUND_DENIED");
+        Orders updatedOrder = orderRepo.save(order);
+        
+        // Notify customer
+        notificationService.createNotification(
+            order.getUser().getUserId(),
+            "Your refund request for order #" + orderId + " has been denied. Reason: " + reason,
+            "REFUND_DENIED",
+            "/profile?tab=orders"
+        );
+        
+        return updatedOrder;
     }
 
     @Override

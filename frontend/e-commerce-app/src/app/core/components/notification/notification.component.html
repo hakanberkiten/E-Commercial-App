@@ -40,7 +40,8 @@
                                 <div class="notification-icon me-3">
                                     <i class="bi" [ngClass]="getNotificationIcon(notification.type)"></i>
                                 </div>
-                                <div *ngIf="notification.type === 'EARNINGS_DEDUCTION'" class="notification-icon bg-warning text-dark">
+                                <div *ngIf="notification.type === 'EARNINGS_DEDUCTION'"
+                                    class="notification-icon bg-warning text-dark">
                                     <i class="bi bi-cash-coin"></i>
                                 </div>
                                 <div>
@@ -65,6 +66,17 @@
                             </button>
                             <button class="btn btn-outline-danger" (click)="denySellerRequest(notification, $event)"
                                 data-bs-toggle="tooltip" title="Deny seller request">
+                                <i class="bi bi-x-circle-fill fs-4"></i>
+                            </button>
+                        </div>
+                        <div *ngIf="notification.type === 'REFUND_REQUEST'"
+                            class="mt-2 d-flex justify-content-center gap-3">
+                            <button class="btn btn-outline-success" (click)="approveRefundRequest(notification, $event)"
+                                data-bs-toggle="tooltip" title="Approve refund request">
+                                <i class="bi bi-check-circle-fill fs-4"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" (click)="denyRefundRequest(notification, $event)"
+                                data-bs-toggle="tooltip" title="Deny refund request">
                                 <i class="bi bi-x-circle-fill fs-4"></i>
                             </button>
                         </div>

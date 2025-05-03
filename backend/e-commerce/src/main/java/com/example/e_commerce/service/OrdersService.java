@@ -21,4 +21,9 @@ public interface OrdersService {
     Orders getOrderByIdFresh(Long id);
     Orders cancelSellerItems(Long orderId, Long sellerId);
     Orders refundDeliveredOrder(Long orderId);
+    
+    // New methods for refund request flow
+    Orders requestRefund(Long orderId, String reason);
+    Orders approveRefundRequest(Long orderId);
+    Orders denyRefundRequest(Long orderId, String reason);
 }

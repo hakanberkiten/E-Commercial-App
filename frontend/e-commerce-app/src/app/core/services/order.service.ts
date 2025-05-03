@@ -164,4 +164,16 @@ export class OrderService {
       })
     );
   }
+
+  requestRefund(orderId: number, reason: string): Observable<any> {
+    return this.http.post<any>(`/api/orders/${orderId}/request-refund`, { reason });
+  }
+
+  approveRefund(orderId: number): Observable<any> {
+    return this.http.post<any>(`/api/orders/${orderId}/approve-refund`, {});
+  }
+
+  denyRefund(orderId: number, reason: string): Observable<any> {
+    return this.http.post<any>(`/api/orders/${orderId}/deny-refund`, { reason });
+  }
 }

@@ -520,6 +520,17 @@
                                                 }">
                                                     {{ order.orderStatus }}
                                                 </span>
+                                                <span *ngIf="order.orderStatus === 'REFUND_REQUESTED'"
+                                                    class="badge bg-warning text-dark">
+                                                    Return Requested
+                                                </span>
+                                                <span *ngIf="order.orderStatus === 'REFUNDED'" class="badge bg-info">
+                                                    Refunded
+                                                </span>
+                                                <span *ngIf="order.orderStatus === 'REFUND_DENIED'"
+                                                    class="badge bg-danger">
+                                                    Refund Denied
+                                                </span>
                                             </td>
                                             <td class="text-end">
                                                 <button class="btn btn-sm btn-outline-primary"
@@ -635,30 +646,40 @@
                             <div class="modal-dialog" role="document">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title">Confirm Return</h5>
+                                        <h5 class="modal-title">Request Return</h5>
                                         <button type="button" class="btn-close"
                                             (click)="hideReturnConfirmation()"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <p>Are you sure you want to return this order? This action will:</p>
+                                        <p>Request a return for this order? This will:</p>
                                         <ul>
-                                            <li>Cancel your entire order</li>
-                                            <li>Return all items to inventory</li>
-                                            <li>Process a refund to your original payment method</li>
+                                            <li>Submit a return request to our admin team</li>
+                                            <li>You'll receive notification when your request is approved or denied</li>
+                                            <li>If approved, a refund will be processed to your original payment method
+                                            </li>
                                             <li *ngIf="orderToReturn?.orderStatus === 'DELIVERED'">
                                                 Note: For delivered orders, items must be returned in original condition
                                             </li>
                                         </ul>
-                                        <p>This action cannot be undone.</p>
+
+                                        <!-- Add reason field -->
+                                        <div class="form-group mt-3">
+                                            <label for="refundReason">Reason for return:</label>
+                                            <textarea id="refundReason" class="form-control" rows="3"
+                                                [(ngModel)]="refundReason"
+                                                placeholder="Please explain why you're returning this order"
+                                                required></textarea>
+                                        </div>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary"
                                             (click)="hideReturnConfirmation()">Cancel</button>
-                                        <button type="button" class="btn btn-danger" [disabled]="isProcessingReturn"
+                                        <button type="button" class="btn btn-danger"
+                                            [disabled]="!refundReason.trim() || isProcessingReturn"
                                             (click)="processOrderReturn()">
                                             <span *ngIf="isProcessingReturn"
-                                                class="spinner-border spinner-border-sm me-2"></span>
-                                            Confirm Return
+                                                class="spinner-border spinner-border-sm me-1"></span>
+                                            Submit Return Request
                                         </button>
                                     </div>
                                 </div>

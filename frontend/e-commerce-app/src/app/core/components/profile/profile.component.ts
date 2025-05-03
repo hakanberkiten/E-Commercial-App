@@ -71,6 +71,7 @@ export class ProfileComponent implements OnInit {
   showConfirmDialog = false;
   currentReturnOrderId: number | null = null;
   orderToReturn: any = null;
+  refundReason: string = '';
 
   constructor(
     private auth: AuthService,
@@ -622,12 +623,16 @@ export class ProfileComponent implements OnInit {
 
   canBeReturned(order: any): boolean {
     return order.orderStatus !== 'CANCELLED' &&
+      order.orderStatus !== 'REFUNDED' &&
+      order.orderStatus !== 'REFUND_REQUESTED' &&
+      order.orderStatus !== 'REFUND_DENIED' &&
       ['PENDING', 'PROCESSING', 'SHIPPED', 'PARTIALLY_SHIPPED', 'DELIVERED'].includes(order.orderStatus);
   }
 
   showReturnConfirmation(order: any): void {
     this.orderToReturn = order;
     this.showConfirmDialog = true;
+    this.refundReason = ''; // Reset reason
   }
 
   hideReturnConfirmation(): void {
@@ -640,40 +645,31 @@ export class ProfileComponent implements OnInit {
 
     this.isProcessingReturn = true;
 
-    // Choose the appropriate method based on order status
-    const refundMethod = this.orderToReturn.orderStatus === 'DELIVERED' ?
-      this.orderService.returnDeliveredOrder(this.orderToReturn.orderId) :
-      this.orderService.returnOrder(this.orderToReturn.orderId);
-
-    refundMethod.subscribe({
-      next: () => {
+    // Request refund instead of directly processing it
+    this.orderService.requestRefund(this.orderToReturn.orderId, this.refundReason).subscribe({
+      next: (response) => {
         const index = this.userOrders.findIndex(
           order => order.orderId === this.orderToReturn.orderId
         );
 
         if (index !== -1) {
-          this.userOrders[index].orderStatus = 'CANCELLED';
+          this.userOrders[index].orderStatus = 'REFUND_REQUESTED';
         }
 
         this.hideReturnConfirmation();
 
-        // Customize message based on order status
-        const statusMsg = this.orderToReturn.orderStatus === 'DELIVERED' ?
-          'Your return request has been approved and a refund has been processed. Please return the items as per the return policy.' :
-          'Your order has been returned successfully and a refund has been processed to your original payment method.';
-
-        this.successMessage = statusMsg;
+        this.successMessage = 'Your refund request has been submitted and is pending approval by an admin.';
 
         if (isPlatformBrowser(this.platformId)) {
           window.scrollTo(0, 0);
         }
       },
       error: (error) => {
-        console.error('Error returning order:', error);
+        console.error('Error requesting refund:', error);
 
         this.hideReturnConfirmation();
 
-        this.errorMessage = error.error?.message || 'Failed to process your return request. Please contact customer support.';
+        this.errorMessage = error.error?.message || 'Failed to submit your return request. Please contact customer support.';
 
         if (isPlatformBrowser(this.platformId)) {
           window.scrollTo(0, 0);

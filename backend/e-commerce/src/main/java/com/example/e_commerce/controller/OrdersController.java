@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -251,5 +253,46 @@ public class OrdersController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Failed to cancel items: " + e.getMessage()));
         }
+    }
+
+    @PostMapping("/{id}/request-refund")
+    public ResponseEntity<Orders> requestRefund(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> requestBody,
+            Authentication authentication) {
+        
+        String reason = requestBody.getOrDefault("reason", "No reason provided");
+        
+        // Get current user
+        User currentUser = userService.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Verify this user owns the order
+        Orders order = orderService.getOrderById(id);
+        if (!order.getUser().getUserId().equals(currentUser.getUserId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(null);
+        }
+        
+        Orders updatedOrder = orderService.requestRefund(id, reason);
+        return ResponseEntity.ok(updatedOrder);
+    }
+
+    @PostMapping("/{id}/approve-refund")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Orders> approveRefund(@PathVariable Long id) {
+        Orders updatedOrder = orderService.approveRefundRequest(id);
+        return ResponseEntity.ok(updatedOrder);
+    }
+
+    @PostMapping("/{id}/deny-refund")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Orders> denyRefund(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> requestBody) {
+        
+        String reason = requestBody.getOrDefault("reason", "No specific reason provided");
+        Orders updatedOrder = orderService.denyRefundRequest(id, reason);
+        return ResponseEntity.ok(updatedOrder);
     }
 }
