@@ -236,14 +236,20 @@ public class OrdersServiceImpl implements OrdersService {
         // Set the status directly as a string
         order.setOrderStatus(upperCaseStatus);
         
-        // When marking an order as DELIVERED, also update all items to DELIVERED
-        if ("DELIVERED".equals(upperCaseStatus)) {
-            if (order.getItems() != null && !order.getItems().isEmpty()) {
-                for (OrderItem item : order.getItems()) {
-                    item.setItemStatus("DELIVERED");
-                    itemRepo.save(item);
-                }
+        // Update all order items to match the order status
+        // Not just for DELIVERED but for ANY status change
+        if (order.getItems() != null && !order.getItems().isEmpty()) {
+            for (OrderItem item : order.getItems()) {
+                // Log before update
+                System.out.println("Updating item #" + item.getOrderItemId() + " status from " + 
+                                  item.getItemStatus() + " to " + upperCaseStatus);
+                
+                // Update item status
+                item.setItemStatus(upperCaseStatus);
+                itemRepo.save(item);
             }
+            
+            System.out.println("Updated all items for order #" + orderId + " to status: " + upperCaseStatus);
         }
         
         return orderRepo.save(order);
