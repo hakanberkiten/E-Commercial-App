@@ -545,81 +545,90 @@
                         </div>
 
                         <!-- Order details section - modify the top part to include the return button -->
-                        <div *ngFor="let order of userOrders" class="order-details mt-3 mb-4 border rounded p-3"
-                            [hidden]="expandedOrderId !== order.orderId">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="mb-0">Order Details</h5>
-
-                                <!-- Return Order button - only show for eligible orders -->
-                                <button *ngIf="canBeReturned(order)" class="btn btn-outline-danger"
-                                    (click)="showReturnConfirmation(order)">
-                                    <i class="bi bi-arrow-return-left me-1"></i>
-                                    Return Order
-                                </button>
-                            </div>
-
-                            <!-- Rest of your existing order details table -->
-                            <div class="table-responsive">
-                                <table class="table table-sm">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Product</th>
-                                            <th>Seller</th>
-                                            <th class="text-center">Quantity</th>
-                                            <th class="text-end">Unit Price</th>
-                                            <th class="text-end">Subtotal</th>
-                                            <th class="text-center">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr *ngFor="let item of order.items">
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <img *ngIf="item.product.image" [src]="item.product.image"
-                                                        alt="{{ item.product.productName }}" class="me-2"
-                                                        style="width: 40px; height: 40px; object-fit: cover;">
-                                                    <span>{{ item.product.productName }}</span>
-                                                </div>
-                                            </td>
-                                            <td>{{ item.product.seller?.firstName }} {{
-                                                item.product.seller?.lastName }}</td>
-                                            <td class="text-center">{{ item.quantityInOrder }}</td>
-                                            <td class="text-end">{{ item.product.price | currency }}</td>
-                                            <td class="text-end">{{ item.orderedProductPrice | currency }}</td>
-                                            <td class="text-center">
-                                                <span class="badge" [ngClass]="{
-                                                   'bg-warning text-dark': order.orderStatus !== 'CANCELLED' && item.itemStatus === 'PENDING',
-                                                    'bg-info': order.orderStatus !== 'CANCELLED' && item.itemStatus === 'SHIPPED',
-                                                    'bg-success': order.orderStatus !== 'CANCELLED' && item.itemStatus === 'DELIVERED',
-                                                    'bg-danger': order.orderStatus === 'CANCELLED' || item.itemStatus==='CANCELLED'
-                                                }">
-                                                    {{ order.orderStatus === 'CANCELLED' ? 'CANCELLED' : item.itemStatus
-                                                    }}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                    <tfoot>
-                                        <tr>
-                                            <td colspan="4" class="text-end fw-bold">Total:</td>
-                                            <td class="text-end fw-bold">{{ order.totalAmount | currency }}</td>
-                                            <td></td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-
-                            <!-- Bottom section with order date and close button -->
-                            <div class="d-flex justify-content-between mt-3">
-                                <div>
-                                    <strong>Order Date:</strong> {{ order.orderDate | date:'mediumDate' }}
-                                    <span *ngIf="order.orderStatus === 'CANCELLED'" class="ms-3 text-danger">
-                                        <i class="bi bi-info-circle me-1"></i> This order has been returned and refunded
-                                    </span>
+                        <div *ngFor="let order of userOrders">
+                            <!-- Add loading indicator for order details -->
+                            <div *ngIf="loadingOrderDetails && expandedOrderId === order.orderId" class="text-center py-3">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                    <span class="visually-hidden">Loading details...</span>
                                 </div>
-                                <button class="btn btn-sm btn-outline-secondary" (click)="expandedOrderId = null">
-                                    <i class="bi bi-x-lg me-1"></i> Close Details
-                                </button>
+                                <span class="ms-2">Loading order details...</span>
+                            </div>
+
+                            <!-- Only show details when not loading -->
+                            <div *ngIf="!loadingOrderDetails && expandedOrderId === order.orderId" class="order-details mt-3 mb-4 border rounded p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0">Order Details</h5>
+
+                                    <!-- Return Order button - only show for eligible orders -->
+                                    <button *ngIf="canBeReturned(order)" class="btn btn-outline-danger"
+                                        (click)="showReturnConfirmation(order)">
+                                        <i class="bi bi-arrow-return-left me-1"></i>
+                                        Return Order
+                                    </button>
+                                </div>
+
+                                <!-- Rest of your existing order details table -->
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Seller</th>
+                                                <th class="text-center">Quantity</th>
+                                                <th class="text-end">Unit Price</th>
+                                                <th class="text-end">Subtotal</th>
+                                                <th class="text-center">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let item of order.items">
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <img *ngIf="item.product.image" [src]="item.product.image"
+                                                            alt="{{ item.product.productName }}" class="me-2"
+                                                            style="width: 40px; height: 40px; object-fit: cover;">
+                                                        <span>{{ item.product.productName }}</span>
+                                                    </div>
+                                                </td>
+                                                <td>{{ item.product.seller?.firstName }} {{
+                                                    item.product.seller?.lastName }}</td>
+                                                <td class="text-center">{{ item.quantityInOrder }}</td>
+                                                <td class="text-end">{{ item.product.price | currency }}</td>
+                                                <td class="text-end">{{ item.orderedProductPrice | currency }}</td>
+                                                <td class="text-center">
+                                                    <span class="badge" [ngClass]="{
+                                                        'bg-warning text-dark': item.itemStatus === 'PENDING',
+                                                        'bg-info': item.itemStatus === 'SHIPPED',
+                                                        'bg-success': item.itemStatus === 'DELIVERED',
+                                                        'bg-danger': item.itemStatus === 'CANCELLED'
+                                                    }">
+                                                        {{ item.itemStatus }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="4" class="text-end fw-bold">Total:</td>
+                                                <td class="text-end fw-bold">{{ order.totalAmount | currency }}</td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+
+                                <!-- Bottom section with order date and close button -->
+                                <div class="d-flex justify-content-between mt-3">
+                                    <div>
+                                        <strong>Order Date:</strong> {{ order.orderDate | date:'mediumDate' }}
+                                        <span *ngIf="order.orderStatus === 'CANCELLED'" class="ms-3 text-danger">
+                                            <i class="bi bi-info-circle me-1"></i> This order has been returned and refunded
+                                        </span>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-secondary" (click)="expandedOrderId = null">
+                                        <i class="bi bi-x-lg me-1"></i> Close Details
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -659,6 +668,6 @@
                 </div>
             </div>
         </div>
-           
+
     </div>
 </div>

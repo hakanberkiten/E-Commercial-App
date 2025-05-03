@@ -73,13 +73,24 @@ public class OrdersController {
         Orders updatedOrder = orderService.updateOrderStatus(id, status);
         
         // Notify the customer about the status change
-        if (updatedOrder.getUser() != null && "SHIPPED".equals(status)) {
-            notificationService.createNotification(
-                updatedOrder.getUser().getUserId(),
-                "Your order #" + id + " has been approved and shipped!",
-                "ORDER_SHIPPED",
-                "/profile?tab=orders"
-            );
+        if (updatedOrder.getUser() != null) {
+            if ("SHIPPED".equals(status)) {
+                notificationService.createNotification(
+                    updatedOrder.getUser().getUserId(),
+                    "Your order #" + id + " has been approved and shipped!",
+                    "ORDER_SHIPPED",
+                    "/profile?tab=orders"
+                );
+            } 
+            // Add this new condition for delivery notifications
+            else if ("DELIVERED".equals(status)) {
+                notificationService.createNotification(
+                    updatedOrder.getUser().getUserId(),
+                    "Your order #" + id + " has been delivered! Enjoy your purchase.",
+                    "ORDER_DELIVERED",
+                    "/profile?tab=orders"
+                );
+            }
         }
         
         return ResponseEntity.ok(updatedOrder);
@@ -125,7 +136,13 @@ public class OrdersController {
     }
 
     @GetMapping("/{id}")
-    public Orders byId(@PathVariable Long id) {
+    public Orders byId(@PathVariable Long id, @RequestParam(required = false) Boolean forceRefresh) {
+        // forceRefresh parametresi ile doğrudan veritabanından güncel veriyi çekmek için
+        if (Boolean.TRUE.equals(forceRefresh)) {
+            // EntityManager veya JdbcTemplate ile direkt sorgulama yapılabilir
+            // Bu örnek kod değildir, sizin yapınıza göre düzenleyin
+            return orderService.getOrderByIdFresh(id);
+        }
         return orderService.getOrderById(id);
     }
 

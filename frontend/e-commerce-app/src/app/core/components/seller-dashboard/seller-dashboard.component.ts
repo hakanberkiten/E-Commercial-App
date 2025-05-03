@@ -33,6 +33,9 @@ export class SellerDashboardComponent implements OnInit {
   isProcessing = false;
   successMessage = '';
   errorMessage = '';
+  isProcessingDelivery = false;
+  processingOrderId: number | null = null;
+  loadingOrderDetails = false;
 
   constructor(
     private categoryService: CategoryService,
@@ -118,47 +121,45 @@ export class SellerDashboardComponent implements OnInit {
 
     this.orderService.getOrdersBySellerId(sellerId).subscribe({
       next: (orders) => {
-        const activeOrders = orders.filter(o => o.orderStatus !== 'CANCELLED');
-        this.customerOrders = activeOrders.map(order => {
+        // Process the orders
+        this.customerOrders = orders.map(order => {
           const sellerItems = order.items.filter((item: any) =>
             item.product.seller.userId === sellerId
           );
-          const sellerTotal = sellerItems.reduce(
-            (sum: number, item: any) => sum + (item.orderedProductPrice || 0),
-            0
-          );
-          // Check if this seller's items are already shipped
-          const sellerApproved = sellerItems.every((item: any) =>
-            item.itemStatus === 'SHIPPED'
-          );
 
-          // Check if this is a multi-seller order
-          const isMultiSellerOrder = order.items.some((item: any) =>
-            item.product.seller.userId !== sellerId
-          );
+          // Database'den gelen status değerini güvenli bir şekilde al
+          const orderStatus = order.orderStatus || order.status || 'PENDING';
 
+          // Her iki alan için de güncel değeri kullan (UI uyumluluğu için)
           return {
             id: order.orderId,
             orderDate: new Date(order.orderDate),
-            status: order.orderStatus,
-            sellerApproved,
-            sellerShipped: sellerApproved, // Track if this seller's items are shipped
-            isMultiSellerOrder,
+            status: orderStatus,         // Eski UI referansları için
+            orderStatus: orderStatus,    // Doğrudan DB alanı
+            sellerApproved: sellerItems.every((item: any) =>
+              item.itemStatus === 'SHIPPED' || item.itemStatus === 'DELIVERED'
+            ),
+            isMultiSellerOrder: order.items.some((item: any) =>
+              item.product.seller.userId !== sellerId
+            ),
+            isDelivered: orderStatus === 'DELIVERED',
             customer: {
               id: order.user?.userId,
               name: `${order.user?.firstName || ''} ${order.user?.lastName || ''}`.trim() || 'Unknown',
               email: order.user?.email || order.email || 'No email provided'
             },
-            items: order.items.map((item: any) => ({
+            items: sellerItems.map((item: any) => ({
               productId: item.product.productId,
               productName: item.product.productName,
               quantity: item.quantityInOrder,
               price: item.product.price,
               subtotal: item.orderedProductPrice,
-              status: item.itemStatus || 'PENDING',
-              isThisSellersItem: item.product.seller.userId === sellerId
+              status: item.itemStatus || (orderStatus === 'DELIVERED' ? 'DELIVERED' : 'PENDING')
             })),
-            totalPrice: sellerTotal
+            totalPrice: sellerItems.reduce(
+              (sum: number, item: any) => sum + (item.orderedProductPrice || 0),
+              0
+            )
           };
         });
       },
@@ -259,17 +260,14 @@ export class SellerDashboardComponent implements OnInit {
       next: (updatedOrder) => {
         const idx = this.customerOrders.findIndex(o => o.id === orderId);
         if (idx >= 0) {
-          // Mark this seller's portion as approved regardless of other sellers
           this.customerOrders[idx].sellerApproved = true;
 
-          // Update the local status to show shipping progress
           if (updatedOrder.orderStatus === 'SHIPPED') {
             this.customerOrders[idx].status = 'SHIPPED';
             this.successMessage = 'All items in this order have been shipped!';
           } else {
-            // This is the key change - show the seller their part is shipped
             this.customerOrders[idx].status = 'PARTIALLY_SHIPPED';
-            this.customerOrders[idx].sellerShipped = true; // New flag to track this seller's shipment
+            this.customerOrders[idx].sellerShipped = true;
             this.successMessage = 'Your items have been approved and marked for shipping! The customer will be notified.';
           }
         }
@@ -296,7 +294,6 @@ export class SellerDashboardComponent implements OnInit {
 
     this.orderService.refundAndCancelOrder(orderId, 'seller').subscribe({
       next: () => {
-        // Update UI to reflect the cancelled order
         const index = this.customerOrders.findIndex(o => o.id === orderId);
         if (index !== -1) {
           this.customerOrders[index].status = 'CANCELLED';
@@ -305,7 +302,6 @@ export class SellerDashboardComponent implements OnInit {
         this.successMessage = 'Order cancelled successfully. Products have been returned to inventory and customer has been refunded.';
         this.isProcessing = false;
 
-        // Reload orders after a short delay to ensure everything is up to date
         setTimeout(() => {
           this.loadSellerOrders();
           this.successMessage = '';
@@ -343,6 +339,119 @@ This will also remove all related reviews and cannot be undone.`;
   }
 
   toggleOrderDetails(orderId: number): void {
-    this.expandedOrderId = this.expandedOrderId === orderId ? null : orderId;
+    if (this.expandedOrderId === orderId) {
+      this.expandedOrderId = null;
+    } else {
+      this.loadingOrderDetails = true;
+
+      // Önbellek sorunlarını önlemek için timestamp ekleyerek zorla yenileme
+      this.orderService.getOrderById(orderId, true).subscribe({
+        next: (orderDetails) => {
+          console.log('Raw order details from backend:', JSON.stringify(orderDetails, null, 2));
+
+          const index = this.customerOrders.findIndex(order => order.id === orderId);
+          if (index !== -1) {
+            const sellerId = this.getCurrentSellerId();
+            const sellerItems = orderDetails.items?.filter((item: any) =>
+              item.product?.seller?.userId === sellerId
+            ) || [];
+
+            // Backend'den gelen orderStatus/status değerine öncelik ver
+            const dbOrderStatus = orderDetails.orderStatus || orderDetails.status;
+
+            if (dbOrderStatus) {
+              // Önemli: Her iki alanı da güncelliyoruz (UI uyumluluğu için)
+              this.customerOrders[index].orderStatus = dbOrderStatus;
+              this.customerOrders[index].status = dbOrderStatus;
+              console.log(`Order ${orderId} status güncellendi:`, dbOrderStatus);
+            } else {
+              console.warn('Backend response does not contain order status!');
+            }
+
+            // ItemStatus alanlarını güncelleme
+            this.customerOrders[index].items = sellerItems.map((item: any) => {
+              return {
+                productId: item.product.productId,
+                productName: item.product.productName,
+                quantity: item.quantityInOrder,
+                price: item.product.price,
+                subtotal: item.orderedProductPrice,
+                status: item.itemStatus || item.status ||
+                        (dbOrderStatus === 'DELIVERED' ? 'DELIVERED' : 'PENDING')
+              };
+            });
+          }
+
+          this.expandedOrderId = orderId;
+          this.loadingOrderDetails = false;
+        },
+        error: (error) => {
+          console.error('Error loading order details', error);
+          this.loadingOrderDetails = false;
+          this.errorMessage = 'Failed to load order details. Please try again.';
+          setTimeout(() => this.errorMessage = '', 3000);
+        }
+      });
+    }
+  }
+
+  private getCurrentSellerId(): number | null {
+    const currentUser = this.authService.getCurrentUser();
+    return currentUser ? currentUser.userId : null;
+  }
+
+  markAsDelivered(orderId: number): void {
+    if (!confirm('Are you sure you want to mark this order as delivered?')) {
+      return;
+    }
+
+    this.isProcessingDelivery = true;
+    this.processingOrderId = orderId;
+
+    this.orderService.updateOrderStatus(orderId, 'DELIVERED').subscribe({
+      next: () => {
+        const index = this.customerOrders.findIndex(order => order.id === orderId);
+        if (index !== -1) {
+          this.customerOrders[index].status = 'DELIVERED';
+          this.customerOrders[index].isDelivered = true;
+
+          if (this.customerOrders[index].items) {
+            this.customerOrders[index].items.forEach((item: { status: string }) => {
+              item.status = 'DELIVERED';
+            });
+          }
+        }
+
+        this.successMessage = 'Order has been marked as delivered! The customer has been notified.';
+        this.isProcessingDelivery = false;
+        this.processingOrderId = null;
+
+        setTimeout(() => {
+          this.successMessage = '';
+        }, 3000);
+      },
+      error: (error) => {
+        console.error('Error marking order as delivered:', error);
+        this.errorMessage = error.message || 'Failed to mark order as delivered. Please try again.';
+        this.isProcessingDelivery = false;
+        this.processingOrderId = null;
+
+        setTimeout(() => {
+          this.errorMessage = '';
+        }, 3000);
+      }
+    });
+  }
+
+  getOrderStatusText(order: any): string {
+    if (order.status === 'CANCELLED') {
+      return 'CANCELLED';
+    } else if (order.status === 'DELIVERED') {
+      return 'DELIVERED';
+    } else if (order.sellerApproved) {
+      return 'YOU SHIPPED';
+    } else {
+      return 'PENDING';
+    }
   }
 }

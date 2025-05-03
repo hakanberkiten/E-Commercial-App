@@ -10,6 +10,7 @@ import { HttpClient } from '@angular/common/http';
 import { OrderService } from '../../services/order.service';
 import { loadStripe, Stripe, StripeElements, StripeCardElement } from '@stripe/stripe-js';
 import { isPlatformBrowser } from '@angular/common';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-profile',
@@ -63,6 +64,7 @@ export class ProfileComponent implements OnInit {
   userOrders: any[] = [];
   loadingOrders: boolean = false;
   expandedOrderId: number | null = null;
+  loadingOrderDetails: boolean = false;
 
   // Return-related properties
   isProcessingReturn = false;
@@ -283,58 +285,58 @@ export class ProfileComponent implements OnInit {
   }
 
   loadUserOrders() {
-    if (this.currentUser) {
-      this.loadingOrders = true;
-
-      // Use the payment service's method directly
-      this.paymentService.getOrdersByUserId(this.currentUser.userId)
-        .subscribe({
-          next: (response: { data?: any[] } | any[]) => {
-            console.log('Raw orders response from backend:', response);
-
-            // Process the response
-            let orders = [];
-            if (Array.isArray(response)) {
-              orders = response;
-            } else if (response && typeof response === 'object') {
-              // Check if response is wrapped in a data property
-              if (response.data && Array.isArray(response.data)) {
-                orders = response.data;
-              } else {
-                // Convert object to array if needed
-                orders = [response];
-              }
-            }
-
-            // Important: Don't manipulate the date objects!
-            // Just log them for debugging purposes
-            console.log('Order dates from backend:',
-              orders.map(o => ({ id: o.orderId, date: o.orderDate })));
-
-            // Sort orders by date in descending order (newest first)
-            this.userOrders = orders.sort((a, b) => {
-              const dateA = new Date(a.orderDate).getTime();
-              const dateB = new Date(b.orderDate).getTime();
-              return dateB - dateA; // Descending order (newest first)
-            });
-
-            this.loadingOrders = false;
-          },
-          error: (error) => {
-            console.error('Error loading orders', error);
-            this.errorMessage = 'Failed to load your orders. Please try again.';
-            this.loadingOrders = false;
-          }
-        });
+    this.loadingOrders = true;
+    const currentUser = this.auth.getCurrentUser();
+    if (!currentUser) {
+      this.loadingOrders = false;
+      return;
     }
+
+    // Add timestamp to prevent caching
+    const timestamp = new Date().getTime();
+    this.orderService.getOrdersByUserId(currentUser.userId).subscribe({
+      next: (orders) => {
+        this.userOrders = orders;
+        this.loadingOrders = false;
+      },
+      error: (error) => {
+        console.error('Error loading orders', error);
+        this.errorMessage = 'Failed to load your orders. Please try again.';
+        this.loadingOrders = false;
+      }
+    });
   }
 
   toggleOrderDetails(orderId: number): void {
-    // If opening a different order, fetch fresh data first
-    if (this.expandedOrderId !== orderId) {
-      this.loadUserOrders();
+    if (this.expandedOrderId === orderId) {
+      // If already expanded, just collapse
+      this.expandedOrderId = null;
+    } else {
+      // If expanding, fetch fresh data for this specific order
+      this.loadingOrderDetails = true;
+
+      // Add timestamp to prevent caching
+      this.orderService.getOrderById(orderId).subscribe({
+        next: (orderDetails) => {
+          console.log('Fetched order details:', orderDetails);
+
+          // Replace the entire order object with the fresh data
+          const index = this.userOrders.findIndex(order => order.orderId === orderId);
+          if (index !== -1) {
+            // Ensure we fully update the order object with the fresh data
+            this.userOrders[index] = orderDetails;
+          }
+
+          this.expandedOrderId = orderId;
+          this.loadingOrderDetails = false;
+        },
+        error: (error) => {
+          console.error('Error loading order details', error);
+          this.errorMessage = 'Failed to load order details. Please try again.';
+          this.loadingOrderDetails = false;
+        }
+      });
     }
-    this.expandedOrderId = this.expandedOrderId === orderId ? null : orderId;
   }
 
   toggleEditMode(): void {

@@ -14,12 +14,38 @@ export class OrderService {
   ) { }
 
   getOrdersBySellerId(sellerId: number): Observable<any[]> {
-    return this.http.get<any[]>(`/api/orders/seller/${sellerId}`);
+    const timestamp = new Date().getTime();
+    return this.http.get<any[]>(`/api/orders/seller/${sellerId}?_=${timestamp}`);
   }
 
   getOrdersByUserId(userId: number): Observable<any[]> {
-    return this.http.get<any[]>(`/api/orders/user/${userId}`);
-    // No date manipulation here - just return the raw data from the backend
+    const timestamp = new Date().getTime();
+    return this.http.get<any[]>(`/api/orders/user/${userId}?_=${timestamp}`);
+  }
+
+  getOrderById(orderId: number, forceRefresh: boolean = false): Observable<any> {
+    // Önbellek sorunlarını önlemek için
+    const timestamp = new Date().getTime();
+    const url = `/api/orders/${orderId}?_=${timestamp}&forceRefresh=${forceRefresh}`;
+
+    const headers = new HttpHeaders({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
+
+    return this.http.get<any>(url, { headers }).pipe(
+      tap(response => {
+        // Gelen yanıtta orderStatus doğru alanın adı mı kontrol et
+        const status = response.orderStatus || response.status;
+        console.log(`Order ${orderId} details retrieved:`, response);
+        console.log(`Order ${orderId} status from DB: ${status}`);
+      }),
+      catchError(error => {
+        console.error('Error retrieving order details:', error);
+        return throwError(() => new Error('Failed to load order details.'));
+      })
+    );
   }
 
   updateOrderStatus(orderId: number, status: string): Observable<any> {
@@ -32,7 +58,7 @@ export class OrderService {
       'Authorization': `Bearer ${token}`
     });
 
-    // Use POST instead of PATCH since we know POST works for other endpoints
+    // Use POST instead of PATCH since we know POST works for other endpointsg
     return this.http.post(`/api/orders/${orderId}/status-update`, { status }, { headers })
       .pipe(
         tap(response => {

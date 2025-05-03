@@ -18,8 +18,9 @@ import com.example.e_commerce.service.OrdersService;
 import com.example.e_commerce.service.NotificationService;
 import com.example.e_commerce.service.PaymentService;
 
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +40,7 @@ public class OrdersServiceImpl implements OrdersService {
     private final NotificationService notificationService;
     private final PaymentService paymentService;
     private final StripeServiceImpl stripeService;
+    private final EntityManager entityManager;
 
     @Override
     public Orders saveOrder(Orders order) {
@@ -153,6 +155,31 @@ public class OrdersServiceImpl implements OrdersService {
             .orElseThrow(() -> new RuntimeException("Order not found"));
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public Orders getOrderByIdFresh(Long id) {
+        // Clear any first level cache (Hibernate)
+        entityManager.clear();
+        
+        // Log işlemi başlangıcı
+        System.out.println("Fetching fresh order details for order ID: " + id);
+        
+        // Then load the order with all its items eagerly
+        Orders order = orderRepo.findWithItemsById(id)
+            .orElseThrow(() -> new RuntimeException("Order not found"));
+            
+        // Order status değerini loglayarak kontrol et
+        System.out.println("Fresh order " + id + " status: " + order.getOrderStatus());
+        if (order.getItems() != null) {
+            System.out.println("Items count: " + order.getItems().size());
+            for (OrderItem item : order.getItems()) {
+                System.out.println("Item " + item.getOrderItemId() + " status: " + item.getItemStatus());
+            }
+        }
+        
+        return order;
+    }
+
     @Override
     public void deleteOrder(Long id) {
         orderRepo.deleteById(id);
@@ -208,6 +235,17 @@ public class OrdersServiceImpl implements OrdersService {
         
         // Set the status directly as a string
         order.setOrderStatus(upperCaseStatus);
+        
+        // When marking an order as DELIVERED, also update all items to DELIVERED
+        if ("DELIVERED".equals(upperCaseStatus)) {
+            if (order.getItems() != null && !order.getItems().isEmpty()) {
+                for (OrderItem item : order.getItems()) {
+                    item.setItemStatus("DELIVERED");
+                    itemRepo.save(item);
+                }
+            }
+        }
+        
         return orderRepo.save(order);
     }
 

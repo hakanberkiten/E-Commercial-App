@@ -127,15 +127,14 @@
                                     <td>{{ order.customer.name }}</td>
                                     <td>
                                         <div class="d-flex flex-column align-items-center">
-                                            <!-- Update the badge display logic -->
+                                            <!-- Update the status badge in the order list -->
                                             <span class="badge rounded-pill py-2 px-3" [ngClass]="{
                                                 'bg-warning text-dark': !order.sellerApproved && order.status === 'PENDING',
-                                                'bg-success': order.sellerApproved && order.status !== 'CANCELLED',
-                                                'bg-info': order.status === 'SHIPPED' && order.status !== 'CANCELLED',
+                                                'bg-success': order.status === 'DELIVERED',
+                                                'bg-info': order.status === 'SHIPPED' && order.status !== 'CANCELLED' && order.status !== 'DELIVERED',
                                                 'bg-danger': order.status === 'CANCELLED'
                                             }">
-                                                {{ order.status === 'CANCELLED' ? 'CANCELLED' : (order.sellerApproved ?
-                                                'YOU SHIPPED' : 'PENDING') }}
+                                                {{ getOrderStatusText(order) }}
                                             </span>
 
                                             <!-- For multi-seller orders, show overall status -->
@@ -183,7 +182,25 @@
                                                 (click)="toggleOrderDetails(order.id)">
                                                 <i class="bi bi-list-ul me-1"></i>Details
                                             </button>
+
+                                            <!-- Add inside the actions cell, after the approve and cancel buttons -->
+                                            <button *ngIf="order.status === 'SHIPPED' && !order.isDelivered"
+                                                class="btn btn-sm btn-outline-success"
+                                                (click)="markAsDelivered(order.id)"
+                                                [disabled]="isProcessingDelivery">
+                                                <span *ngIf="isProcessingDelivery && processingOrderId === order.id" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                                <i *ngIf="!(isProcessingDelivery && processingOrderId === order.id)" class="bi bi-truck-check me-1"></i>Mark Delivered
+                                            </button>
                                         </div>
+                                    </td>
+                                </tr>
+                                <!-- Add loading indicator for order details -->
+                                <tr *ngIf="loadingOrderDetails && expandedOrderId" class="order-details-row bg-light">
+                                    <td colspan="6" class="p-3 text-center">
+                                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                            <span class="visually-hidden">Loading details...</span>
+                                        </div>
+                                        <span class="ms-2">Loading order details...</span>
                                     </td>
                                 </tr>
                                 <!-- Order details row -->
@@ -193,6 +210,21 @@
                                     <td colspan="6" class="p-0">
                                         <div class="p-3">
                                             <h6 class="mb-3">Order Details</h6>
+
+                                            <!-- Güncellenen order status gösterimi -->
+                                            <div class="mb-3 p-2 border rounded bg-light">
+                                                <strong>Order Status:</strong>
+                                                <span class="badge ms-2" [ngClass]="{
+                                                    'bg-warning text-dark': order.orderStatus === 'PENDING',
+                                                    'bg-info': order.orderStatus === 'SHIPPED' || order.orderStatus === 'PARTIALLY_SHIPPED',
+                                                    'bg-success': order.orderStatus === 'DELIVERED',
+                                                    'bg-danger': order.orderStatus === 'CANCELLED'
+                                                }">{{ order.orderStatus || order.status }}</span>
+
+                                                <!-- Debug bilgisi - geliştirme sırasında yardımcı olabilir -->
+                                                <small class="ms-3 text-muted">Database status: {{ order.orderStatus || 'N/A' }}</small>
+                                            </div>
+
                                             <table class="table table-sm">
                                                 <thead>
                                                     <tr>
@@ -200,7 +232,7 @@
                                                         <th class="text-center">Quantity</th>
                                                         <th class="text-end">Unit Price</th>
                                                         <th class="text-end">Subtotal</th>
-                                                        <th class="text-center">Status</th>
+                                                        <th class="text-center">Item Status</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -213,7 +245,8 @@
                                                             <span class="badge" [ngClass]="{
                                                                 'bg-warning text-dark': item.status === 'PENDING',
                                                                 'bg-info': item.status === 'SHIPPED',
-                                                                'bg-success': item.status === 'DELIVERED'
+                                                                'bg-success': item.status === 'DELIVERED',
+                                                                'bg-danger': item.status === 'CANCELLED'
                                                             }">{{ item.status }}</span>
                                                         </td>
                                                     </tr>

@@ -87,6 +87,8 @@ export class NotificationsComponent implements OnInit {
       case 'ORDER_SHIPPED':
       case 'ORDER_PARTIAL_SHIPPED':
         return 'bi-truck';
+      case 'ORDER_DELIVERED':
+        return 'bi-check2-circle';
       case 'ORDER_CANCELLED':
       case 'ORDER_CANCELLED_BY_SELLER':
         return 'bi-x-circle';

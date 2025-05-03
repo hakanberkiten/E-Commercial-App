@@ -18,4 +18,5 @@ public interface OrdersService {
     Orders refundAndCancelOrder(Long orderId);
     Orders approveSellerItems(Long orderId, Long sellerId);
     Orders approveSellerItemsAndProcessPayment(Long orderId, Long sellerId);
+    Orders getOrderByIdFresh(Long id);
 }
