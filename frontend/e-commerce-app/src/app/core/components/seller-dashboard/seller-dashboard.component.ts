@@ -456,7 +456,13 @@ This will also remove all related reviews and cannot be undone.`;
   }
 
   getOrderStatusText(order: any): string {
-    if (order.status === 'CANCELLED') {
+    if (order.status === 'REFUNDED') {
+      return 'REFUNDED';
+    } else if (order.status === 'REFUND_REQUESTED') {
+      return 'REFUND REQUESTED';
+    } else if (order.status === 'REFUND_DENIED') {
+      return 'REFUND DENIED';
+    } else if (order.status === 'CANCELLED') {
       return 'CANCELLED';
     } else if (order.status === 'DELIVERED') {
       return 'DELIVERED';
