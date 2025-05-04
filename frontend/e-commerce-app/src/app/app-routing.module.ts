@@ -12,6 +12,7 @@ import { SellerDashboardComponent } from './core/components/seller-dashboard/sel
 import { AdminDashboardComponent } from './core/components/admin-dashboard/admin-dashboard.component';
 import { NotificationsComponent } from './core/components/notification/notification.component';
 import { AdminRestrictGuard } from './core/guards/admin-restrict.guard';
+import { OAuth2SuccessComponent } from './auth/oauth2/oauth2-success.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'products', pathMatch: 'full' },
@@ -55,6 +56,7 @@ const routes: Routes = [
     component: NotificationsComponent,
     canActivate: [AuthGuard]
   },
+  { path: 'auth/oauth2/success', component: OAuth2SuccessComponent },
 ];
 
 @NgModule({

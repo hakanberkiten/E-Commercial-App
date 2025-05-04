@@ -1,9 +1,10 @@
-import { AfterContentInit, Component, Inject, PLATFORM_ID, OnInit } from '@angular/core';
+import { AfterContentInit, Component, Inject, PLATFORM_ID, OnInit, AfterViewInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { NotificationService } from '../../services/notification.service';
+declare var bootstrap: any;
 
 @Component({
   selector: 'app-footer',
@@ -11,7 +12,7 @@ import { NotificationService } from '../../services/notification.service';
   templateUrl: './footer.component.html',
   styleUrl: './footer.component.css'
 })
-export class FooterComponent implements AfterContentInit, OnInit {
+export class FooterComponent implements AfterContentInit, OnInit, AfterViewInit {
   adminUsers: any[] = [];
   loading = false;
   hasPendingRequest = false;
@@ -22,7 +23,7 @@ export class FooterComponent implements AfterContentInit, OnInit {
     private http: HttpClient,
     private notificationService: NotificationService,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Check if there's a pending request during initialization
@@ -43,6 +44,14 @@ export class FooterComponent implements AfterContentInit, OnInit {
     // Only load admin users in the browser, not during SSR
     if (isPlatformBrowser(this.platformId)) {
       this.loadAdminUsers();
+    }
+  }
+
+  ngAfterViewInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      // Initialize tooltips
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+      [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     }
   }
 

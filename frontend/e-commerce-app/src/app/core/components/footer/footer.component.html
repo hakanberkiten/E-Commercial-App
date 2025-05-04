@@ -4,21 +4,34 @@
       <div class="col-md-4 mb-3">
         <h5>E-Commerce App</h5>
         <p class="small text-white-50">Your trusted online shopping destination</p>
-        <div class="d-flex gap-3 mt-3">
-          <a href="#" class="text-white-50"><i class="bi bi-facebook"></i></a>
-          <a href="#" class="text-white-50"><i class="bi bi-twitter"></i></a>
-          <a href="#" class="text-white-50"><i class="bi bi-instagram"></i></a>
-        </div>
+
       </div>
 
       <div class="col-md-4 mb-3">
         <h5>Quick Links</h5>
         <ul class="list-unstyled">
-          <li><a href="#" class="text-decoration-none text-white-50" data-bs-toggle="modal"
-              data-bs-target="#aboutUsModal">About Us</a></li>
-          <li><a routerLink="/products" *ngIf="!isAdmin()" class="text-decoration-none text-white-50">Products</a></li>
-          <li><a href="#" class="text-decoration-none text-white-50">Privacy Policy</a></li>
-          <li><a href="#" class="text-decoration-none text-white-50">Terms of Service</a></li>
+          <li>
+            <a href="#" class="text-decoration-none text-white-50" data-bs-toggle="modal" data-bs-target="#aboutUsModal"
+              title="Learn about our company and mission">
+              <i class="bi bi-info-circle me-1"></i> About Us
+            </a>
+          </li>
+          <li>
+            <a routerLink="/products" *ngIf="!isAdmin()" class="text-decoration-none text-white-50"
+              title="Explore our product catalog">
+              <i class="bi bi-grid me-1"></i> Products
+            </a>
+          </li>
+          <li>
+            <a href="#" class="text-decoration-none text-white-50" title="Information about how we handle your data">
+              <i class="bi bi-shield-check me-1"></i> Privacy Policy
+            </a>
+          </li>
+          <li>
+            <a href="#" class="text-decoration-none text-white-50" title="Rules and guidelines for using our services">
+              <i class="bi bi-clipboard-check me-1"></i> Terms of Service
+            </a>
+          </li>
         </ul>
       </div>
 
@@ -27,19 +40,15 @@
         <p class="small text-white-50">Want to sell your products on our platform?</p>
 
         <!-- Only show button to logged-in customers who are not admins or sellers -->
-        <button *ngIf="isLoggedIn() && isCustomer() && !hasPendingRequest"
-          id="sellerRequestBtn"
-          class="btn btn-outline-light btn-sm"
-          (click)="requestSellerAccess()">
+        <button *ngIf="isLoggedIn() && isCustomer() && !hasPendingRequest" id="sellerRequestBtn"
+          class="btn btn-outline-light btn-sm" (click)="requestSellerAccess()">
           <i class="bi bi-shop"></i>
           Request Seller Access
         </button>
 
         <!-- Show this when request is pending -->
-        <button *ngIf="isLoggedIn() && isCustomer() && hasPendingRequest"
-          id="sellerRequestBtn"
-          class="btn btn-outline-light btn-sm opacity-75"
-          disabled>
+        <button *ngIf="isLoggedIn() && isCustomer() && hasPendingRequest" id="sellerRequestBtn"
+          class="btn btn-outline-light btn-sm opacity-75" disabled>
           <i class="bi bi-hourglass-split"></i>
           Request Pending
         </button>

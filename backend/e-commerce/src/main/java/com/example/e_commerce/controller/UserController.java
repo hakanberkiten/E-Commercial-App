@@ -47,6 +47,19 @@ public class UserController {
         return userService.getUserById(id);
     }
 
+    @GetMapping("/current")
+    public ResponseEntity<User> getCurrentUser(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        String email = authentication.getName();
+        User user = userService.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+            
+        return ResponseEntity.ok(user);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody Map<String, Object> updates,
                                        Authentication authentication) {

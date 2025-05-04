@@ -28,9 +28,10 @@ import { ErrorInterceptor } from './core/interceptors/error.interceptor';
 import { FooterComponent } from './core/components/footer/footer.component';
 import { NotificationsComponent } from './core/components/notification/notification.component';
 import { PaymentComponent } from './core/components/payment/payment.component';
+import { OAuth2SuccessComponent } from './auth/oauth2/oauth2-success.component';
 
 @NgModule({
-  declarations: [AppComponent, ProductListComponent, LoginComponent, SignupComponent, CustomerComponent, CartPageComponent, NavbarComponent, ProfileComponent, ProductDetailComponent, SellerDashboardComponent, AdminDashboardComponent, FooterComponent, NotificationsComponent, PaymentComponent],
+  declarations: [AppComponent, ProductListComponent, LoginComponent, SignupComponent, CustomerComponent, CartPageComponent, NavbarComponent, ProfileComponent, ProductDetailComponent, SellerDashboardComponent, AdminDashboardComponent, FooterComponent, NotificationsComponent, PaymentComponent, OAuth2SuccessComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,

@@ -127,13 +127,16 @@
                                     <td>{{ order.customer.name }}</td>
                                     <td>
                                         <div class="d-flex flex-column align-items-center">
-                                            <!-- Update the status badge in the order list -->
-                                            <span class="badge rounded-pill py-2 px-3" [ngClass]="{
-                                                'bg-warning text-dark': !order.sellerApproved && order.status === 'PENDING',
+                                            <!-- Update the status badge in the order list --><span
+                                                class="badge rounded-pill py-2 px-3" [ngClass]="{
+                                                'bg-warning-subtle text-warning border border-warning': order.status === 'REFUND_REQUESTED',
+                                                'bg-info-subtle text-info border border-info': order.status === 'REFUNDED',
+                                                'bg-danger-subtle text-danger border border-danger': order.status === 'REFUND_DENIED',
+                                                'bg-warning bg-opacity-75': !order.sellerApproved && order.status === 'PENDING',
+                                                'bg-primary bg-opacity-75': order.status === 'SHIPPED' || order.status === 'PARTIALLY_SHIPPED' || order.sellerApproved,
                                                 'bg-success': order.status === 'DELIVERED',
-                                                'bg-info': order.status === 'SHIPPED' && order.status !== 'CANCELLED' && order.status !== 'DELIVERED',
                                                 'bg-danger': order.status === 'CANCELLED'
-                                            }">
+                                    }">
                                                 {{ getOrderStatusText(order) }}
                                             </span>
 
@@ -186,10 +189,11 @@
                                             <!-- Add inside the actions cell, after the approve and cancel buttons -->
                                             <button *ngIf="order.status === 'SHIPPED' && !order.isDelivered"
                                                 class="btn btn-sm btn-outline-success"
-                                                (click)="markAsDelivered(order.id)"
-                                                [disabled]="isProcessingDelivery">
-                                                <span *ngIf="isProcessingDelivery && processingOrderId === order.id" class="spinner-border spinner-border-sm me-1" role="status"></span>
-                                                <i *ngIf="!(isProcessingDelivery && processingOrderId === order.id)" class="bi bi-truck-check me-1"></i>Mark Delivered
+                                                (click)="markAsDelivered(order.id)" [disabled]="isProcessingDelivery">
+                                                <span *ngIf="isProcessingDelivery && processingOrderId === order.id"
+                                                    class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                                <i *ngIf="!(isProcessingDelivery && processingOrderId === order.id)"
+                                                    class="bi bi-truck-check me-1"></i>Mark Delivered
                                             </button>
                                         </div>
                                     </td>
@@ -212,18 +216,7 @@
                                             <h6 class="mb-3">Order Details</h6>
 
                                             <!-- Güncellenen order status gösterimi -->
-                                            <div class="mb-3 p-2 border rounded bg-light">
-                                                <strong>Order Status:</strong>
-                                                <span class="badge ms-2" [ngClass]="{
-                                                    'bg-warning text-dark': order.orderStatus === 'PENDING',
-                                                    'bg-info': order.orderStatus === 'SHIPPED' || order.orderStatus === 'PARTIALLY_SHIPPED',
-                                                    'bg-success': order.orderStatus === 'DELIVERED',
-                                                    'bg-danger': order.orderStatus === 'CANCELLED'
-                                                }">{{ order.orderStatus || order.status }}</span>
 
-                                                <!-- Debug bilgisi - geliştirme sırasında yardımcı olabilir -->
-                                                <small class="ms-3 text-muted">Database status: {{ order.orderStatus || 'N/A' }}</small>
-                                            </div>
 
                                             <table class="table table-sm">
                                                 <thead>
@@ -243,11 +236,15 @@
                                                         <td class="text-end">{{ item.subtotal | currency }}</td>
                                                         <td class="text-center">
                                                             <span class="badge" [ngClass]="{
-                                                                'bg-warning text-dark': item.status === 'PENDING',
-                                                                'bg-info': item.status === 'SHIPPED',
+                                                                'bg-warning-subtle text-warning border border-warning': item.status === 'REFUND_REQUESTED',
+                                                                'bg-info-subtle text-info border border-info': item.status === 'RETURNED',
+                                                                'bg-danger-subtle text-danger border border-danger': item.status === 'REFUND_DENIED',
+                                                                'bg-warning bg-opacity-75': item.status === 'PENDING',
+                                                                'bg-primary bg-opacity-75': item.status === 'SHIPPED' || item.status === 'PARTIALLY_SHIPPED',
                                                                 'bg-success': item.status === 'DELIVERED',
                                                                 'bg-danger': item.status === 'CANCELLED'
-                                                            }">{{ item.status }}</span>
+                                                            }">{{ item.status === 'RETURNED' ? 'REFUNDED' : item.status
+                                                                }}</span>
                                                         </td>
                                                     </tr>
                                                 </tbody>

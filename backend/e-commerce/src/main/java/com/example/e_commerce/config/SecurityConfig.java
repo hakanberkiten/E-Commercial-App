@@ -1,6 +1,10 @@
 package com.example.e_commerce.config;
 
 import com.example.e_commerce.security.JwtAuthFilter;
+import com.example.e_commerce.security.oauth2.OAuth2LoginSuccessHandler;
+import com.example.e_commerce.security.oauth2.CustomOAuth2UserService;
+import com.example.e_commerce.service.impl.CustomUserDetailsService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.*;
 import org.springframework.http.HttpMethod;
@@ -18,6 +22,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final CustomUserDetailsService userDetailsService;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+    private final CustomOAuth2UserService customOAuth2UserService; // Inject the service directly
     
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -33,6 +40,12 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/signup").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CORS preflight
                 
+                // OAuth2 endpoints
+                .requestMatchers("/login/**", "/oauth2/**").permitAll()
+                
+                // Current user endpoint - authenticated but no specific role needed
+                .requestMatchers("/api/auth/user/current").authenticated()
+                
                 // Public GET requests for products, categories, reviews
                 .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**", "/api/reviews/**").permitAll()
                 
@@ -42,6 +55,7 @@ public class SecurityConfig {
                 // Make address endpoints more permissive - use wildcards for all address operations
                 .requestMatchers("/api/addresses/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/users/{id}/addresses").authenticated()
+                
                 .requestMatchers(HttpMethod.PUT, "/api/users/{id}/addresses/default").authenticated()
                 .requestMatchers("/api/user-addresses/**").authenticated()
                 
@@ -98,6 +112,15 @@ public class SecurityConfig {
             )
             
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            
+            // Configure OAuth2 login
+            .oauth2Login(oauth2 -> oauth2
+                .loginPage("/login")
+                .successHandler(oAuth2LoginSuccessHandler)
+                .userInfoEndpoint(userInfo -> userInfo
+                    .userService(customOAuth2UserService) // Use the injected service directly
+                )
+            )
             
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS));

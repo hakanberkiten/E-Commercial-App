@@ -206,4 +206,25 @@ export class AuthService {
   hasRole(role: string): boolean {
     return this.getUserRole() === role;
   }
+
+  // Method to handle OAuth2 login success
+  handleOAuth2Success(token: string): Observable<User> {
+    console.log('Processing OAuth2 success with token');
+
+    // Store token
+    if (this.isBrowser) {
+      localStorage.setItem('jwt_token', token);
+    }
+
+    // Fetch user info with the token - FIXED PATH to match backend controller
+    return this.http.get<User>('/api/auth/user/current').pipe(
+      tap(user => {
+        console.log('Fetched current user:', user);
+        if (this.isBrowser) {
+          localStorage.setItem('currentUser', JSON.stringify(user));
+        }
+        this.currentUserSubject.next(user);
+      })
+    );
+  }
 }

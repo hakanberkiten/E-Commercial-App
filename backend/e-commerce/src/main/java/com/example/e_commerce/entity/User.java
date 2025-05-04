@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.AllArgsConstructor;
+
 @Builder
 @Entity
 @Table(name = "user")
@@ -43,4 +44,10 @@ public class User {
     private Boolean active = true;
 
     private String stripeCustomerId;
+
+    @Column(name = "auth_provider")
+    private String authProvider;
+
+    @Column(name = "provider_id")
+    private String providerId;
 }
