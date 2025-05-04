@@ -6,6 +6,8 @@ import { isPlatformBrowser } from '@angular/common';
 import { NotificationService } from '../../services/notification.service';
 declare var bootstrap: any;
 
+declare var bootstrap: any;
+
 @Component({
   selector: 'app-footer',
   standalone: false,

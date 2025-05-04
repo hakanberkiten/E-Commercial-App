@@ -127,8 +127,13 @@
                                     <td>{{ order.customer.name }}</td>
                                     <td>
                                         <div class="d-flex flex-column align-items-center">
+<<<<<<< HEAD
                                             <!-- Update the status badge in the order list --><span
                                                 class="badge rounded-pill py-2 px-3" [ngClass]="{
+=======
+                                            <!-- Update the status badge in the order list -->
+                                            <span class="badge rounded-pill py-2 px-3" [ngClass]="{
+>>>>>>> b5b57226adc0996a573c1cd7a010fb9444e7de65
                                                 'bg-warning-subtle text-warning border border-warning': order.status === 'REFUND_REQUESTED',
                                                 'bg-info-subtle text-info border border-info': order.status === 'REFUNDED',
                                                 'bg-danger-subtle text-danger border border-danger': order.status === 'REFUND_DENIED',
@@ -215,9 +220,12 @@
                                         <div class="p-3">
                                             <h6 class="mb-3">Order Details</h6>
 
+<<<<<<< HEAD
                                             <!-- Güncellenen order status gösterimi -->
 
 
+=======
+>>>>>>> b5b57226adc0996a573c1cd7a010fb9444e7de65
                                             <table class="table table-sm">
                                                 <thead>
                                                     <tr>
@@ -243,8 +251,12 @@
                                                                 'bg-primary bg-opacity-75': item.status === 'SHIPPED' || item.status === 'PARTIALLY_SHIPPED',
                                                                 'bg-success': item.status === 'DELIVERED',
                                                                 'bg-danger': item.status === 'CANCELLED'
+<<<<<<< HEAD
                                                             }">{{ item.status === 'RETURNED' ? 'REFUNDED' : item.status
                                                                 }}</span>
+=======
+                                                            }">{{ item.status === 'RETURNED' ? 'REFUNDED' : item.status }}</span>
+>>>>>>> b5b57226adc0996a573c1cd7a010fb9444e7de65
                                                         </td>
                                                     </tr>
                                                 </tbody>
