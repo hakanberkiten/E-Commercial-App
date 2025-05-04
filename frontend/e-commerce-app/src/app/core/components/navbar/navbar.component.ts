@@ -227,18 +227,20 @@ export class NavbarComponent implements OnInit {
   }
 
   goToNotification(notification: any): void {
+    // Mark notification as seen if needed
     if (!notification.seen) {
       this.notificationService.markAsSeen(notification.id).subscribe();
     }
 
-    // Navigate to the notification detail or related page
-    if (notification.link) {
-      this.router.navigateByUrl(notification.link);
-    } else {
-      this.router.navigate(['/notifications', notification.id]);
-    }
-
+    // Close dropdown and navigate
     this.showNotifications = false;
+    document.removeEventListener('click', this.closeNotifications);
+
+    // Use navigationExtras with preserveFragment to ensure clean navigation
+    this.router.navigate(['/notifications'], {
+      queryParams: { highlight: notification.id },
+      queryParamsHandling: 'merge'
+    });
   }
 
   getNotificationIcon(type: string): string {

@@ -33,8 +33,11 @@
                 </div>
 
                 <div *ngIf="!loading && !error && notifications.length > 0" class="list-group list-group-flush">
-                    <div *ngFor="let notification of notifications" class="list-group-item list-group-item-action"
-                        [class.bg-light]="!notification.seen" (click)="markAsSeen(notification)">
+                    <div *ngFor="let notification of notifications"
+                         [id]="'notification-' + notification.id"
+                         class="list-group-item list-group-item-action"
+                         [class.bg-light]="!notification.seen"
+                         (click)="markAsSeen(notification)">
                         <div class="d-flex w-100 justify-content-between">
                             <div class="d-flex">
                                 <div class="notification-icon me-3">

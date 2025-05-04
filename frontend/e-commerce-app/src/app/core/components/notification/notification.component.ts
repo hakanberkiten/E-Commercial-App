@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterContentInit, AfterViewChecked, Component, OnInit } from '@angular/core';
 import { NotificationService, Notification } from '../../services/notification.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { OrderService } from '../../services/order.service';
 
@@ -10,20 +10,32 @@ import { OrderService } from '../../services/order.service';
   templateUrl: './notification.component.html',
   styleUrls: ['./notification.component.css']
 })
-export class NotificationsComponent implements OnInit {
+export class NotificationsComponent implements OnInit, AfterViewChecked {
   notifications: Notification[] = [];
   loading: boolean = false;
   error: string = '';
+  private clickedNotificationIds: Set<number> = new Set<number>();
 
   constructor(
     private notificationService: NotificationService,
     private router: Router,
     private http: HttpClient,
-    private orderService:OrderService
+    private orderService: OrderService,
+    private route: ActivatedRoute
   ) { }
 
   ngOnInit(): void {
     this.loadNotifications();
+  }
+
+  ngAfterViewChecked(): void {
+    // Check for highlighted notification from query params with increased delay
+    this.route.queryParams.subscribe(params => {
+      if (params['highlight'] && !this.clickedNotificationIds.has(Number(params['highlight']))) {
+        // Only highlight if not clicked yet
+        this.scrollToAndHighlightNotification(Number(params['highlight']));
+      }
+    });
   }
 
   markAsRead(notificationId: number): void {
@@ -37,9 +49,11 @@ export class NotificationsComponent implements OnInit {
       });
     }
   }
+
   hasUnreadNotifications(): boolean {
     return this.notifications?.some(notification => !notification.seen);
   }
+
   loadNotifications(): void {
     this.loading = true;
     this.notificationService.getAllNotifications().subscribe({
@@ -56,6 +70,16 @@ export class NotificationsComponent implements OnInit {
   }
 
   markAsSeen(notification: Notification): void {
+    // Add notification ID to "clicked" set temporarily
+    this.clickedNotificationIds.add(notification.id);
+
+    // Remove highlight class if it exists
+    const element = document.getElementById(`notification-${notification.id}`);
+    if (element) {
+      element.classList.remove('notification-highlight');
+    }
+
+    // Original marking as seen logic
     if (!notification.seen) {
       this.notificationService.markAsSeen(notification.id).subscribe({
         next: () => {
@@ -214,7 +238,7 @@ export class NotificationsComponent implements OnInit {
     const originalHTML = target.innerHTML;
     target.disabled = true;
     target.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-    
+
     // Extract the order ID from the link
     const match = notification.link.match(/\/admin\/refund-requests\/(\d+)/);
     if (!match) {
@@ -223,16 +247,16 @@ export class NotificationsComponent implements OnInit {
       target.innerHTML = originalHTML;
       return;
     }
-    
+
     const orderId = parseInt(match[1]);
-    
+
     this.orderService.approveRefund(orderId).subscribe({
       next: () => {
         // Visual feedback before removal
         target.innerHTML = '<i class="bi bi-check-circle-fill fs-4"></i>';
         target.classList.add('btn-success');
         target.classList.remove('btn-outline-success');
-        
+
         // Delete the notification and remove from list after a short delay
         setTimeout(() => {
           this.notificationService.deleteNotification(notification.id).subscribe({
@@ -261,7 +285,7 @@ export class NotificationsComponent implements OnInit {
     const originalHTML = target.innerHTML;
     target.disabled = true;
     target.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-    
+
     // Extract the order ID from the link
     const match = notification.link.match(/\/admin\/refund-requests\/(\d+)/);
     if (!match) {
@@ -270,9 +294,9 @@ export class NotificationsComponent implements OnInit {
       target.innerHTML = originalHTML;
       return;
     }
-    
+
     const orderId = parseInt(match[1]);
-    
+
     // Show a prompt for the rejection reason
     const reason = prompt('Please provide a reason for denying this refund request');
     if (!reason) {
@@ -280,14 +304,14 @@ export class NotificationsComponent implements OnInit {
       target.innerHTML = originalHTML;
       return;
     }
-    
+
     this.orderService.denyRefund(orderId, reason).subscribe({
       next: () => {
         // Visual feedback before removal
         target.innerHTML = '<i class="bi bi-x-circle-fill fs-4"></i>';
         target.classList.add('btn-danger');
         target.classList.remove('btn-outline-danger');
-        
+
         // Delete the notification and remove from list after a short delay
         setTimeout(() => {
           this.notificationService.deleteNotification(notification.id).subscribe({
@@ -373,5 +397,29 @@ export class NotificationsComponent implements OnInit {
         toastEl.remove();
       }
     }, 5000);
+  }
+
+  scrollToAndHighlightNotification(notificationId: number): void {
+    // Don't highlight if it's in our "clicked" set
+    if (this.clickedNotificationIds.has(notificationId)) {
+      this.clickedNotificationIds.delete(notificationId);
+      return;
+    }
+
+    // Allow more time for the DOM to fully render
+    const element = document.getElementById(`notification-${notificationId}`);
+
+    if (element) {
+      // First scroll to make sure element is visible
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      // Force browser to recalculate layout before animation
+      window.getComputedStyle(element).opacity;
+
+      // Add highlight class for animation - will stay highlighted
+      element.classList.add('notification-highlight');
+    } else {
+      console.error('Notification element not found:', notificationId);
+    }
   }
 }
