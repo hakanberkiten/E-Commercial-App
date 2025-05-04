@@ -100,12 +100,17 @@ export class NotificationsComponent implements OnInit, AfterViewChecked {
   }
 
   deleteNotification(notification: Notification): void {
-    this.notificationService.deleteNotification(notification.id).subscribe({
-      next: () => {
-        this.notifications = this.notifications.filter(n => n.id !== notification.id);
-      },
-      error: (error) => console.error('Error deleting notification:', error)
-    });
+    // Use hide instead of actual deletion
+    this.notificationService.hideNotification(notification.id);
+    this.notifications = this.notifications.filter(n => n.id !== notification.id);
+  }
+
+  deleteAllNotifications(): void {
+    if (confirm('Are you sure you want to delete all notifications? They will be hidden from your view.')) {
+      this.notificationService.hideAllNotifications();
+      this.notifications = [];
+      this.showToast('Success', 'All notifications have been removed', 'info');
+    }
   }
 
   goToNotification(notification: Notification): void {

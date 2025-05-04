@@ -1,7 +1,7 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, interval, Subject } from 'rxjs';
-import { switchMap, tap, shareReplay, startWith } from 'rxjs/operators';
+import { switchMap, tap, shareReplay, startWith, map } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
 
 export interface Notification {
@@ -84,6 +84,7 @@ export class NotificationService {
   private fetchRecentNotifications(): Observable<Notification[]> {
     return this.http.get<Notification[]>(`${this.apiUrl}/recent`)
       .pipe(
+        map(notifications => this.filterHiddenNotifications(notifications)),
         tap(notifications => {
           this.notificationsSubject.next(notifications);
           const unseenCount = notifications.filter(n => !n.seen).length;
@@ -100,6 +101,7 @@ export class NotificationService {
   getAllNotifications(): Observable<Notification[]> {
     return this.http.get<Notification[]>(this.apiUrl)
       .pipe(
+        map(notifications => this.filterHiddenNotifications(notifications)),
         tap(notifications => {
           // Keep recent notifications updated if full list is fetched
           const recentNotifications = notifications.slice(0, 5);
@@ -189,5 +191,61 @@ export class NotificationService {
       localStorage.removeItem('pendingSellerRequest');
     }
     this.pendingRequestSubject.next(false);
+  }
+
+  // Store hidden notification IDs in localStorage
+  private getHiddenNotificationIds(): number[] {
+    if (this.isBrowser) {
+      const hiddenIds = localStorage.getItem('hiddenNotificationIds');
+      return hiddenIds ? JSON.parse(hiddenIds) : [];
+    }
+    return [];
+  }
+
+  private saveHiddenNotificationIds(ids: number[]): void {
+    if (this.isBrowser) {
+      localStorage.setItem('hiddenNotificationIds', JSON.stringify(ids));
+    }
+  }
+
+  // Hide a notification (client-side only)
+  hideNotification(notificationId: number): void {
+    const hiddenIds = this.getHiddenNotificationIds();
+    if (!hiddenIds.includes(notificationId)) {
+      hiddenIds.push(notificationId);
+      this.saveHiddenNotificationIds(hiddenIds);
+    }
+
+    // Update local state by removing the hidden notification
+    const currentNotifications = this.notificationsSubject.value;
+    const updatedNotifications = currentNotifications.filter(
+      notification => notification.id !== notificationId
+    );
+    this.notificationsSubject.next(updatedNotifications);
+
+    // Update unseen count
+    const unseenCount = updatedNotifications.filter(n => !n.seen).length;
+    this.unseenCountSubject.next(unseenCount);
+  }
+
+  // Hide all notifications (client-side only)
+  hideAllNotifications(): void {
+    const currentNotifications = this.notificationsSubject.value;
+    const notificationIds = currentNotifications.map(n => n.id);
+
+    // Add all current IDs to hidden list
+    const hiddenIds = this.getHiddenNotificationIds();
+    const updatedHiddenIds = [...new Set([...hiddenIds, ...notificationIds])];
+    this.saveHiddenNotificationIds(updatedHiddenIds);
+
+    // Clear local notifications list
+    this.notificationsSubject.next([]);
+    this.unseenCountSubject.next(0);
+  }
+
+  // Filter out hidden notifications when fetching
+  private filterHiddenNotifications(notifications: Notification[]): Notification[] {
+    const hiddenIds = this.getHiddenNotificationIds();
+    return notifications.filter(notification => !hiddenIds.includes(notification.id));
   }
 }

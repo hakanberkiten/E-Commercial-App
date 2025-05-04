@@ -11,6 +11,10 @@
                             (click)="markAllAsSeen()">
                             Mark all as seen
                         </button>
+                        <button *ngIf="notifications.length > 0" class="btn btn-outline-danger"
+                            (click)="deleteAllNotifications()">
+                            Delete All
+                        </button>
                     </div>
                 </div>
 
