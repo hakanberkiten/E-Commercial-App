@@ -454,9 +454,11 @@
                                             <td>${{ payment.amount.toFixed(2) }}</td>
                                             <td>
                                                 <span class="badge" [ngClass]="{
-                                                            'bg-success': payment.status === 'succeeded',
+                                                            'bg-success': payment.status === 'succeeded' || payment.status === 'COMPLETED' || payment.status === 'active',
                                                             'bg-warning': payment.status === 'pending',
-                                                            'bg-danger': payment.status === 'failed'
+                                                            'bg-danger': payment.status === 'failed' || payment.status === 'CANCELLED' || payment.status === 'DEDUCTED',
+                                                            'bg-info': payment.status === 'REFUNDED' || payment.status === 'refund',
+                                                            'bg-secondary': !['succeeded', 'pending', 'failed', 'REFUNDED', 'COMPLETED', 'CANCELLED', 'DEDUCTED', 'active', 'refund'].includes(payment.status)
                                                         }">
                                                     {{ payment.status }}
                                                 </span>
@@ -513,23 +515,15 @@
                                             <td>{{ order.totalAmount | currency }}</td>
                                             <td>
                                                 <span class="badge rounded-pill py-2 px-3" [ngClass]="{
-                                                    'bg-warning text-dark': order.orderStatus === 'PENDING',
-                                                    'bg-info': order.orderStatus === 'SHIPPED' || order.orderStatus === 'PARTIALLY_SHIPPED',
+                                                    'bg-warning-subtle text-warning border border-warning': order.orderStatus === 'REFUND_REQUESTED',
+                                                    'bg-info-subtle text-info border border-info': order.orderStatus === 'REFUNDED',
+                                                    'bg-danger-subtle text-danger border border-danger': order.orderStatus === 'REFUND_DENIED',
+                                                    'bg-warning bg-opacity-75': order.orderStatus === 'PENDING',
+                                                    'bg-primary bg-opacity-75': order.orderStatus === 'SHIPPED' || order.orderStatus === 'PARTIALLY_SHIPPED',
                                                     'bg-success': order.orderStatus === 'DELIVERED',
-                                                    'bg-danger': order.orderStatus === 'CANCELLED'
+                                                    'bg-danger text-light': order.orderStatus === 'CANCELLED'
                                                 }">
                                                     {{ order.orderStatus }}
-                                                </span>
-                                                <span *ngIf="order.orderStatus === 'REFUND_REQUESTED'"
-                                                    class="badge bg-warning text-dark">
-                                                    Return Requested
-                                                </span>
-                                                <span *ngIf="order.orderStatus === 'REFUNDED'" class="badge bg-info">
-                                                    Refunded
-                                                </span>
-                                                <span *ngIf="order.orderStatus === 'REFUND_DENIED'"
-                                                    class="badge bg-danger">
-                                                    Refund Denied
                                                 </span>
                                             </td>
                                             <td class="text-end">
@@ -570,7 +564,7 @@
                                     <button *ngIf="canBeReturned(order)" class="btn btn-outline-danger"
                                         (click)="showReturnConfirmation(order)">
                                         <i class="bi bi-arrow-return-left me-1"></i>
-                                        Return Order
+                                        Request Return Order
                                     </button>
                                 </div>
 
@@ -606,8 +600,13 @@
                                                     <span class="badge" [ngClass]="{
                                                         'bg-warning text-dark': item.itemStatus === 'PENDING',
                                                         'bg-info': item.itemStatus === 'SHIPPED',
+                                                        'bg-primary bg-opacity-75': item.itemStatus === 'PARTIALLY_SHIPPED',
                                                         'bg-success': item.itemStatus === 'DELIVERED',
-                                                        'bg-danger': item.itemStatus === 'CANCELLED'
+                                                        'bg-danger': item.itemStatus === 'CANCELLED',
+                                                        'bg-warning-subtle text-warning border border-warning': item.itemStatus === 'REFUND_REQUESTED',
+                                                        'bg-info-subtle text-info border border-info': item.itemStatus === 'REFUNDED',
+                                                        'bg-danger-subtle text-danger border border-danger': item.itemStatus === 'REFUND_DENIED',
+                                                        'bg-secondary': !['PENDING', 'SHIPPED', 'PARTIALLY_SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUND_REQUESTED', 'REFUNDED', 'REFUND_DENIED'].includes(item.itemStatus)
                                                     }">
                                                         {{ item.itemStatus }}
                                                     </span>
