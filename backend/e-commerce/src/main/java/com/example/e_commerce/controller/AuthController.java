@@ -7,6 +7,7 @@ import com.example.e_commerce.entity.User;
 import com.example.e_commerce.repository.RoleRepository;
 import com.example.e_commerce.repository.UserRepository;
 import com.example.e_commerce.security.JwtUtils;
+import com.example.e_commerce.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,7 @@ public class AuthController {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+    private final PaymentService paymentService;
 
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest req) {
@@ -36,7 +38,7 @@ public class AuthController {
             if (userRepository.findByEmail(req.getEmail()).isPresent()) {
                 return ResponseEntity
                     .badRequest()
-                    .body("Error: Email is already in use!");
+                    .body(Map.of("message", "Error: Email is already in use!"));
             }
 
             // Yeni kullanıcı oluşturma
@@ -52,7 +54,19 @@ public class AuthController {
                 .orElseThrow(() -> new RuntimeException("Error: Role CUSTOMER not found."));
             user.setRole(customerRole);
             
-            userRepository.save(user);
+            // Save the user first to get the user ID
+            user = userRepository.save(user);
+            
+            try {
+                // Create a Stripe customer for this user and update the user record
+                String stripeCustomerId = paymentService.createCustomerIfNotExists(user.getUserId());
+                user.setStripeCustomerId(stripeCustomerId);
+                userRepository.save(user);
+            } catch (Exception e) {
+                // Log the error but don't prevent user creation
+                System.err.println("Failed to create Stripe customer: " + e.getMessage());
+                e.printStackTrace();
+            }
             
             // Başarılı bir şekilde yanıt dön
             return ResponseEntity.ok().body(Map.of("message", "User registered successfully!"));
