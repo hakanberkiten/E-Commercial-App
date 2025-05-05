@@ -106,7 +106,19 @@ export class NavbarComponent implements OnInit {
     const query = event.target.value;
     this.searchSubject.next(query);
   }
+  navigateToProfileTab(tabName: string): void {
+    // Always navigate with query params, which makes the implementation more reliable
+    this.router.navigate(['/profile'], {
+      queryParams: { tab: tabName },
+      queryParamsHandling: 'merge'
+    });
 
+    // Close any open dropdowns
+    const dropdownMenu = document.querySelector('.dropdown-menu.show');
+    if (dropdownMenu) {
+      dropdownMenu.classList.remove('show');
+    }
+  }
   // Asıl arama fonksiyonu
   private performSearch(query: string): void {
     if (!query || query.trim() === '') {

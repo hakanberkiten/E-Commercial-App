@@ -377,12 +377,16 @@
                                 </td>
                                 <td>
                                     <span class="badge rounded-pill py-2 px-3" [ngClass]="{
-                                        'bg-warning text-dark': order.orderStatus === 'PENDING',
-                                        'bg-info': order.orderStatus === 'SHIPPED',
+                                        'bg-warning-subtle text-warning border border-warning': order.orderStatus === 'REFUND_REQUESTED',
+                                        'bg-info-subtle text-info border border-info': order.orderStatus === 'REFUNDED',
+                                        'bg-danger-subtle text-danger border border-danger': order.orderStatus === 'REFUND_DENIED',
+                                        'bg-warning bg-opacity-75': order.orderStatus === 'PENDING',
+                                        'bg-primary bg-opacity-75': order.orderStatus === 'SHIPPED' || order.orderStatus === 'PARTIALLY_SHIPPED',
                                         'bg-success': order.orderStatus === 'DELIVERED',
-                                        'bg-danger': order.orderStatus === 'CANCELLED'
+                                        'bg-danger text-light': order.orderStatus === 'CANCELLED',
+                                        'bg-secondary': !order.orderStatus
                                     }">
-                                        {{ order.orderStatus }}
+                                        {{ order.orderStatus || 'UNKNOWN' }}
                                     </span>
                                 </td>
                                 <td>

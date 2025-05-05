@@ -39,6 +39,16 @@ public void deleteUserAddressByAddressId(Long addressId) {
     List<UserAddress> userAddresses = userAddressRepository.findByAddressAddressId(addressId);
     userAddressRepository.deleteAll(userAddresses);
 }
+
+@Override
+    public List<UserAddress> findByUser(User user) {
+        return userAddressRepository.findByUser(user);
+    }
+
+    @Override
+    public List<UserAddress> findByAddressAddressId(Long addressId) {
+        return userAddressRepository.findByAddressAddressId(addressId);
+}
     @Override
     public List<UserAddress> getAllUserAddresses() {
         return userAddressRepository.findAll();

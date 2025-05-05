@@ -162,17 +162,11 @@
                 <!-- Social signup section -->
                 <div class="social-login text-center mt-4 fade-in-up">
                     <p class="text-muted small mb-3">Or sign up with</p>
-                    <div class="d-flex justify-content-center gap-3">
+                    <div class="d-flex justify-content-center ">
                         <a href="http://localhost:8080/oauth2/authorization/google"
                             class="btn btn-outline-light btn-social">
                             <i class="bi bi-google"></i>
                         </a>
-                        <button class="btn btn-outline-light btn-social">
-                            <i class="bi bi-facebook"></i>
-                        </button>
-                        <button class="btn btn-outline-light btn-social">
-                            <i class="bi bi-apple"></i>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -212,6 +206,31 @@
             transform: translateY(0);
             opacity: 1;
         }
+    }
+
+
+    /* Google login button styling */
+    .btn-social {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+        background-color: white;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-social:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-social i {
+        font-size: 1.2rem;
+        color: #DB4437;
+        /* Google's red brand color */
     }
 
     @keyframes fadeInUp {

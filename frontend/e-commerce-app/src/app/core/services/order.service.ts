@@ -49,20 +49,15 @@ export class OrderService {
   }
 
   updateOrderStatus(orderId: number, status: string): Observable<any> {
-    // Get the authentication token
-    const token = localStorage.getItem('jwt_token');
-
-    // Create headers with authorization
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    });
-
-    // Use POST instead of PATCH since we know POST works for other endpointsg
-    return this.http.post(`/api/orders/${orderId}/status-update`, { status }, { headers })
+    // Use POST method as it was working before
+    return this.http.post<any>(`/api/orders/${orderId}/status-update`, { status })
       .pipe(
         tap(response => {
           console.log(`Order ${orderId} status updated to ${status}:`, response);
+        }),
+        catchError(error => {
+          console.error(`Error updating order ${orderId} status:`, error);
+          return throwError(() => error);
         })
       );
   }
@@ -170,7 +165,21 @@ export class OrderService {
   }
 
   approveRefund(orderId: number): Observable<any> {
-    return this.http.post<any>(`/api/orders/${orderId}/approve-refund`, {});
+    // Daha detaylı hata işleme ekleyelim
+    return this.http.post<any>(`/api/orders/${orderId}/approve-refund`, {})
+      .pipe(
+        catchError(error => {
+          console.error(`Error approving refund for order ${orderId}:`, error);
+          // Detaylı hata döndür
+          return throwError(() => {
+            return {
+              status: error.status,
+              message: error.error?.message || 'Failed to approve refund',
+              error: error
+            };
+          });
+        })
+      );
   }
 
   denyRefund(orderId: number, reason: string): Observable<any> {

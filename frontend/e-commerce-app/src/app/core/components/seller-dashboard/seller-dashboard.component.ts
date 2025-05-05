@@ -153,7 +153,11 @@ export class SellerDashboardComponent implements OnInit {
               quantity: item.quantityInOrder,
               price: item.product.price,
               subtotal: item.orderedProductPrice,
-              status: item.itemStatus || (orderStatus === 'DELIVERED' ? 'DELIVERED' : 'PENDING')
+              status: item.itemStatus ||
+                (orderStatus === 'REFUND_DENIED' ? 'REFUND_DENIED' :
+                  orderStatus === 'REFUNDED' ? 'REFUNDED' :
+                    orderStatus === 'REFUND_REQUESTED' ? 'REFUND_REQUESTED' :
+                      orderStatus === 'DELIVERED' ? 'DELIVERED' : 'PENDING')
             })),
             totalPrice: sellerItems.reduce(
               (sum: number, item: any) => sum + (item.orderedProductPrice || 0),

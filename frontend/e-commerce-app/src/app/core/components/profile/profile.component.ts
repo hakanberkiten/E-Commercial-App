@@ -4,7 +4,7 @@ import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../services/auth.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { PaymentService } from '../../services/payment.service';
 import { HttpClient } from '@angular/common/http';
 import { OrderService } from '../../services/order.service';
@@ -77,6 +77,7 @@ export class ProfileComponent implements OnInit {
     private auth: AuthService,
     private fb: FormBuilder,
     private router: Router,
+    private route: ActivatedRoute,
     private http: HttpClient,
     private orderService: OrderService,
     private paymentService: PaymentService,
@@ -138,6 +139,16 @@ export class ProfileComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    // Get the current user data
+    this.currentUser = this.auth.getCurrentUser();
+
+    // Subscribe to route query params to handle tab changes
+    this.route.queryParams.subscribe(params => {
+      if (params['tab']) {
+        this.setActiveTab(params['tab']);
+      }
+    });
+
     this.auth.currentUser$.subscribe(user => {
       this.currentUser = user;
       if (user) {
@@ -157,13 +168,6 @@ export class ProfileComponent implements OnInit {
         } else {
           // For admin users, ensure we stay on the profile tab
           this.activeTab = 'profile';
-        }
-
-        // Check for tab parameter in URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const tabParam = urlParams.get('tab');
-        if (tabParam) {
-          this.setActiveTab(tabParam);
         }
       } else {
         this.router.navigate(['/login']);
@@ -476,11 +480,34 @@ export class ProfileComponent implements OnInit {
     this.auth.setDefaultAddress(addressId, this.currentUser?.userId?.toString() || '').subscribe({
       next: () => {
         this.addressSuccessMessage = 'Default address updated!';
+
+        // Update local address data to reflect the change immediately
+        this.addresses.forEach(addr => {
+          // First set all addresses to non-default
+          addr.isDefault = false;
+
+          // Then set the selected address as default
+          if (addr.id.toString() === addressId) {
+            addr.isDefault = true;
+          }
+        });
+
+        // Also reload data from server to ensure sync
         this.loadUserAddresses();
+
+        // Auto-hide success message after 3 seconds
+        setTimeout(() => {
+          this.addressSuccessMessage = '';
+        }, 3000);
       },
       error: (err) => {
         this.addressErrorMessage = 'Failed to update default address';
         console.error('Error updating default address:', err);
+
+        // Auto-hide error message after 3 seconds
+        setTimeout(() => {
+          this.addressErrorMessage = '';
+        }, 3000);
       }
     });
   }
@@ -606,13 +633,25 @@ export class ProfileComponent implements OnInit {
 
   setActiveTab(tab: string): void {
     this.activeTab = tab;
-    if (tab === 'myorders') {
-      this.loadUserOrders();
+
+    // Load necessary data for the selected tab
+    if (tab === 'addresses') {
+      this.loadUserAddresses();
     } else if (tab === 'payment') {
       this.loadUserCards();
     } else if (tab === 'orders') {
       this.loadPaymentHistory();
+    } else if (tab === 'myorders') {
+      this.loadUserOrders();
     }
+
+    // Update URL to reflect the current tab without reloading the component
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab: tab },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
   }
 
   hasOrders(): boolean {
@@ -674,7 +713,7 @@ export class ProfileComponent implements OnInit {
         if (isPlatformBrowser(this.platformId)) {
           window.scrollTo(0, 0);
         }
-      }
-    });
-  }
+     }
+});
+}
 }

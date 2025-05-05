@@ -153,23 +153,31 @@
                                     </td>
                                     <td>
                                         <div class="d-flex justify-content-center gap-2">
-                                            <button *ngIf="order.status !== 'CANCELLED' && !order.sellerApproved"
-                                                class="btn btn-sm btn-success" (click)="approveOrder(order.id)"
-                                                [disabled]="isProcessing">
+                                            <!-- Replace the current Approve & Ship button with this updated version -->
+                                            <button *ngIf="order.status !== 'CANCELLED' &&
+                                                          order.status !== 'REFUNDED' &&
+                                                          order.status !== 'REFUND_REQUESTED' &&
+                                                          order.status !== 'REFUND_DENIED' &&
+                                                          !order.sellerApproved" class="btn btn-sm btn-success"
+                                                (click)="approveOrder(order.id)" [disabled]="isProcessing">
                                                 <span *ngIf="isProcessing" class="spinner-border spinner-border-sm me-1"
                                                     role="status" aria-hidden="true"></span>
                                                 <i *ngIf="!isProcessing" class="bi bi-check2 me-1"></i>Approve & Ship
                                             </button>
 
-                                            <!-- Add the cancel button here -->
-                                            <button *ngIf="order.status !== 'CANCELLED' && order.status !== 'SHIPPED'"
+                                            <!-- Replace the current cancel buttons with these updated versions -->
+
+                                            <!-- Regular cancel button for non-shipped orders -->
+                                            <button
+                                                *ngIf="!['CANCELLED', 'SHIPPED', 'REFUNDED', 'REFUND_DENIED'].includes(order.status)"
                                                 class="btn btn-sm btn-danger" (click)="cancelOrder(order.id)"
                                                 [disabled]="isProcessing">
                                                 <i class="bi bi-x-circle me-1"></i>Cancel
                                             </button>
 
-                                            <!-- Add this button for cancelling shipped orders with a warning -->
-                                            <button *ngIf="order.status !== 'CANCELLED' && order.status === 'SHIPPED'"
+                                            <!-- Cancel button for shipped orders -->
+                                            <button
+                                                *ngIf="order.status === 'SHIPPED' && !['CANCELLED', 'REFUNDED', 'REFUND_DENIED'].includes(order.status)"
                                                 class="btn btn-sm btn-outline-danger" (click)="cancelOrder(order.id)"
                                                 [disabled]="isProcessing">
                                                 <i class="bi bi-x-circle me-1"></i>Cancel & Refund

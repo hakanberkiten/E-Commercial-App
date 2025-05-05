@@ -124,16 +124,36 @@
                             <!-- Dropdown menu -->
                             <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
                                 <li>
-                                    <a class="dropdown-item py-2" routerLink="/profile">
+                                    <a class="dropdown-item py-2" (click)="navigateToProfileTab('profile')"
+                                        style="cursor: pointer;">
                                         <i class="bi bi-person me-2"></i>Profile
                                     </a>
                                 </li>
+                                <li>
+                                    <a class="dropdown-item py-2" (click)="navigateToProfileTab('addresses')"
+                                        style="cursor: pointer;">
+                                        <i class="bi bi-geo-alt me-2"></i>Addresses
+                                    </a>
+                                </li>
+                                <li *ngIf="!isAdmin()">
+                                    <a class="dropdown-item py-2" (click)="navigateToProfileTab('payment')"
+                                        style="cursor: pointer;">
+                                        <i class="bi bi-credit-card me-2"></i>Payment Methods
+                                    </a>
+                                </li>
+                                <li *ngIf="!isAdmin()">
+                                    <a class="dropdown-item py-2" (click)="navigateToProfileTab('orders')"
+                                        style="cursor: pointer;">
+                                        <i class="bi bi-box-seam me-2"></i>Payment History
+                                    </a>
+                                </li>
                                 <li *ngIf="isCustomerOrSeller()">
-                                    <a class="dropdown-item py-2" routerLink="/profile"
-                                        [queryParams]="{tab: 'myorders'}">
+                                    <a class="dropdown-item py-2" (click)="navigateToProfileTab('myorders')"
+                                        style="cursor: pointer;">
                                         <i class="bi bi-bag-check me-2"></i>My Orders
                                     </a>
                                 </li>
+
                                 <!-- Show seller dashboard in dropdown for sellers -->
                                 <li *ngIf="isSeller()">
                                     <a class="dropdown-item py-2" routerLink="/seller-dashboard">

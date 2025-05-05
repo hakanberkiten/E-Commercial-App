@@ -237,26 +237,45 @@ export class NotificationsComponent implements OnInit, AfterViewChecked {
       });
     }
   }
-
   approveRefundRequest(notification: any, event: Event): void {
+    event.stopPropagation(); // Öncelikle event propagation'ı durduralım
     const target = event.currentTarget as HTMLButtonElement;
     const originalHTML = target.innerHTML;
     target.disabled = true;
     target.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
-    // Extract the order ID from the link
-    const match = notification.link.match(/\/admin\/refund-requests\/(\d+)/);
-    if (!match) {
-      console.error('Could not extract order ID from notification link');
+    // URL'den orderId'yi daha esnek bir şekilde çıkaralım
+    let orderId: number | null = null;
+
+    // Direkt link'ten ID'yi çıkar
+    if (notification.link && notification.link.includes('/refund-requests/')) {
+      const match = notification.link.match(/\/refund-requests\/(\d+)/);
+      if (match && match[1]) {
+        orderId = parseInt(match[1]);
+      }
+    }
+
+    // Eğer link'ten çıkaramazsak, mesajdan çıkarmayı deneyelim
+    if (!orderId && notification.message) {
+      const match = notification.message.match(/order #(\d+)/i);
+      if (match && match[1]) {
+        orderId = parseInt(match[1]);
+      }
+    }
+
+    if (!orderId) {
+      console.error('Could not extract order ID from notification', notification);
       target.disabled = false;
       target.innerHTML = originalHTML;
+      this.showToast('Error', 'Could not determine order ID', 'danger');
       return;
     }
 
-    const orderId = parseInt(match[1]);
 
     this.orderService.approveRefund(orderId).subscribe({
-      next: () => {
+      next: (response) => {
+        console.log('Refund approval successful:', response); // Debug log
+
         // Visual feedback before removal
         target.innerHTML = '<i class="bi bi-check-circle-fill fs-4"></i>';
         target.classList.add('btn-success');
@@ -280,10 +299,10 @@ export class NotificationsComponent implements OnInit, AfterViewChecked {
         console.error('Error approving refund request:', error);
         target.disabled = false;
         target.innerHTML = originalHTML;
-        this.showToast('Error', 'Failed to approve refund request', 'danger');
-      }
-    });
-  }
+        this.showToast('Error',` Failed to approve refund: ${error.error?.message || error.message || 'Unknown error'}`, 'danger');
+   }
+});
+}
 
   denyRefundRequest(notification: any, event: Event): void {
     const target = event.currentTarget as HTMLButtonElement;

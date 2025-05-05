@@ -86,17 +86,11 @@
                 <!-- Social login section -->
                 <div class="social-login text-center mt-4 fade-in-up">
                     <p class="text-muted small mb-3">Or sign in with</p>
-                    <div class="d-flex justify-content-center gap-3">
+                    <div class="d-flex justify-content-center">
                         <a href="http://localhost:8080/oauth2/authorization/google"
                             class="btn btn-outline-light btn-social">
                             <i class="bi bi-google"></i>
                         </a>
-                        <button class="btn btn-outline-light btn-social">
-                            <i class="bi bi-facebook"></i>
-                        </button>
-                        <button class="btn btn-outline-light btn-social">
-                            <i class="bi bi-apple"></i>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -112,11 +106,11 @@
     }
 
     .slide-up {
-        animation: slideUp 0.5s ease-out;
+        animation: slideUp 0.5s ease-out forwards;
     }
 
     .fade-in-up {
-        animation: fadeInUp 0.7s ease-out;
+        animation: fadeInUp 0.7s ease-out forwards;
     }
 
     .btn-social {
@@ -138,19 +132,10 @@
 
     .btn-social i {
         font-size: 1.2rem;
-    }
-
-    .btn-social:nth-child(1) i {
         color: #DB4437;
     }
 
-    .btn-social:nth-child(2) i {
-        color: #4267B2;
-    }
 
-    .btn-social:nth-child(3) i {
-        color: #000000;
-    }
 
     /* Animations */
     @keyframes slideUp {

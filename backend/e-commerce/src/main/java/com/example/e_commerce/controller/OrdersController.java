@@ -279,11 +279,19 @@ public class OrdersController {
     }
 
     @PostMapping("/{id}/approve-refund")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Orders> approveRefund(@PathVariable Long id) {
-        Orders updatedOrder = orderService.approveRefundRequest(id);
-        return ResponseEntity.ok(updatedOrder);
-    }
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<?> approveRefund(@PathVariable Long id) {
+        try {
+            System.out.println("Admin approving refund for order: " + id); // Debug log
+            Orders updatedOrder = orderService.approveRefundRequest(id);
+            return ResponseEntity.ok(updatedOrder);
+        } catch (Exception e) {
+            System.err.println("Error approving refund: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("message", "Error approving refund: " + e.getMessage()));
+            }
+}
 
     @PostMapping("/{id}/deny-refund")
     @PreAuthorize("hasRole('ADMIN')")
